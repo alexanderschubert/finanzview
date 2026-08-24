@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -9,11 +10,6 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
-    /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, mixed>  $input
-     */
     public function create(array $input): User
     {
         Validator::make($input, [
@@ -28,7 +24,7 @@ class CreateNewUser implements CreatesNewUsers
                 'string',
                 'email',
                 'max:255',
-                'unique:users,email',
+                'unique:users',
             ],
 
             'password' => [
@@ -39,10 +35,42 @@ class CreateNewUser implements CreatesNewUsers
             ],
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
         ]);
+
+        $this->createDefaultCategories($user);
+
+        return $user;
+    }
+
+    private function createDefaultCategories(User $user): void
+    {
+        $categories = [
+            ['name' => 'Wohnen', 'type' => 'expense', 'icon' => '🏠'],
+            ['name' => 'Lebensmittel', 'type' => 'expense', 'icon' => '🛒'],
+            ['name' => 'Mobilität', 'type' => 'expense', 'icon' => '🚗'],
+            ['name' => 'Energie', 'type' => 'expense', 'icon' => '💡'],
+            ['name' => 'Telekommunikation', 'type' => 'expense', 'icon' => '📱'],
+            ['name' => 'Versicherungen', 'type' => 'expense', 'icon' => '🛡️'],
+            ['name' => 'Freizeit', 'type' => 'expense', 'icon' => '🎬'],
+            ['name' => 'Shopping', 'type' => 'expense', 'icon' => '🛍️'],
+            ['name' => 'Gesundheit', 'type' => 'expense', 'icon' => '❤️'],
+            ['name' => 'Restaurants', 'type' => 'expense', 'icon' => '🍽️'],
+            ['name' => 'Gehalt', 'type' => 'income', 'icon' => '💰'],
+            ['name' => 'Nebenverdienst', 'type' => 'income', 'icon' => '💶'],
+            ['name' => 'Erstattung', 'type' => 'income', 'icon' => '↩️'],
+            ['name' => 'Sonstige Einnahmen', 'type' => 'income', 'icon' => '📈'],
+            ['name' => 'Sonstiges', 'type' => 'both', 'icon' => '📦'],
+        ];
+
+        foreach ($categories as $category) {
+            $user->categories()->create([
+                ...$category,
+                'is_active' => true,
+            ]);
+        }
     }
 }

@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,5 +18,9 @@ Route::middleware('auth')->group(function () {
     ])->name('dashboard');
 
     Route::resource('accounts', AccountController::class);
+
+    Route::resource('transactions', TransactionController::class);
+
+    Route::resource('categories', CategoryController::class);
 
 });

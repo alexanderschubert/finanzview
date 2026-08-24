@@ -55,15 +55,15 @@ class Account extends Model
      * Startsaldo + Einnahmen - Ausgaben
      */
     public function getCurrentBalanceAttribute(): float
-    {
-        $income = $this->transactions()
-            ->where('type', 'income')
-            ->sum('amount');
+{
+    $income = $this->transactions()
+        ->where('type', 'income')
+        ->sum('amount');
 
-        $expenses = $this->transactions()
-            ->where('type', 'expense')
-            ->sum('amount');
+    $expenses = $this->transactions()
+        ->where('type', 'expense')
+        ->sum('amount');
 
-        return (float) $this->opening_balance + $income - $expenses;
-    }
+    return (float) $this->opening_balance + $income - $expenses;
+}
 }

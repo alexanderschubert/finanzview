@@ -16,24 +16,22 @@ class Transaction extends Model
         'user_id',
         'account_id',
         'category_id',
+        'type',
+        'amount',
         'transaction_date',
         'description',
-        'notes',
-        'amount',
-        'type',
-        'currency',
         'merchant',
         'reference',
+        'notes',
         'is_pending',
         'is_recurring',
-        'external_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'transaction_date' => 'date',
             'amount' => 'decimal:2',
+            'transaction_date' => 'date',
             'is_pending' => 'boolean',
             'is_recurring' => 'boolean',
         ];
@@ -58,7 +56,7 @@ class Transaction extends Model
     {
         return $this->belongsToMany(
             Tag::class,
-            'transaction_tag'
+            'transaction_tags'
         );
     }
 }
