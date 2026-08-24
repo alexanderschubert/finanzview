@@ -29,7 +29,7 @@
             </h2>
 
             <p class="text-slate-500 mt-1">
-                Verwalte deine Bankkonten, Bargeldkonten und weitere Vermögenswerte.
+                Verwalte Bankkonten, Bargeld und weitere Vermögenswerte.
             </p>
 
         </div>
@@ -52,7 +52,7 @@
                 transition
             "
         >
-            + Konto hinzufügen
+            + Konto
         </a>
 
     </div>
@@ -60,7 +60,7 @@
 
 
     {{-- ========================================================= --}}
-    {{-- ERFOLGSMELDUNG --}}
+    {{-- MELDUNGEN --}}
     {{-- ========================================================= --}}
 
     @if (session('success'))
@@ -77,18 +77,11 @@
                 text-emerald-700
             "
         >
-
             {{ session('success') }}
-
         </div>
 
     @endif
 
-
-
-    {{-- ========================================================= --}}
-    {{-- FEHLER --}}
-    {{-- ========================================================= --}}
 
     @if (session('error'))
 
@@ -104,9 +97,7 @@
                 text-red-700
             "
         >
-
             {{ session('error') }}
-
         </div>
 
     @endif
@@ -114,121 +105,26 @@
 
 
     {{-- ========================================================= --}}
-    {{-- ÜBERSICHT --}}
+    {{-- GESAMTÜBERSICHT --}}
     {{-- ========================================================= --}}
 
     @php
 
         $activeAccounts = $accounts->where('is_active', true);
 
-        $totalAccounts = $accounts->count();
+        $includedAccounts = $accounts->where(
+            'include_in_total',
+            true
+        );
 
-        $includedAccounts = $accounts
-            ->where('include_in_total', true)
-            ->count();
+        $totalBalance = $includedAccounts->sum(
+            'calculated_balance'
+        );
 
     @endphp
 
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-
-
-        {{-- GESAMT KONTEN --}}
-
-        <div
-            class="
-                bg-white
-                rounded-2xl
-                shadow-sm
-                border
-                border-slate-100
-                p-5
-            "
-        >
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-slate-500">
-                        Konten
-                    </p>
-
-                    <p class="text-3xl font-semibold text-slate-900 mt-2">
-                        {{ $totalAccounts }}
-                    </p>
-
-                </div>
-
-
-                <div
-                    class="
-                        w-11
-                        h-11
-                        rounded-xl
-                        bg-slate-100
-                        flex
-                        items-center
-                        justify-center
-                        text-xl
-                    "
-                >
-                    🏦
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        {{-- AKTIVE KONTEN --}}
-
-        <div
-            class="
-                bg-white
-                rounded-2xl
-                shadow-sm
-                border
-                border-slate-100
-                p-5
-            "
-        >
-
-            <div class="flex items-center justify-between">
-
-                <div>
-
-                    <p class="text-sm text-slate-500">
-                        Aktive Konten
-                    </p>
-
-                    <p class="text-3xl font-semibold text-emerald-600 mt-2">
-                        {{ $activeAccounts->count() }}
-                    </p>
-
-                </div>
-
-
-                <div
-                    class="
-                        w-11
-                        h-11
-                        rounded-xl
-                        bg-emerald-50
-                        flex
-                        items-center
-                        justify-center
-                        text-xl
-                    "
-                >
-                    ✓
-                </div>
-
-            </div>
-
-        </div>
-
 
 
         {{-- GESAMTVERMÖGEN --}}
@@ -237,44 +133,97 @@
             class="
                 bg-white
                 rounded-2xl
-                shadow-sm
                 border
                 border-slate-100
+                shadow-sm
                 p-5
             "
         >
 
-            <div class="flex items-center justify-between">
+            <p class="text-sm text-slate-500">
+                Gesamtvermögen
+            </p>
 
-                <div>
+            <p
+                class="
+                    text-2xl
+                    font-semibold
+                    mt-2
+                    {{ $totalBalance >= 0
+                        ? 'text-slate-900'
+                        : 'text-red-600' }}
+                "
+            >
+                {{ number_format(
+                    $totalBalance,
+                    2,
+                    ',',
+                    '.'
+                ) }}
+                €
+            </p>
 
-                    <p class="text-sm text-slate-500">
-                        Im Gesamtvermögen
-                    </p>
+            <p class="text-xs text-slate-400 mt-1">
+                Einbezogene Konten
+            </p>
 
-                    <p class="text-3xl font-semibold text-slate-900 mt-2">
-                        {{ $includedAccounts }}
-                    </p>
-
-                </div>
+        </div>
 
 
-                <div
-                    class="
-                        w-11
-                        h-11
-                        rounded-xl
-                        bg-slate-100
-                        flex
-                        items-center
-                        justify-center
-                        text-xl
-                    "
-                >
-                    💰
-                </div>
 
-            </div>
+        {{-- KONTEN --}}
+
+        <div
+            class="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-100
+                shadow-sm
+                p-5
+            "
+        >
+
+            <p class="text-sm text-slate-500">
+                Aktive Konten
+            </p>
+
+            <p class="text-2xl font-semibold text-slate-900 mt-2">
+                {{ $activeAccounts->count() }}
+            </p>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Von {{ $accounts->count() }} Konten insgesamt
+            </p>
+
+        </div>
+
+
+
+        {{-- EINBEZOGEN --}}
+
+        <div
+            class="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-100
+                shadow-sm
+                p-5
+            "
+        >
+
+            <p class="text-sm text-slate-500">
+                Im Gesamtvermögen
+            </p>
+
+            <p class="text-2xl font-semibold text-emerald-600 mt-2">
+                {{ $includedAccounts->count() }}
+            </p>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Konten werden berücksichtigt
+            </p>
 
         </div>
 
@@ -286,193 +235,199 @@
     {{-- KONTEN --}}
     {{-- ========================================================= --}}
 
-    @if ($accounts->isEmpty())
+    <div class="mt-8">
 
-        <div
-            class="
-                bg-white
-                rounded-3xl
-                shadow-sm
-                border
-                border-slate-100
-                mt-6
-                p-10
-                sm:p-16
-                text-center
-            "
-        >
+
+        @if ($accounts->isEmpty())
+
+            {{-- ================================================= --}}
+            {{-- KEINE KONTEN --}}
+            {{-- ================================================= --}}
 
             <div
                 class="
-                    mx-auto
-                    w-16
-                    h-16
-                    rounded-2xl
-                    bg-slate-100
-                    flex
-                    items-center
-                    justify-center
-                    text-3xl
+                    bg-white
+                    rounded-3xl
+                    border
+                    border-slate-100
+                    shadow-sm
+                    p-10
+                    sm:p-14
+                    text-center
                 "
             >
-                🏦
-            </div>
-
-
-            <h2 class="font-semibold text-slate-900 text-lg mt-5">
-                Noch keine Konten
-            </h2>
-
-
-            <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-                Lege dein erstes Konto an, damit Finanzblick deine
-                Kontostände und Buchungen verwalten kann.
-            </p>
-
-
-            <a
-                href="{{ route('accounts.create') }}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    mt-6
-                    rounded-xl
-                    bg-slate-950
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-white
-                    hover:bg-slate-800
-                "
-            >
-                Erstes Konto erstellen
-            </a>
-
-        </div>
-
-    @else
-
-
-        {{-- ===================================================== --}}
-        {{-- DESKTOP / TABLET KONTEN --}}
-        {{-- ===================================================== --}}
-
-        <div
-            class="
-                grid
-                grid-cols-1
-                md:grid-cols-2
-                xl:grid-cols-3
-                gap-5
-                mt-6
-            "
-        >
-
-
-            @foreach ($accounts as $account)
 
                 <div
                     class="
-                        bg-white
-                        rounded-3xl
-                        shadow-sm
-                        border
-                        border-slate-100
-                        overflow-hidden
-                        hover:shadow-md
-                        transition
+                        mx-auto
+                        w-16
+                        h-16
+                        rounded-2xl
+                        bg-slate-100
+                        flex
+                        items-center
+                        justify-center
+                        text-3xl
                     "
                 >
+                    🏦
+                </div>
 
 
-                    {{-- KARTEN HEADER --}}
-
-                    <div class="p-5">
-
-
-                        <div class="flex items-start justify-between gap-4">
+                <h3 class="text-lg font-semibold text-slate-900 mt-5">
+                    Noch keine Konten
+                </h3>
 
 
-                            {{-- ICON --}}
+                <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+                    Erstelle dein erstes Konto, damit Finanzblick
+                    deine Vermögensentwicklung berechnen kann.
+                </p>
 
-                            <div
-                                class="
-                                    w-14
-                                    h-14
-                                    rounded-2xl
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-2xl
-                                    flex-shrink-0
-                                "
-                                style="background-color: {{ $account->color ?: '#f1f5f9' }}"
-                            >
 
-                                {{ $account->icon ?: '🏦' }}
+                <a
+                    href="{{ route('accounts.create') }}"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        mt-6
+                        rounded-xl
+                        bg-slate-950
+                        px-5
+                        py-3
+                        text-sm
+                        font-medium
+                        text-white
+                        hover:bg-slate-800
+                    "
+                >
+                    Erstes Konto erstellen
+                </a>
+
+            </div>
+
+
+        @else
+
+
+            {{-- ================================================= --}}
+            {{-- KONTO-KARTEN --}}
+            {{-- ================================================= --}}
+
+            <div
+                class="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    xl:grid-cols-3
+                    gap-5
+                "
+            >
+
+                @foreach ($accounts as $account)
+
+                    <div
+                        class="
+                            bg-white
+                            rounded-3xl
+                            border
+                            border-slate-100
+                            shadow-sm
+                            overflow-hidden
+                            hover:shadow-md
+                            transition
+                        "
+                    >
+
+
+                        {{-- KOPF --}}
+
+                        <div class="p-6">
+
+
+                            <div class="flex items-start justify-between gap-4">
+
+
+                                {{-- ICON --}}
+
+                                <div
+                                    class="
+                                        w-14
+                                        h-14
+                                        rounded-2xl
+                                        flex
+                                        items-center
+                                        justify-center
+                                        text-2xl
+                                    "
+                                    style="
+                                        background-color:
+                                        {{ $account->color ?: '#f1f5f9' }};
+                                    "
+                                >
+                                    {{ $account->icon ?: '🏦' }}
+                                </div>
+
+
+                                {{-- STATUS --}}
+
+                                @if ($account->is_active)
+
+                                    <span
+                                        class="
+                                            text-[11px]
+                                            font-medium
+                                            text-emerald-700
+                                            bg-emerald-50
+                                            px-2.5
+                                            py-1
+                                            rounded-full
+                                        "
+                                    >
+                                        Aktiv
+                                    </span>
+
+                                @else
+
+                                    <span
+                                        class="
+                                            text-[11px]
+                                            font-medium
+                                            text-slate-500
+                                            bg-slate-100
+                                            px-2.5
+                                            py-1
+                                            rounded-full
+                                        "
+                                    >
+                                        Inaktiv
+                                    </span>
+
+                                @endif
 
                             </div>
 
 
-                            {{-- STATUS --}}
 
-                            @if ($account->is_active)
+                            {{-- NAME --}}
 
-                                <span
-                                    class="
-                                        inline-flex
-                                        items-center
-                                        gap-1.5
-                                        text-xs
-                                        font-medium
-                                        text-emerald-700
-                                        bg-emerald-50
-                                        px-2.5
-                                        py-1.5
-                                        rounded-full
-                                    "
-                                >
-
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-
-                                    Aktiv
-
-                                </span>
-
-                            @else
-
-                                <span
-                                    class="
-                                        text-xs
-                                        font-medium
-                                        text-slate-500
-                                        bg-slate-100
-                                        px-2.5
-                                        py-1.5
-                                        rounded-full
-                                    "
-                                >
-                                    Inaktiv
-                                </span>
-
-                            @endif
-
-                        </div>
-
-
-
-                        {{-- KONTO NAME --}}
-
-                        <div class="mt-5">
-
-                            <h2 class="font-semibold text-lg text-slate-900 truncate">
+                            <h3
+                                class="
+                                    text-lg
+                                    font-semibold
+                                    text-slate-900
+                                    mt-5
+                                    truncate
+                                "
+                            >
                                 {{ $account->name }}
-                            </h2>
+                            </h3>
 
 
-                            <p class="text-sm text-slate-500 mt-1 truncate">
+                            {{-- INSTITUT --}}
+
+                            <p class="text-sm text-slate-500 mt-1">
 
                                 @if ($account->institution)
 
@@ -480,136 +435,131 @@
 
                                 @else
 
-                                    @switch($account->type)
+                                    {{ match($account->type) {
 
-                                        @case('checking')
-                                            Girokonto
-                                            @break
+                                        'checking' => 'Girokonto',
 
-                                        @case('savings')
-                                            Sparkonto
-                                            @break
+                                        'savings' => 'Sparkonto',
 
-                                        @case('credit_card')
-                                            Kreditkarte
-                                            @break
+                                        'credit_card' => 'Kreditkarte',
 
-                                        @case('paypal')
-                                            PayPal
-                                            @break
+                                        'paypal' => 'PayPal',
 
-                                        @case('cash')
-                                            Bargeld
-                                            @break
+                                        'cash' => 'Bargeld',
 
-                                        @case('investment')
-                                            Investment
-                                            @break
+                                        'investment' => 'Investment',
 
-                                        @case('loan')
-                                            Kredit
-                                            @break
+                                        'loan' => 'Kredit',
 
-                                        @default
-                                            Sonstiges
+                                        default => 'Sonstiges'
 
-                                    @endswitch
+                                    } }}
 
                                 @endif
 
                             </p>
 
-                        </div>
+
+
+                            {{-- SALDO --}}
+
+                            <div class="mt-6">
+
+                                <p class="text-xs text-slate-400">
+                                    Aktueller Kontostand
+                                </p>
+
+                                <p
+                                    class="
+                                        text-2xl
+                                        font-semibold
+                                        mt-1
+                                        {{ $account->calculated_balance >= 0
+                                            ? 'text-slate-900'
+                                            : 'text-red-600' }}
+                                    "
+                                >
+
+                                    {{ number_format(
+                                        $account->calculated_balance,
+                                        2,
+                                        ',',
+                                        '.'
+                                    ) }}
+
+                                    {{ $account->currency }}
+
+                                </p>
+
+                            </div>
 
 
 
-                        {{-- SALDO --}}
+                            {{-- INFO --}}
 
-                        <div class="mt-6">
-
-                            <p class="text-xs text-slate-400">
-                                Aktueller Kontostand
-                            </p>
-
-
-                            <p
+                            <div
                                 class="
-                                    text-3xl
-                                    font-semibold
-                                    mt-1
-                                    {{ $account->calculated_balance >= 0
-                                        ? 'text-slate-900'
-                                        : 'text-red-600' }}
+                                    flex
+                                    items-center
+                                    justify-between
+                                    mt-6
+                                    pt-4
+                                    border-t
+                                    border-slate-100
                                 "
                             >
 
-                                {{ number_format(
-                                    $account->calculated_balance,
-                                    2,
-                                    ',',
-                                    '.'
-                                ) }}
+                                <span class="text-xs text-slate-400">
 
-                                <span class="text-lg">
+                                    @if ($account->include_in_total)
+
+                                        <span class="text-emerald-600">
+                                            ● Im Gesamtvermögen
+                                        </span>
+
+                                    @else
+
+                                        Nicht eingerechnet
+
+                                    @endif
+
+                                </span>
+
+
+                                <span class="text-xs text-slate-400">
                                     {{ $account->currency }}
                                 </span>
 
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-
-                    {{-- TRENNER --}}
-
-                    <div class="border-t border-slate-100"></div>
-
-
-
-                    {{-- KARTEN FOOTER --}}
-
-                    <div
-                        class="
-                            px-5
-                            py-4
-                            flex
-                            items-center
-                            justify-between
-                            gap-3
-                            bg-slate-50/50
-                        "
-                    >
-
-
-                        <div>
-
-                            @if ($account->include_in_total)
-
-                                <p class="text-xs text-emerald-600 font-medium">
-                                    ✓ Im Gesamtvermögen
-                                </p>
-
-                            @else
-
-                                <p class="text-xs text-slate-400">
-                                    Nicht eingerechnet
-                                </p>
-
-                            @endif
+                            </div>
 
                         </div>
 
 
-                        <div class="flex items-center gap-3">
+
+                        {{-- AKTIONEN --}}
+
+                        <div
+                            class="
+                                px-6
+                                py-4
+                                bg-slate-50
+                                border-t
+                                border-slate-100
+                                flex
+                                items-center
+                                justify-between
+                            "
+                        >
 
                             <a
-                                href="{{ route('accounts.edit', $account) }}"
+                                href="{{ route(
+                                    'accounts.edit',
+                                    $account
+                                ) }}"
                                 class="
                                     text-sm
                                     font-medium
-                                    text-slate-500
+                                    text-slate-600
                                     hover:text-slate-900
                                 "
                             >
@@ -619,8 +569,15 @@
 
                             <form
                                 method="POST"
-                                action="{{ route('accounts.destroy', $account) }}"
-                                onsubmit="return confirm('Möchtest du dieses Konto wirklich löschen?');"
+                                action="{{ route(
+                                    'accounts.destroy',
+                                    $account
+                                ) }}"
+                                onsubmit="
+                                    return confirm(
+                                        'Möchtest du dieses Konto wirklich löschen?'
+                                    );
+                                "
                             >
 
                                 @csrf
@@ -645,13 +602,13 @@
 
                     </div>
 
-                </div>
+                @endforeach
 
-            @endforeach
+            </div>
 
-        </div>
+        @endif
 
-    @endif
+    </div>
 
 
 
@@ -667,28 +624,29 @@
                 rounded-2xl
                 bg-slate-50
                 border
-                border-slate-200
+                border-slate-100
                 p-5
-                flex
-                items-start
-                gap-4
             "
         >
 
-            <div class="text-xl">
-                💡
-            </div>
+            <div class="flex items-start gap-3">
 
-            <div>
+                <span class="text-lg">
+                    💡
+                </span>
 
-                <p class="font-medium text-slate-900">
-                    Tipp
-                </p>
+                <div>
 
-                <p class="text-sm text-slate-500 mt-1">
-                    Konten, die nicht in das Gesamtvermögen einbezogen werden,
-                    bleiben trotzdem für Buchungen verfügbar.
-                </p>
+                    <p class="text-sm font-medium text-slate-700">
+                        Tipp
+                    </p>
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        Du kannst festlegen, welche Konten in dein
+                        Gesamtvermögen einbezogen werden.
+                    </p>
+
+                </div>
 
             </div>
 

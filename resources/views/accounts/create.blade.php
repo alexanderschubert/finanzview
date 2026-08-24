@@ -1,206 +1,611 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
+@extends('layouts.app')
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+@section('title', 'Neues Konto – Finanzblick')
+@section('eyebrow', 'Finanzverwaltung')
+@section('page_title', 'Neues Konto')
+
+@section('content')
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    {{-- HEADER --}}
+    <div class="mb-6">
+
+        <a
+            href="{{ route('accounts.index') }}"
+            class="text-sm text-slate-500 hover:text-slate-900"
+        >
+            ← Konten
+        </a>
+
+        <div class="mt-4">
+
+            <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">
+                Neues Konto
+            </h2>
+
+            <p class="text-slate-500 mt-1">
+                Füge ein Bankkonto, Bargeld oder einen anderen Vermögenswert hinzu.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {{-- FEHLER --}}
+    @if ($errors->any())
+
+        <div class="mb-6 rounded-2xl bg-red-50 border border-red-100 p-4 text-sm text-red-700">
+
+            <p class="font-medium mb-2">
+                Bitte überprüfe deine Eingaben.
+            </p>
+
+            <ul class="list-disc list-inside space-y-1">
+
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+
+            </ul>
+
+        </div>
+
+    @endif
+
+
+    <form
+        method="POST"
+        action="{{ route('accounts.store') }}"
     >
 
-    <title>Konto erstellen – Finanzblick</title>
+        @csrf
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
-</head>
 
-<body class="min-h-screen bg-slate-100">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-<div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
-    <a
-        href="{{ route('accounts.index') }}"
-        class="text-sm text-slate-500"
-    >
-        ← Konten
-    </a>
+            {{-- ================================================= --}}
+            {{-- HAUPTBEREICH --}}
+            {{-- ================================================= --}}
 
-    <div class="bg-white rounded-3xl shadow-sm p-6 sm:p-8 mt-4">
+            <div class="lg:col-span-2 space-y-6">
 
-        <h1 class="text-2xl font-semibold text-slate-900">
-            Konto hinzufügen
-        </h1>
 
-        <p class="text-slate-500 mt-1 mb-8">
-            Erstelle ein neues Finanzkonto.
-        </p>
+                {{-- GRUNDINFORMATIONEN --}}
 
-        @if ($errors->any())
-            <div class="mb-6 rounded-xl bg-red-50 p-4 text-red-700">
-                <ul class="list-disc list-inside text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
+
+                    <div class="mb-6">
+
+                        <h3 class="font-semibold text-slate-900">
+                            Kontoinformationen
+                        </h3>
+
+                        <p class="text-sm text-slate-500 mt-1">
+                            Grundlegende Angaben zum Konto.
+                        </p>
+
+                    </div>
+
+
+                    <div class="space-y-6">
+
+
+                        {{-- NAME --}}
+
+                        <div>
+
+                            <label
+                                for="name"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Kontoname
+                            </label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value="{{ old('name') }}"
+                                required
+                                autofocus
+                                placeholder="z. B. Girokonto"
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                        </div>
+
+
+                        {{-- INSTITUT --}}
+
+                        <div>
+
+                            <label
+                                for="institution"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Bank / Anbieter
+                                <span class="font-normal text-slate-400">
+                                    (optional)
+                                </span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="institution"
+                                name="institution"
+                                value="{{ old('institution') }}"
+                                placeholder="z. B. ING, DKB, PayPal"
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                        </div>
+
+
+                        {{-- TYP --}}
+
+                        <div>
+
+                            <label
+                                for="type"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Kontoart
+                            </label>
+
+                            <select
+                                id="type"
+                                name="type"
+                                required
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                                <option value="checking" @selected(old('type', 'checking') === 'checking')>
+                                    Girokonto
+                                </option>
+
+                                <option value="savings" @selected(old('type') === 'savings')>
+                                    Sparkonto
+                                </option>
+
+                                <option value="credit_card" @selected(old('type') === 'credit_card')>
+                                    Kreditkarte
+                                </option>
+
+                                <option value="paypal" @selected(old('type') === 'paypal')>
+                                    PayPal
+                                </option>
+
+                                <option value="cash" @selected(old('type') === 'cash')>
+                                    Bargeld
+                                </option>
+
+                                <option value="investment" @selected(old('type') === 'investment')>
+                                    Investment
+                                </option>
+
+                                <option value="loan" @selected(old('type') === 'loan')>
+                                    Kredit
+                                </option>
+
+                                <option value="other" @selected(old('type') === 'other')>
+                                    Sonstiges
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        {{-- WÄHRUNG --}}
+
+                        <div>
+
+                            <label
+                                for="currency"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Währung
+                            </label>
+
+                            <select
+                                id="currency"
+                                name="currency"
+                                required
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                                <option value="EUR" @selected(old('currency', 'EUR') === 'EUR')>
+                                    🇪🇺 EUR – Euro
+                                </option>
+
+                                <option value="USD" @selected(old('currency') === 'USD')>
+                                    🇺🇸 USD – US-Dollar
+                                </option>
+
+                                <option value="GBP" @selected(old('currency') === 'GBP')>
+                                    🇬🇧 GBP – Britisches Pfund
+                                </option>
+
+                                <option value="CHF" @selected(old('currency') === 'CHF')>
+                                    🇨🇭 CHF – Schweizer Franken
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- STARTSALDO --}}
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
+
+                    <div class="mb-6">
+
+                        <h3 class="font-semibold text-slate-900">
+                            Startsaldo
+                        </h3>
+
+                        <p class="text-sm text-slate-500 mt-1">
+                            Der Kontostand, mit dem Finanzblick starten soll.
+                        </p>
+
+                    </div>
+
+
+                    <div>
+
+                        <label
+                            for="opening_balance"
+                            class="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                            Eröffnungssaldo
+                        </label>
+
+                        <div class="relative">
+
+                            <input
+                                type="number"
+                                id="opening_balance"
+                                name="opening_balance"
+                                step="0.01"
+                                value="{{ old('opening_balance', '0.00') }}"
+                                required
+                                class="w-full rounded-2xl border border-slate-200 px-5 py-4 pr-14 text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                            <span class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
+                                €
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- DETAILS --}}
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8">
+
+                    <div class="mb-6">
+
+                        <h3 class="font-semibold text-slate-900">
+                            Weitere Angaben
+                        </h3>
+
+                        <p class="text-sm text-slate-500 mt-1">
+                            Optionale Informationen.
+                        </p>
+
+                    </div>
+
+
+                    <div class="space-y-6">
+
+
+                        {{-- IBAN --}}
+
+                        <div>
+
+                            <label
+                                for="iban"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                IBAN
+                                <span class="font-normal text-slate-400">
+                                    (optional)
+                                </span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="iban"
+                                name="iban"
+                                value="{{ old('iban') }}"
+                                placeholder="DE00 0000 0000 0000 0000 00"
+                                autocomplete="off"
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                        </div>
+
+
+                        {{-- KONTO NUMMER --}}
+
+                        <div>
+
+                            <label
+                                for="account_number"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Kontonummer
+                                <span class="font-normal text-slate-400">
+                                    (optional)
+                                </span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="account_number"
+                                name="account_number"
+                                value="{{ old('account_number') }}"
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                        </div>
+
+
+                        {{-- NOTIZEN --}}
+
+                        <div>
+
+                            <label
+                                for="notes"
+                                class="block text-sm font-medium text-slate-700 mb-2"
+                            >
+                                Notizen
+                                <span class="font-normal text-slate-400">
+                                    (optional)
+                                </span>
+                            </label>
+
+                            <textarea
+                                id="notes"
+                                name="notes"
+                                rows="4"
+                                class="w-full rounded-xl border border-slate-200 px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >{{ old('notes') }}</textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-        @endif
 
-        <form
-            method="POST"
-            action="{{ route('accounts.store') }}"
-            class="space-y-6"
+
+
+            {{-- ================================================= --}}
+            {{-- SIDEBAR --}}
+            {{-- ================================================= --}}
+
+            <div class="space-y-6">
+
+
+                {{-- DARSTELLUNG --}}
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+
+                    <h3 class="font-semibold text-slate-900">
+                        Darstellung
+                    </h3>
+
+                    <p class="text-sm text-slate-500 mt-1 mb-5">
+                        Icon und Farbe des Kontos.
+                    </p>
+
+
+                    {{-- ICON --}}
+
+                    <div>
+
+                        <label
+                            for="icon"
+                            class="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                            Icon
+                        </label>
+
+                        <div class="flex gap-3">
+
+                            <div
+                                id="icon-preview"
+                                class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl"
+                            >
+                                {{ old('icon', '🏦') }}
+                            </div>
+
+                            <input
+                                type="text"
+                                id="icon"
+                                name="icon"
+                                value="{{ old('icon', '🏦') }}"
+                                maxlength="10"
+                                class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- FARBE --}}
+
+                    <div class="mt-5">
+
+                        <label
+                            for="color"
+                            class="block text-sm font-medium text-slate-700 mb-2"
+                        >
+                            Farbe
+                        </label>
+
+                        <input
+                            type="color"
+                            id="color"
+                            name="color"
+                            value="{{ old('color', '#f1f5f9') }}"
+                            class="w-full h-12 rounded-xl border border-slate-200 cursor-pointer"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                {{-- OPTIONEN --}}
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+
+                    <h3 class="font-semibold text-slate-900">
+                        Optionen
+                    </h3>
+
+                    <div class="space-y-4 mt-5">
+
+
+                        <label class="flex items-start gap-3 cursor-pointer">
+
+                            <input
+                                type="checkbox"
+                                name="is_active"
+                                value="1"
+                                checked
+                                class="w-5 h-5 mt-0.5 rounded border-slate-300"
+                            >
+
+                            <span>
+
+                                <span class="block text-sm font-medium text-slate-900">
+                                    Konto aktiv
+                                </span>
+
+                                <span class="block text-xs text-slate-500 mt-1">
+                                    Das Konto kann für neue Buchungen verwendet werden.
+                                </span>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="flex items-start gap-3 cursor-pointer">
+
+                            <input
+                                type="checkbox"
+                                name="include_in_total"
+                                value="1"
+                                checked
+                                class="w-5 h-5 mt-0.5 rounded border-slate-300"
+                            >
+
+                            <span>
+
+                                <span class="block text-sm font-medium text-slate-900">
+                                    Im Gesamtvermögen
+                                </span>
+
+                                <span class="block text-xs text-slate-500 mt-1">
+                                    Der Kontostand wird beim Gesamtvermögen berücksichtigt.
+                                </span>
+
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        {{-- AKTIONEN --}}
+
+        <div
+            class="
+                mt-6
+                bg-white
+                rounded-3xl
+                shadow-sm
+                border
+                border-slate-100
+                p-5
+                flex
+                flex-col-reverse
+                sm:flex-row
+                sm:items-center
+                sm:justify-end
+                gap-3
+            "
         >
 
-            @csrf
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    Kontoname
-                </label>
-
-                <input
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
-                    placeholder="z. B. Hauptkonto"
-                    required
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    Bank / Anbieter
-                </label>
-
-                <input
-                    type="text"
-                    name="institution"
-                    value="{{ old('institution') }}"
-                    placeholder="z. B. ING, DKB, PayPal, American Express"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    Kontotyp
-                </label>
-
-                <select
-                    name="type"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-                    <option value="checking">🏦 Girokonto</option>
-                    <option value="savings">💰 Tagesgeld / Sparkonto</option>
-                    <option value="credit_card">💳 Kreditkarte</option>
-                    <option value="paypal">🅿️ PayPal</option>
-                    <option value="cash">💵 Bargeld</option>
-                    <option value="investment">📈 Depot / Investment</option>
-                    <option value="loan">💸 Kredit</option>
-                    <option value="other">📦 Sonstiges</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    Startsaldo
-                </label>
-
-                <input
-                    type="number"
-                    step="0.01"
-                    name="opening_balance"
-                    value="{{ old('opening_balance', 0) }}"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-            </div>
-
-            <div>
-    <label class="block text-sm font-medium mb-2">
-        Währung
-    </label>
-
-    <select
-        name="currency"
-        required
-        class="w-full rounded-xl border border-slate-200 px-4 py-3"
-    >
-        <option value="EUR" {{ old('currency', 'EUR') === 'EUR' ? 'selected' : '' }}>
-            EUR – Euro
-        </option>
-
-        <option value="USD" {{ old('currency') === 'USD' ? 'selected' : '' }}>
-            USD – US-Dollar
-        </option>
-
-        <option value="CHF" {{ old('currency') === 'CHF' ? 'selected' : '' }}>
-            CHF – Schweizer Franken
-        </option>
-
-        <option value="GBP" {{ old('currency') === 'GBP' ? 'selected' : '' }}>
-            GBP – Britisches Pfund
-        </option>
-    </select>
-</div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    IBAN
-                </label>
-
-                <input
-                    type="text"
-                    name="iban"
-                    value="{{ old('iban') }}"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-2">
-                    Symbol / Icon
-                </label>
-
-                <input
-                    type="text"
-                    name="icon"
-                    value="{{ old('icon') }}"
-                    placeholder="🏦"
-                    maxlength="20"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3"
-                >
-            </div>
-
-            <label class="flex items-center gap-3">
-
-                <input
-                    type="checkbox"
-                    name="include_in_total"
-                    value="1"
-                    checked
-                >
-
-                <span class="text-sm text-slate-700">
-                    In Gesamtvermögen berücksichtigen
-                </span>
-
-            </label>
+            <a
+                href="{{ route('accounts.index') }}"
+                class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            >
+                Abbrechen
+            </a>
 
             <button
                 type="submit"
-                class="w-full rounded-xl bg-slate-950 py-3.5 font-medium text-white"
+                class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-6 py-3 text-sm font-medium text-white hover:bg-slate-800"
             >
                 Konto erstellen
             </button>
 
-        </form>
+        </div>
 
-    </div>
+    </form>
 
 </div>
 
-</body>
-</html>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const iconInput = document.getElementById('icon');
+    const iconPreview = document.getElementById('icon-preview');
+
+    if (!iconInput || !iconPreview) {
+        return;
+    }
+
+    iconInput.addEventListener('input', function () {
+
+        iconPreview.textContent =
+            this.value.trim() || '🏦';
+
+    });
+
+});
+
+</script>
+
+@endsection

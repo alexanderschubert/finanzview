@@ -7,10 +7,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use App\Models\Account;
+use App\Models\Category;
+use App\Models\Tag;
+use App\Models\Transaction;
+use App\Models\Budget;
+use App\Models\Loan;
+use App\Models\CreditCard;
+use App\Models\RecurringTransaction;
+
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +33,7 @@ class User extends Authenticatable
         'password',
     ];
 
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -32,6 +43,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
 
     /**
      * Get the attributes that should be cast.
@@ -46,6 +58,7 @@ class User extends Authenticatable
         ];
     }
 
+
     /**
      * Financial accounts belonging to the user.
      */
@@ -53,6 +66,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Account::class);
     }
+
 
     /**
      * Categories belonging to the user.
@@ -62,6 +76,7 @@ class User extends Authenticatable
         return $this->hasMany(Category::class);
     }
 
+
     /**
      * Tags belonging to the user.
      */
@@ -69,6 +84,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tag::class);
     }
+
 
     /**
      * Transactions belonging to the user.
@@ -78,6 +94,7 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+
     /**
      * Budgets belonging to the user.
      */
@@ -85,6 +102,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Budget::class);
     }
+
 
     /**
      * Loans belonging to the user.
@@ -94,6 +112,7 @@ class User extends Authenticatable
         return $this->hasMany(Loan::class);
     }
 
+
     /**
      * Credit cards belonging to the user.
      */
@@ -101,6 +120,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(CreditCard::class);
     }
+
 
     /**
      * Recurring transactions belonging to the user.

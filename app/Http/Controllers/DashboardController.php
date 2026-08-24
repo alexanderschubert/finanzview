@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -12,11 +12,11 @@ class DashboardController extends Controller
         $user = $request->user();
 
         /*
-         * Ausgewählten Monat bestimmen.
-         *
-         * Format:
-         * 2026-08
+         * =========================================================
+         * AUSGEWÄHLTEN MONAT
+         * =========================================================
          */
+
         $selectedMonth = $request->input(
             'month',
             now()->format('Y-m')
@@ -35,26 +35,26 @@ class DashboardController extends Controller
         $startOfMonth = $month->copy()->startOfMonth();
         $endOfMonth = $month->copy()->endOfMonth();
 
-
         /*
-         * Aktuelles Jahr
+         * =========================================================
+         * JAHR
+         * =========================================================
          */
+
         $startOfYear = $month->copy()->startOfYear();
         $endOfYear = $month->copy()->endOfYear();
 
-
         /*
-         * Konten
+         * =========================================================
+         * KONTEN
+         * =========================================================
          */
+
         $accounts = $user->accounts()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-
-        /*
-         * Kontostände berechnen
-         */
         foreach ($accounts as $account) {
 
             $income = $account->transactions()
@@ -66,23 +66,27 @@ class DashboardController extends Controller
                 ->sum('amount');
 
             $account->calculated_balance =
-                $account->opening_balance
-                + $income
-                - $expense;
+                (float) $account->opening_balance
+                + (float) $income
+                - (float) $expense;
         }
 
-
         /*
-         * Gesamtvermögen
+         * =========================================================
+         * GESAMTVERMÖGEN
+         * =========================================================
          */
+
         $totalBalance = $accounts
             ->where('include_in_total', true)
             ->sum('calculated_balance');
 
-
         /*
-         * Einnahmen im ausgewählten Monat
+         * =========================================================
+         * MONATLICHE EINNAHMEN
+         * =========================================================
          */
+
         $monthlyIncome = $user->transactions()
             ->where('type', 'income')
             ->whereBetween('transaction_date', [
@@ -91,10 +95,12 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
-
         /*
-         * Ausgaben im ausgewählten Monat
+         * =========================================================
+         * MONATLICHE AUSGABEN
+         * =========================================================
          */
+
         $monthlyExpense = $user->transactions()
             ->where('type', 'expense')
             ->whereBetween('transaction_date', [
@@ -103,25 +109,31 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
-
         /*
-         * Monatssaldo
+         * =========================================================
+         * MONATSSALDO
+         * =========================================================
          */
+
         $monthlyBalance =
             $monthlyIncome - $monthlyExpense;
 
-
         /*
-         * Sparquote
+         * =========================================================
+         * SPARQUOTE
+         * =========================================================
          */
+
         $savingsRate = $monthlyIncome > 0
             ? ($monthlyBalance / $monthlyIncome) * 100
             : 0;
 
-
         /*
-         * Jahreswerte
+         * =========================================================
+         * JAHRESWERTE
+         * =========================================================
          */
+
         $yearlyIncome = $user->transactions()
             ->where('type', 'income')
             ->whereBetween('transaction_date', [
@@ -138,10 +150,12 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
-
         /*
-         * Letzte Buchungen
+         * =========================================================
+         * LETZTE BUCHUNGEN
+         * =========================================================
          */
+
         $recentTransactions = $user->transactions()
             ->with([
                 'account',
@@ -152,10 +166,12 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
-
         /*
-         * Ausgaben nach Kategorie
+         * =========================================================
+         * AUSGABEN NACH KATEGORIE
+         * =========================================================
          */
+
         $expensesByCategory = $user->transactions()
             ->with('category')
             ->where('type', 'expense')
@@ -176,70 +192,298 @@ class DashboardController extends Controller
             ->sortByDesc('amount')
             ->values();
 
-
         /*
-         * Letzte 6 Monate für das Diagramm
+         * =========================================================
+         * LETZTE 6 MONATE
+         * =========================================================
          */
+
         $chartMonths = collect();
 
         for ($i = 5; $i >= 0; $i--) {
 
-            $chartMonth = $month->copy()
-                ->subMonths($i);
+            $chartMonth = $month->copy()->subMonths($i);
+
+            $chartStart =
+                $chartMonth->copy()->startOfMonth();
+
+            $chartEnd =
+                $chartMonth->copy()->endOfMonth();
 
             $income = $user->transactions()
                 ->where('type', 'income')
                 ->whereBetween('transaction_date', [
-                    $chartMonth->copy()->startOfMonth(),
-                    $chartMonth->copy()->endOfMonth(),
+                    $chartStart,
+                    $chartEnd,
                 ])
                 ->sum('amount');
 
             $expense = $user->transactions()
                 ->where('type', 'expense')
                 ->whereBetween('transaction_date', [
-                    $chartMonth->copy()->startOfMonth(),
-                    $chartMonth->copy()->endOfMonth(),
+                    $chartStart,
+                    $chartEnd,
                 ])
                 ->sum('amount');
 
             $chartMonths->push([
-                'label' => $chartMonth->translatedFormat('M'),
-                'full_label' => $chartMonth->translatedFormat('F Y'),
-                'income' => (float) $income,
-                'expense' => (float) $expense,
-                'balance' => (float) ($income - $expense),
+                'label' =>
+                    $chartMonth->translatedFormat('M'),
+
+                'full_label' =>
+                    $chartMonth->translatedFormat('F Y'),
+
+                'income' =>
+                    (float) $income,
+
+                'expense' =>
+                    (float) $expense,
+
+                'balance' =>
+                    (float) ($income - $expense),
             ]);
         }
 
+        /*
+         * =========================================================
+         * VERMÖGENSENTWICKLUNG
+         * =========================================================
+         */
+
+        $wealthMonths = collect();
+
+        $includedAccounts = $accounts
+            ->where('include_in_total', true);
+
+        $openingBalance = $includedAccounts
+            ->sum('opening_balance');
+
+        for ($i = 5; $i >= 0; $i--) {
+
+            $wealthMonth =
+                $month->copy()->subMonths($i);
+
+            $wealthEnd =
+                $wealthMonth->copy()->endOfMonth();
+
+            $incomeUntil = $user->transactions()
+                ->where('type', 'income')
+                ->where(
+                    'transaction_date',
+                    '<=',
+                    $wealthEnd
+                )
+                ->sum('amount');
+
+            $expenseUntil = $user->transactions()
+                ->where('type', 'expense')
+                ->where(
+                    'transaction_date',
+                    '<=',
+                    $wealthEnd
+                )
+                ->sum('amount');
+
+            $wealthBalance =
+                $openingBalance
+                + $incomeUntil
+                - $expenseUntil;
+
+            $wealthMonths->push([
+                'label' =>
+                    $wealthMonth->translatedFormat('M'),
+
+                'full_label' =>
+                    $wealthMonth->translatedFormat('F Y'),
+
+                'balance' =>
+                    (float) $wealthBalance,
+            ]);
+        }
+
+        /*
+         * =========================================================
+         * WERTE FÜR VERMÖGENSDIAGRAMM
+         * =========================================================
+         */
+
+        $maxWealthValue = max(
+            1,
+            $wealthMonths->max('balance')
+        );
+
+        $minWealthValue = min(
+            0,
+            $wealthMonths->min('balance')
+        );
+
+        /*
+         * =========================================================
+         * BUDGETS
+         * =========================================================
+         */
+
+        $budgets = $user->budgets()
+            ->where('is_active', true)
+            ->with('categories')
+            ->orderBy('name')
+            ->get();
+
+        foreach ($budgets as $budget) {
+
+            /*
+             * Zeitraum bestimmen
+             */
+
+            if ($budget->period === 'monthly') {
+
+                $budgetStart = $startOfMonth->copy();
+                $budgetEnd = $endOfMonth->copy();
+
+            } elseif ($budget->period === 'yearly') {
+
+                $budgetStart = $startOfYear->copy();
+                $budgetEnd = $endOfYear->copy();
+
+            } else {
+
+                $budgetStart = Carbon::parse(
+                    $budget->start_date
+                )->startOfDay();
+
+                $budgetEnd = Carbon::parse(
+                    $budget->end_date
+                )->endOfDay();
+            }
+
+            /*
+             * Kategorien
+             */
+
+            $categoryIds = $budget->categories
+                ->pluck('id');
+
+            /*
+             * Verbrauch berechnen
+             */
+
+            if ($categoryIds->isEmpty()) {
+
+                $spent = 0;
+
+            } else {
+
+                $spent = $user->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [
+                        $budgetStart,
+                        $budgetEnd,
+                    ])
+                    ->whereIn(
+                        'category_id',
+                        $categoryIds
+                    )
+                    ->sum('amount');
+            }
+
+            /*
+             * Budgetwerte
+             */
+
+            $budgetAmount =
+                (float) $budget->amount;
+
+            $spentAmount =
+                (float) $spent;
+
+            $remaining =
+                $budgetAmount - $spentAmount;
+
+            $percentage = $budgetAmount > 0
+                ? ($spentAmount / $budgetAmount) * 100
+                : 0;
+
+            /*
+             * Werte an Model anhängen
+             */
+
+            $budget->calculated_spent =
+                $spentAmount;
+
+            $budget->calculated_remaining =
+                $remaining;
+
+            $budget->calculated_percentage =
+                $percentage;
+
+            $budget->calculated_exceeded =
+                $spentAmount > $budgetAmount;
+
+            $budget->calculated_start_date =
+                $budgetStart;
+
+            $budget->calculated_end_date =
+                $budgetEnd;
+        }
+
+        /*
+         * =========================================================
+         * VIEW
+         * =========================================================
+         */
 
         return view('dashboard', [
 
-            'accounts' => $accounts,
+            'accounts' =>
+                $accounts,
 
-            'totalBalance' => $totalBalance,
+            'totalBalance' =>
+                $totalBalance,
 
-            'monthlyIncome' => $monthlyIncome,
+            'monthlyIncome' =>
+                $monthlyIncome,
 
-            'monthlyExpense' => $monthlyExpense,
+            'monthlyExpense' =>
+                $monthlyExpense,
 
-            'monthlyBalance' => $monthlyBalance,
+            'monthlyBalance' =>
+                $monthlyBalance,
 
-            'savingsRate' => $savingsRate,
+            'savingsRate' =>
+                $savingsRate,
 
-            'yearlyIncome' => $yearlyIncome,
+            'yearlyIncome' =>
+                $yearlyIncome,
 
-            'yearlyExpense' => $yearlyExpense,
+            'yearlyExpense' =>
+                $yearlyExpense,
 
-            'recentTransactions' => $recentTransactions,
+            'recentTransactions' =>
+                $recentTransactions,
 
-            'expensesByCategory' => $expensesByCategory,
+            'expensesByCategory' =>
+                $expensesByCategory,
 
-            'chartMonths' => $chartMonths,
+            'chartMonths' =>
+                $chartMonths,
 
-            'selectedMonth' => $selectedMonth,
+            'wealthMonths' =>
+                $wealthMonths,
 
-            'currentMonth' => $month->translatedFormat('F Y'),
+            'maxWealthValue' =>
+                $maxWealthValue,
+
+            'minWealthValue' =>
+                $minWealthValue,
+
+            'budgets' =>
+                $budgets,
+
+            'selectedMonth' =>
+                $selectedMonth,
+
+            'currentMonth' =>
+                $month->translatedFormat('F Y'),
         ]);
     }
 }

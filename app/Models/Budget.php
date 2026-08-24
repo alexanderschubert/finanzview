@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Budget extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -24,26 +23,43 @@ class Budget extends Model
         'icon',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'amount' => 'decimal:2',
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'is_active' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_active' => 'boolean',
+    ];
 
-    public function user(): BelongsTo
+    /*
+     * Benutzer
+     */
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function categories(): BelongsToMany
+    /*
+     * Kategorien
+     */
+    public function categories()
     {
         return $this->belongsToMany(
             Category::class,
-            'budget_category'
+            'budget_category',
+            'budget_id',
+            'category_id'
         );
+    }
+
+    /*
+     * Prüfen, ob Budget aktuell aktiv ist
+     */
+    public function isCurrentlyActive(): bool
+    {
+        $today = now()->toDateString();
+
+        return $this->is_active
+            && $this->start_date->toDateString() <= $today
+            && $this->end_date->toDateString() >= $today;
     }
 }
