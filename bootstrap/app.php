@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        // Nginx Proxy Manager / Reverse Proxy vertrauen
+        $middleware->trustProxies(
+            at: '*'
+        );
+
         $middleware->redirectGuestsTo(
             fn (Request $request) => route('login')
         );

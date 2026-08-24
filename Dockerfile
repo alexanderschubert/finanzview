@@ -101,8 +101,7 @@ COPY . .
 # Deshalb können die Laravel Composer-Scripts ausgeführt
 # werden.
 
-RUN composer dump-autoload --optimize
-
+RUN composer dump-autoload --optimize --no-scripts
 
 # ---------------------------------------------------------
 # Frontend Assets

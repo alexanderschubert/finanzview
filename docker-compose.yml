@@ -6,16 +6,14 @@ services:
       dockerfile: Dockerfile
 
     image: finanzblick:latest
-
     container_name: finanzblick-app
-
     restart: unless-stopped
 
     env_file:
       - .env
 
-    ports:
-      - "8099:80"
+    expose:
+      - "80"
 
     volumes:
       - ./storage:/var/www/html/storage
@@ -30,9 +28,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
-
     container_name: finanzblick-postgres
-
     restart: unless-stopped
 
     environment:
@@ -49,7 +45,6 @@ services:
           "CMD-SHELL",
           "pg_isready -U ${DB_USERNAME:-finanzblick} -d ${DB_DATABASE:-finanzblick}"
         ]
-
       interval: 5s
       timeout: 5s
       retries: 20
@@ -67,4 +62,5 @@ volumes:
 networks:
 
   finanzblick:
-    name: finanzblick
+    name: finanzblick-net
+    external: true
