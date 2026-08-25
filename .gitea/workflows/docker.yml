@@ -1,4 +1,4 @@
-name: Build Finanzblick
+name: Build and Push Finanzblick
 
 on:
   push:
@@ -19,5 +19,17 @@ jobs:
       - name: Docker Image bauen
         run: |
           docker build \
-            -t finanzblick:latest \
+            -t gitea.alxserver.de/alexander/finanzblick:latest \
             .
+
+      - name: Bei Gitea Container Registry anmelden
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | \
+          docker login gitea.alxserver.de \
+            --username "${{ secrets.REGISTRY_USER }}" \
+            --password-stdin
+
+      - name: Image zu Gitea pushen
+        run: |
+          docker push \
+            gitea.alxserver.de/alexander/finanzblick:latest
