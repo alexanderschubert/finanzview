@@ -1,136 +1,149 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>finanzblick</Name>
-  <Repository>finanzblick:latest</Repository>
-
+  <Name>Finanzblick</Name>
+  <Repository>gitea.alxserver.de/alexander/finanzblick:latest</Repository>
+  <Registry>https://gitea.alxserver.de</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
 
   <Support>https://gitea.alxserver.de/alexander/finanzblick</Support>
-  <Project>https://gitea.alxserver.de/alexander/finanzblick</Project>
 
+  <Project>Finanzblick</Project>
   <Overview>
-Finanzblick – persönliche Finanzverwaltung auf Basis von Laravel.
+    Finanzblick – persönliche Finanzverwaltung auf Basis von Laravel.
 
-Dieses Template installiert ausschließlich die Finanzblick-Anwendung.
-PostgreSQL wird separat bereitgestellt und kann über die Datenbankvariablen
-frei konfiguriert werden.
+    Dieses Template verwendet das fertige Finanzblick Docker Image aus der
+    privaten Gitea Container Registry.
 
-Die Anwendung verwendet standardmäßig Port 80 im Container.
-
-WebUI:
-http://[IP]:[PORT:8080]/
-
-Bei Verwendung eines Reverse Proxy kann Finanzblick über ein gemeinsames
-Docker-Netzwerk direkt über Port 80 angesprochen werden.
+    PostgreSQL wird separat betrieben und über die DB_* Variablen konfiguriert.
   </Overview>
 
-  <Category>Tools:Financial</Category>
+  <Category>Finance:</Category>
 
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
 
   <TemplateURL>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/finanzblick.xml</TemplateURL>
 
-  <Config
-    Name="WebUI Port"
-    Target="80"
-    Default="8080"
-    Mode="tcp"
-    Description="HTTP-Port der Finanzblick-Weboberfläche."
-    Type="Port"
-    Display="always"
-    Required="true"
-    Mask="false">8080</Config>
+  <Icon>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/public/favicon.ico</Icon>
 
-  <Config
-    Name="Storage"
-    Target="/var/www/html/storage"
-    Default="/mnt/user/appdata/finanzblick/storage"
-    Mode="rw"
-    Description="Persistenter Speicher für Laravel Storage, Logs und öffentliche Dateien."
-    Type="Path"
-    Display="always"
-    Required="true"
-    Mask="false">/mnt/user/appdata/finanzblick/storage</Config>
+  <Config Name="WebUI Port"
+          Target="80"
+          Default="8080"
+          Mode="tcp"
+          Description="Port für die Finanzblick Weboberfläche."
+          Type="Port"
+          Display="always"
+          Required="true"
+          Mask="false">8080</Config>
 
-  <Config
-    Name="APP_KEY"
-    Target="APP_KEY"
-    Default=""
-    Description="Laravel Application Key. Bei einer bestehenden Installation unbedingt den bisherigen APP_KEY verwenden."
-    Type="Variable"
-    Display="always"
-    Required="false"
-    Mask="true"></Config>
+  <Config Name="Application URL"
+          Target="APP_URL"
+          Default="http://[IP]:[PORT:8080]"
+          Mode=""
+          Description="Öffentliche URL von Finanzblick. Bei Verwendung eines Reverse Proxy z.B. https://finanzblick.alxserver.de"
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">http://[IP]:[PORT:8080]</Config>
 
-  <Config
-    Name="APP_URL"
-    Target="APP_URL"
-    Default="http://[IP]:[PORT:8080]"
-    Description="Öffentliche URL von Finanzblick, z.B. https://finanzblick.alxserver.de"
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">http://[IP]:[PORT:8080]</Config>
+  <Config Name="Application Key"
+          Target="APP_KEY"
+          Default=""
+          Mode=""
+          Description="Laravel APP_KEY. Beispiel: base64:... Einmal erzeugen und anschließend dauerhaft beibehalten."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false"></Config>
 
-  <Config
-    Name="DB_CONNECTION"
-    Target="DB_CONNECTION"
-    Default="pgsql"
-    Description="Datenbanktreiber."
-    Type="Variable"
-    Display="advanced-hide"
-    Required="true"
-    Mask="false">pgsql</Config>
+  <Config Name="Database Connection"
+          Target="DB_CONNECTION"
+          Default="pgsql"
+          Mode=""
+          Description="Datenbanktreiber."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">pgsql</Config>
 
-  <Config
-    Name="DB_HOST"
-    Target="DB_HOST"
-    Default="finanzblick-postgres"
-    Description="Hostname oder IP-Adresse der PostgreSQL-Instanz. Hier kann auch eine bereits vorhandene PostgreSQL-Instanz eingetragen werden."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">finanzblick-postgres</Config>
+  <Config Name="Database Host"
+          Target="DB_HOST"
+          Default=""
+          Mode=""
+          Description="Hostname oder IP-Adresse des PostgreSQL-Servers. Beispiel: 192.168.40.100 oder postgres."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false"></Config>
 
-  <Config
-    Name="DB_PORT"
-    Target="DB_PORT"
-    Default="5432"
-    Description="PostgreSQL-Port."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">5432</Config>
+  <Config Name="Database Port"
+          Target="DB_PORT"
+          Default="5432"
+          Mode=""
+          Description="PostgreSQL Port."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">5432</Config>
 
-  <Config
-    Name="DB_DATABASE"
-    Target="DB_DATABASE"
-    Default="finanzblick"
-    Description="Name der PostgreSQL-Datenbank."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">finanzblick</Config>
+  <Config Name="Database Name"
+          Target="DB_DATABASE"
+          Default="finanzblick"
+          Mode=""
+          Description="Name der PostgreSQL-Datenbank."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">finanzblick</Config>
 
-  <Config
-    Name="DB_USERNAME"
-    Target="DB_USERNAME"
-    Default="finanzblick"
-    Description="PostgreSQL-Benutzer."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="false">finanzblick</Config>
+  <Config Name="Database User"
+          Target="DB_USERNAME"
+          Default="finanzblick"
+          Mode=""
+          Description="PostgreSQL Benutzer."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">finanzblick</Config>
 
-  <Config
-    Name="DB_PASSWORD"
-    Target="DB_PASSWORD"
-    Default=""
-    Description="Passwort des PostgreSQL-Benutzers."
-    Type="Variable"
-    Display="always"
-    Required="true"
-    Mask="true"></Config>
+  <Config Name="Database Password"
+          Target="DB_PASSWORD"
+          Default=""
+          Mode=""
+          Description="PostgreSQL Passwort."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="true"></Config>
+
+  <Config Name="Timezone"
+          Target="TZ"
+          Default="Europe/Berlin"
+          Mode=""
+          Description="Zeitzone für Finanzblick."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">Europe/Berlin</Config>
+
+  <Config Name="Storage"
+          Target="/var/www/html/storage"
+          Default="/mnt/user/appdata/finanzblick/storage"
+          Mode="rw"
+          Description="Persistenter Speicher für Laravel Storage."
+          Type="Path"
+          Display="always"
+          Required="true"
+          Mask="false">/mnt/user/appdata/finanzblick/storage</Config>
+
+  <Config Name="App Data"
+          Target="/var/www/html/bootstrap/cache"
+          Default="/mnt/user/appdata/finanzblick/bootstrap-cache"
+          Mode="rw"
+          Description="Persistenter Laravel Bootstrap Cache."
+          Type="Path"
+          Display="advanced"
+          Required="true"
+          Mask="false">/mnt/user/appdata/finanzblick/bootstrap-cache</Config>
 
 </Container>
