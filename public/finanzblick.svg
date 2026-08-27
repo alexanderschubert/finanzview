@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="512" height="512" rx="120" fill="#16A34A"/>
+    
+    <path
+        d="M145 356V250"
+        stroke="white"
+        stroke-width="42"
+        stroke-linecap="round"
+    />
+
+    <path
+        d="M256 356V190"
+        stroke="white"
+        stroke-width="42"
+        stroke-linecap="round"
+    />
+
+    <path
+        d="M367 356V125"
+        stroke="white"
+        stroke-width="42"
+        stroke-linecap="round"
+    />
+
+    <path
+        d="M125 390H387"
+        stroke="white"
+        stroke-width="24"
+        stroke-linecap="round"
+    />
+</svg>

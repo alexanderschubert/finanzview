@@ -10,6 +10,17 @@
         content="width=device-width, initial-scale=1.0"
     >
 
+    <meta
+        name="theme-color"
+        content="#16a34a"
+    >
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ asset('finanzblick.svg') }}"
+    >
+
     <title>
         @yield('title', 'Finanzblick')
     </title>
@@ -24,10 +35,6 @@
 
 <body class="min-h-screen bg-slate-100 text-slate-900">
 
-
-{{-- ========================================================= --}}
-{{-- APP SHELL --}}
-{{-- ========================================================= --}}
 
 <div class="min-h-screen flex">
 
@@ -47,7 +54,6 @@
         "
     >
 
-
         {{-- LOGO --}}
 
         <div class="h-20 px-6 flex items-center">
@@ -57,18 +63,14 @@
                 class="flex items-center gap-3"
             >
 
-                <div
-                    class="
-                        w-10 h-10
-                        rounded-2xl
-                        bg-white
-                        text-slate-950
-                        flex items-center justify-center
-                        font-bold
-                        text-lg
-                    "
-                >
-                    F
+                <div class="w-10 h-10 rounded-2xl overflow-hidden flex-shrink-0">
+
+                    <img
+                        src="{{ asset('finanzblick.svg') }}"
+                        alt="Finanzblick"
+                        class="w-full h-full"
+                    >
+
                 </div>
 
 
@@ -89,7 +91,6 @@
         </div>
 
 
-
         {{-- NAVIGATION --}}
 
         <nav class="flex-1 px-4 py-6 space-y-1">
@@ -106,7 +107,7 @@
                     text-sm font-medium
                     transition
                     {{ request()->routeIs('dashboard')
-                        ? 'bg-white/10 text-white'
+                        ? 'bg-finanz-600 text-white'
                         : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
@@ -122,7 +123,6 @@
             </a>
 
 
-
             {{-- KONTEN --}}
 
             <a
@@ -134,7 +134,7 @@
                     text-sm font-medium
                     transition
                     {{ request()->routeIs('accounts.*')
-                        ? 'bg-white/10 text-white'
+                        ? 'bg-finanz-600 text-white'
                         : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
@@ -150,7 +150,6 @@
             </a>
 
 
-
             {{-- BUCHUNGEN --}}
 
             <a
@@ -162,7 +161,7 @@
                     text-sm font-medium
                     transition
                     {{ request()->routeIs('transactions.*')
-                        ? 'bg-white/10 text-white'
+                        ? 'bg-finanz-600 text-white'
                         : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
@@ -178,7 +177,6 @@
             </a>
 
 
-
             {{-- KATEGORIEN --}}
 
             <a
@@ -190,7 +188,7 @@
                     text-sm font-medium
                     transition
                     {{ request()->routeIs('categories.*')
-                        ? 'bg-white/10 text-white'
+                        ? 'bg-finanz-600 text-white'
                         : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
@@ -204,7 +202,6 @@
                 </span>
 
             </a>
-
 
 
             {{-- TRENNER --}}
@@ -227,18 +224,19 @@
             </div>
 
 
-
             {{-- BUDGETS --}}
 
             <a
-                href="#"
+                href="{{ route('budgets.index') }}"
                 class="
                     flex items-center gap-3
                     px-4 py-3
                     rounded-xl
                     text-sm font-medium
-                    text-slate-500
-                    cursor-not-allowed
+                    transition
+                    {{ request()->routeIs('budgets.*')
+                        ? 'bg-finanz-600 text-white'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
 
@@ -250,12 +248,7 @@
                     Budgets
                 </span>
 
-                <span class="ml-auto text-[10px] text-slate-600">
-                    BALD
-                </span>
-
             </a>
-
 
 
             {{-- ANALYSEN --}}
@@ -287,7 +280,6 @@
             </a>
 
 
-
             {{-- WIEDERKEHREND --}}
 
             <a
@@ -317,7 +309,6 @@
             </a>
 
         </nav>
-
 
 
         {{-- SIDEBAR UNTEN --}}
@@ -355,12 +346,11 @@
 
             <div class="mt-3 flex items-center gap-3 px-4 py-3">
 
-
                 <div
                     class="
                         w-9 h-9
                         rounded-full
-                        bg-white/10
+                        bg-finanz-600
                         flex items-center justify-center
                         text-sm font-semibold
                     "
@@ -416,7 +406,6 @@
     </aside>
 
 
-
     {{-- ===================================================== --}}
     {{-- RECHTER BEREICH --}}
     {{-- ===================================================== --}}
@@ -424,9 +413,7 @@
     <div class="flex-1 min-w-0 flex flex-col">
 
 
-        {{-- ================================================= --}}
         {{-- TOPBAR --}}
-        {{-- ================================================= --}}
 
         <header
             class="
@@ -448,17 +435,14 @@
 
             <div class="flex items-center gap-3 lg:hidden">
 
-                <div
-                    class="
-                        w-9 h-9
-                        rounded-xl
-                        bg-slate-950
-                        text-white
-                        flex items-center justify-center
-                        font-bold
-                    "
-                >
-                    F
+                <div class="w-9 h-9 rounded-xl overflow-hidden">
+
+                    <img
+                        src="{{ asset('finanzblick.svg') }}"
+                        alt="Finanzblick"
+                        class="w-full h-full"
+                    >
+
                 </div>
 
                 <span class="font-semibold">
@@ -517,13 +501,14 @@
                         items-center
                         justify-center
                         rounded-xl
-                        bg-slate-950
+                        bg-finanz-600
                         px-4
                         py-2.5
                         text-sm
                         font-medium
                         text-white
-                        hover:bg-slate-800
+                        hover:bg-finanz-700
+                        transition
                     "
                 >
                     + Buchung
@@ -536,10 +521,10 @@
                     class="
                         w-10 h-10
                         rounded-xl
-                        bg-slate-100
+                        bg-finanz-100
                         flex items-center justify-center
                         font-semibold
-                        text-slate-700
+                        text-finanz-700
                     "
                 >
 
@@ -558,15 +543,11 @@
         </header>
 
 
-
-        {{-- ================================================= --}}
         {{-- MOBILE NAVIGATION --}}
-        {{-- ================================================= --}}
 
         <div class="lg:hidden bg-white border-b border-slate-200 px-4 py-3">
 
             <div class="flex gap-2 overflow-x-auto">
-
 
                 <a
                     href="{{ route('dashboard') }}"
@@ -576,7 +557,7 @@
                         rounded-xl
                         text-sm font-medium
                         {{ request()->routeIs('dashboard')
-                            ? 'bg-slate-950 text-white'
+                            ? 'bg-finanz-600 text-white'
                             : 'bg-slate-100 text-slate-600' }}
                     "
                 >
@@ -592,7 +573,7 @@
                         rounded-xl
                         text-sm font-medium
                         {{ request()->routeIs('accounts.*')
-                            ? 'bg-slate-950 text-white'
+                            ? 'bg-finanz-600 text-white'
                             : 'bg-slate-100 text-slate-600' }}
                     "
                 >
@@ -608,7 +589,7 @@
                         rounded-xl
                         text-sm font-medium
                         {{ request()->routeIs('transactions.*')
-                            ? 'bg-slate-950 text-white'
+                            ? 'bg-finanz-600 text-white'
                             : 'bg-slate-100 text-slate-600' }}
                     "
                 >
@@ -624,11 +605,27 @@
                         rounded-xl
                         text-sm font-medium
                         {{ request()->routeIs('categories.*')
-                            ? 'bg-slate-950 text-white'
+                            ? 'bg-finanz-600 text-white'
                             : 'bg-slate-100 text-slate-600' }}
                     "
                 >
                     Kategorien
+                </a>
+
+
+                <a
+                    href="{{ route('budgets.index') }}"
+                    class="
+                        whitespace-nowrap
+                        px-4 py-2
+                        rounded-xl
+                        text-sm font-medium
+                        {{ request()->routeIs('budgets.*')
+                            ? 'bg-finanz-600 text-white'
+                            : 'bg-slate-100 text-slate-600' }}
+                    "
+                >
+                    Budgets
                 </a>
 
             </div>
@@ -636,10 +633,7 @@
         </div>
 
 
-
-        {{-- ================================================= --}}
         {{-- CONTENT --}}
-        {{-- ================================================= --}}
 
         <main class="flex-1">
 
