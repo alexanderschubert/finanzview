@@ -1,15 +1,12 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard – Finanzblick')
-
-@section('eyebrow', 'Übersicht')
-
+@section('eyebrow', 'Finanzübersicht')
 @section('page_title', 'Dashboard')
 
 @section('content')
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -19,16 +16,22 @@
 
         <div>
 
-            <p class="text-sm text-slate-500">
-                Guten Tag, {{ auth()->user()->name }}
-            </p>
+            <div class="flex items-center gap-2">
 
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mt-1">
-                Deine Finanzen
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+
+                <p class="text-sm font-medium text-emerald-600">
+                    Finanzübersicht
+                </p>
+
+            </div>
+
+            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mt-2">
+                Hallo, {{ auth()->user()->name }}
             </h2>
 
             <p class="text-slate-500 mt-2">
-                Alles Wichtige auf einen Blick.
+                Hier ist deine finanzielle Übersicht für {{ $currentMonth }}.
             </p>
 
         </div>
@@ -46,12 +49,33 @@
                     type="month"
                     name="month"
                     value="{{ $selectedMonth }}"
-                    class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm"
+                    class="
+                        rounded-xl
+                        border border-slate-200
+                        bg-white
+                        px-4 py-3
+                        text-sm
+                        text-slate-700
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
+                    "
                 >
 
                 <button
                     type="submit"
-                    class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    class="
+                        rounded-xl
+                        border border-slate-200
+                        bg-white
+                        px-4 py-3
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        hover:bg-slate-50
+                        transition
+                    "
                 >
                     Anzeigen
                 </button>
@@ -61,9 +85,22 @@
 
             <a
                 href="{{ route('transactions.create') }}"
-                class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800 transition"
+                class="
+                    inline-flex
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-slate-950
+                    px-5 py-3
+                    text-sm
+                    font-medium
+                    text-white
+                    hover:bg-slate-800
+                    transition
+                "
             >
-                + Buchung
+                <span class="mr-2 text-emerald-400">+</span>
+                Neue Buchung
             </a>
 
         </div>
@@ -73,26 +110,33 @@
 
 
     {{-- ========================================================= --}}
-    {{-- VERMÖGEN --}}
+    {{-- KENNZAHLEN --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
 
-        <div
-            class="lg:col-span-2 rounded-3xl bg-slate-950 text-white p-6 sm:p-8 overflow-hidden relative"
-        >
 
-            <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-white/5"></div>
+        {{-- VERMÖGEN --}}
 
-            <div class="absolute -right-10 -bottom-32 w-72 h-72 rounded-full bg-white/5"></div>
+        <div class="bg-slate-950 text-white rounded-3xl p-6 relative overflow-hidden">
+
+            <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-emerald-500/10"></div>
 
             <div class="relative">
 
-                <p class="text-sm text-slate-400">
-                    Gesamtvermögen
-                </p>
+                <div class="flex items-center justify-between">
 
-                <p class="text-4xl sm:text-5xl font-semibold tracking-tight mt-2">
+                    <p class="text-sm text-slate-400">
+                        Gesamtvermögen
+                    </p>
+
+                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                        💰
+                    </div>
+
+                </div>
+
+                <p class="text-3xl font-semibold tracking-tight mt-5">
 
                     {{ number_format(
                         $totalBalance,
@@ -105,133 +149,32 @@
 
                 </p>
 
-
-                <div class="flex flex-wrap gap-6 mt-8">
-
-                    <div>
-
-                        <p class="text-xs text-slate-400">
-                            Einnahmen
-                        </p>
-
-                        <p class="font-medium text-emerald-400 mt-1">
-
-                            +{{ number_format(
-                                $monthlyIncome,
-                                2,
-                                ',',
-                                '.'
-                            ) }}
-
-                            €
-
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <p class="text-xs text-slate-400">
-                            Ausgaben
-                        </p>
-
-                        <p class="font-medium text-red-400 mt-1">
-
-                            -{{ number_format(
-                                $monthlyExpense,
-                                2,
-                                ',',
-                                '.'
-                            ) }}
-
-                            €
-
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <p class="text-xs text-slate-400">
-                            Sparquote
-                        </p>
-
-                        <p class="font-medium text-white mt-1">
-
-                            {{ number_format(
-                                $savingsRate,
-                                1,
-                                ',',
-                                '.'
-                            ) }}
-
-                            %
-
-                        </p>
-
-                    </div>
-
-                </div>
+                <p class="text-xs text-slate-500 mt-2">
+                    Alle berücksichtigten Konten
+                </p>
 
             </div>
 
         </div>
 
 
-        {{-- MONATSSALDO --}}
-
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-8">
-
-            <p class="text-sm text-slate-500">
-                Monatssaldo
-            </p>
-
-            <p
-                class="text-3xl font-semibold mt-4
-                {{ $monthlyBalance >= 0
-                    ? 'text-emerald-600'
-                    : 'text-red-600' }}"
-            >
-
-                {{ $monthlyBalance >= 0 ? '+' : '' }}
-
-                {{ number_format(
-                    $monthlyBalance,
-                    2,
-                    ',',
-                    '.'
-                ) }}
-
-                €
-
-            </p>
-
-            <p class="text-sm text-slate-500 mt-4">
-                {{ $currentMonth }}
-            </p>
-
-        </div>
-
-    </div>
-
-
-
-    {{-- ========================================================= --}}
-    {{-- MONATS-KENNZAHLEN --}}
-    {{-- ========================================================= --}}
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
-
+        {{-- EINNAHMEN --}}
 
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
 
-            <p class="text-sm text-slate-500">
-                Einnahmen
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-emerald-600 mt-2">
+                <p class="text-sm text-slate-500">
+                    Einnahmen
+                </p>
+
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    ↗
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-emerald-600 mt-5">
 
                 +{{ number_format(
                     $monthlyIncome,
@@ -244,16 +187,30 @@
 
             </p>
 
+            <p class="text-xs text-slate-400 mt-2">
+                {{ $currentMonth }}
+            </p>
+
         </div>
 
 
+        {{-- AUSGABEN --}}
+
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
 
-            <p class="text-sm text-slate-500">
-                Ausgaben
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-red-600 mt-2">
+                <p class="text-sm text-slate-500">
+                    Ausgaben
+                </p>
+
+                <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
+                    ↘
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-red-600 mt-5">
 
                 -{{ number_format(
                     $monthlyExpense,
@@ -266,16 +223,37 @@
 
             </p>
 
+            <p class="text-xs text-slate-400 mt-2">
+                {{ $currentMonth }}
+            </p>
+
         </div>
 
 
+        {{-- SPARQUOTE --}}
+
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
 
-            <p class="text-sm text-slate-500">
-                Sparquote
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-slate-900 mt-2">
+                <p class="text-sm text-slate-500">
+                    Sparquote
+                </p>
+
+                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
+                    %
+                </div>
+
+            </div>
+
+            <p class="
+                text-3xl
+                font-semibold
+                mt-5
+                {{ $savingsRate >= 0
+                    ? 'text-slate-900'
+                    : 'text-red-600' }}
+            ">
 
                 {{ number_format(
                     $savingsRate,
@@ -288,6 +266,10 @@
 
             </p>
 
+            <p class="text-xs text-slate-400 mt-2">
+                Einnahmen minus Ausgaben
+            </p>
+
         </div>
 
     </div>
@@ -295,20 +277,203 @@
 
 
     {{-- ========================================================= --}}
-    {{-- MONATSVERLAUF --}}
+    {{-- MONATSSALDO + JAHRESWERTE --}}
+    {{-- ========================================================= --}}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+
+
+        {{-- MONATSSALDO --}}
+
+        <div class="
+            lg:col-span-2
+            rounded-3xl
+            border
+            p-6
+            {{ $monthlyBalance >= 0
+                ? 'bg-emerald-50 border-emerald-100'
+                : 'bg-red-50 border-red-100' }}
+        ">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                <div>
+
+                    <p class="text-sm font-medium text-slate-600">
+                        Monatssaldo
+                    </p>
+
+                    <p class="
+                        text-3xl
+                        font-semibold
+                        mt-2
+                        {{ $monthlyBalance >= 0
+                            ? 'text-emerald-700'
+                            : 'text-red-700' }}
+                    ">
+
+                        {{ $monthlyBalance >= 0 ? '+' : '' }}
+
+                        {{ number_format(
+                            $monthlyBalance,
+                            2,
+                            ',',
+                            '.'
+                        ) }}
+
+                        €
+
+                    </p>
+
+                </div>
+
+
+                <div class="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    px-4 py-2
+                    text-sm
+                    font-medium
+                    self-start
+                    {{ $monthlyBalance >= 0
+                        ? 'bg-white text-emerald-700'
+                        : 'bg-white text-red-700' }}
+                ">
+
+                    {{ $monthlyBalance >= 0
+                        ? 'Positiver Monat'
+                        : 'Mehr Ausgaben als Einnahmen' }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- JAHRESWERTE --}}
+
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+
+            <p class="text-sm font-medium text-slate-500">
+                Dieses Jahr
+            </p>
+
+            <div class="mt-4 space-y-4">
+
+                <div class="flex items-center justify-between">
+
+                    <span class="text-sm text-slate-500">
+                        Einnahmen
+                    </span>
+
+                    <span class="font-semibold text-emerald-600">
+                        +{{ number_format(
+                            $yearlyIncome,
+                            2,
+                            ',',
+                            '.'
+                        ) }} €
+                    </span>
+
+                </div>
+
+
+                <div class="flex items-center justify-between">
+
+                    <span class="text-sm text-slate-500">
+                        Ausgaben
+                    </span>
+
+                    <span class="font-semibold text-red-600">
+                        -{{ number_format(
+                            $yearlyExpense,
+                            2,
+                            ',',
+                            '.'
+                        ) }} €
+                    </span>
+
+                </div>
+
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+
+                    <span class="text-sm font-medium text-slate-700">
+                        Jahressaldo
+                    </span>
+
+                    <span class="
+                        font-semibold
+                        {{ ($yearlyIncome - $yearlyExpense) >= 0
+                            ? 'text-slate-900'
+                            : 'text-red-600' }}
+                    ">
+
+                        {{ ($yearlyIncome - $yearlyExpense) >= 0 ? '+' : '' }}
+
+                        {{ number_format(
+                            $yearlyIncome - $yearlyExpense,
+                            2,
+                            ',',
+                            '.'
+                        ) }} €
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    {{-- ========================================================= --}}
+    {{-- EINNAHMEN / AUSGABEN --}}
     {{-- ========================================================= --}}
 
     <div class="bg-white rounded-3xl border border-slate-100 shadow-sm mt-5 overflow-hidden">
 
         <div class="p-6 sm:p-8">
 
-            <h3 class="text-lg font-semibold text-slate-900">
-                Einnahmen & Ausgaben
-            </h3>
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 
-            <p class="text-sm text-slate-500 mt-1">
-                Entwicklung der letzten 6 Monate
-            </p>
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                        Entwicklung
+                    </p>
+
+                    <h3 class="text-xl font-semibold text-slate-900 mt-1">
+                        Einnahmen & Ausgaben
+                    </h3>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Vergleich der letzten sechs Monate.
+                    </p>
+
+                </div>
+
+
+                <div class="flex items-center gap-4 text-xs text-slate-500">
+
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        Einnahmen
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                        Ausgaben
+                    </div>
+
+                </div>
+
+            </div>
 
 
             @php
@@ -326,7 +491,7 @@
             @endphp
 
 
-            <div class="space-y-6 mt-8">
+            <div class="space-y-7 mt-8">
 
                 @foreach ($chartMonths as $chartMonth)
 
@@ -338,9 +503,15 @@
                                 {{ $chartMonth['label'] }}
                             </span>
 
-                            <span class="text-xs text-slate-400">
+                            <span class="
+                                text-xs
+                                font-medium
+                                {{ $chartMonth['balance'] >= 0
+                                    ? 'text-emerald-600'
+                                    : 'text-red-600' }}
+                            ">
 
-                                Saldo:
+                                Saldo
 
                                 {{ $chartMonth['balance'] >= 0 ? '+' : '' }}
 
@@ -349,9 +520,7 @@
                                     2,
                                     ',',
                                     '.'
-                                ) }}
-
-                                €
+                                ) }} €
 
                             </span>
 
@@ -366,28 +535,23 @@
                                 Einnahmen
                             </span>
 
-                            <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
 
                                 <div
-                                    class="h-full bg-emerald-500 rounded-full"
-                                    style="
-                                        width:
-                                        {{ ($chartMonth['income'] / $maxChartValue) * 100 }}%
-                                    "
+                                    class="h-full bg-emerald-500 rounded-full transition-all"
+                                    style="width: {{ ($chartMonth['income'] / $maxChartValue) * 100 }}%"
                                 ></div>
 
                             </div>
 
-                            <span class="w-20 text-right text-xs font-medium">
+                            <span class="w-24 text-right text-xs font-medium text-slate-700">
 
                                 {{ number_format(
                                     $chartMonth['income'],
                                     0,
                                     ',',
                                     '.'
-                                ) }}
-
-                                €
+                                ) }} €
 
                             </span>
 
@@ -402,28 +566,23 @@
                                 Ausgaben
                             </span>
 
-                            <div class="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
 
                                 <div
-                                    class="h-full bg-red-500 rounded-full"
-                                    style="
-                                        width:
-                                        {{ ($chartMonth['expense'] / $maxChartValue) * 100 }}%
-                                    "
+                                    class="h-full bg-red-500 rounded-full transition-all"
+                                    style="width: {{ ($chartMonth['expense'] / $maxChartValue) * 100 }}%"
                                 ></div>
 
                             </div>
 
-                            <span class="w-20 text-right text-xs font-medium">
+                            <span class="w-24 text-right text-xs font-medium text-slate-700">
 
                                 {{ number_format(
                                     $chartMonth['expense'],
                                     0,
                                     ',',
                                     '.'
-                                ) }}
-
-                                €
+                                ) }} €
 
                             </span>
 
@@ -476,14 +635,14 @@
         $paddingBottom = 50;
 
         $innerWidth =
-            $svgWidth
-            - $paddingLeft
-            - $paddingRight;
+            $svgWidth -
+            $paddingLeft -
+            $paddingRight;
 
         $innerHeight =
-            $svgHeight
-            - $paddingTop
-            - $paddingBottom;
+            $svgHeight -
+            $paddingTop -
+            $paddingBottom;
 
         $wealthPoints = [];
 
@@ -495,29 +654,20 @@
             );
 
             $x =
-                $paddingLeft
-                +
-                (
-                    $index / $count
-                )
-                *
+                $paddingLeft +
+                ($index / $count) *
                 $innerWidth;
 
             $normalized =
                 (
-                    $wealthMonth['balance']
-                    - $wealthMin
-                )
-                /
+                    $wealthMonth['balance'] -
+                    $wealthMin
+                ) /
                 $wealthRange;
 
             $y =
-                $paddingTop
-                +
-                (
-                    1 - $normalized
-                )
-                *
+                $paddingTop +
+                (1 - $normalized) *
                 $innerHeight;
 
             $wealthPoints[] = [
@@ -565,14 +715,11 @@
 
         <div class="p-6 sm:p-8">
 
-
-            {{-- HEADER --}}
-
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 
                 <div>
 
-                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
                         Vermögen
                     </p>
 
@@ -581,7 +728,7 @@
                     </h3>
 
                     <p class="text-sm text-slate-500 mt-1">
-                        Entwicklung deines Gesamtvermögens über die letzten 6 Monate.
+                        Entwicklung deines Gesamtvermögens über die letzten sechs Monate.
                     </p>
 
                 </div>
@@ -600,9 +747,7 @@
                             2,
                             ',',
                             '.'
-                        ) }}
-
-                        €
+                        ) }} €
 
                     </p>
 
@@ -610,8 +755,6 @@
 
             </div>
 
-
-            {{-- CHART --}}
 
             @if ($wealthMonths->isNotEmpty())
 
@@ -632,12 +775,8 @@
                                 @php
 
                                     $lineY =
-                                        $paddingTop
-                                        +
-                                        (
-                                            $i / 4
-                                        )
-                                        *
+                                        $paddingTop +
+                                        ($i / 4) *
                                         $innerHeight;
 
                                 @endphp
@@ -658,8 +797,8 @@
 
                             <polygon
                                 points="{{ $wealthAreaPoints }}"
-                                fill="#0f172a"
-                                opacity="0.05"
+                                fill="#10b981"
+                                opacity="0.08"
                             />
 
 
@@ -668,7 +807,7 @@
                             <polyline
                                 points="{{ $wealthLinePoints }}"
                                 fill="none"
-                                stroke="#0f172a"
+                                stroke="#10b981"
                                 stroke-width="4"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -684,7 +823,7 @@
                                     cy="{{ $point['y'] }}"
                                     r="6"
                                     fill="white"
-                                    stroke="#0f172a"
+                                    stroke="#10b981"
                                     stroke-width="3"
                                 />
 
@@ -714,8 +853,6 @@
                 </div>
 
 
-                {{-- WERTE --}}
-
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
 
                     @foreach ($wealthMonths as $wealthMonth)
@@ -726,25 +863,21 @@
                                 {{ $wealthMonth['full_label'] }}
                             </p>
 
-                            <p
-                                class="
-                                    text-sm
-                                    font-semibold
-                                    mt-1
-                                    {{ $wealthMonth['balance'] >= 0
-                                        ? 'text-slate-900'
-                                        : 'text-red-600' }}
-                                "
-                            >
+                            <p class="
+                                text-sm
+                                font-semibold
+                                mt-1
+                                {{ $wealthMonth['balance'] >= 0
+                                    ? 'text-slate-900'
+                                    : 'text-red-600' }}
+                            ">
 
                                 {{ number_format(
                                     $wealthMonth['balance'],
                                     2,
                                     ',',
                                     '.'
-                                ) }}
-
-                                €
+                                ) }} €
 
                             </p>
 
@@ -778,12 +911,15 @@
 
     <div class="mt-5">
 
-
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 
             <div>
 
-                <h3 class="text-lg font-semibold text-slate-900">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    Planung
+                </p>
+
+                <h3 class="text-xl font-semibold text-slate-900 mt-1">
                     Deine Budgets
                 </h3>
 
@@ -796,7 +932,7 @@
 
             <a
                 href="{{ route('budgets.index') }}"
-                class="text-sm font-medium text-slate-500 hover:text-slate-900"
+                class="text-sm font-medium text-slate-500 hover:text-slate-900 transition"
             >
                 Alle Budgets →
             </a>
@@ -806,28 +942,25 @@
 
         @if ($budgets->isEmpty())
 
-            <div
-                class="
-                    bg-white
-                    rounded-3xl
-                    border
-                    border-slate-100
-                    shadow-sm
-                    p-8
-                    text-center
-                "
-            >
+            <div class="
+                bg-white
+                rounded-3xl
+                border border-slate-100
+                shadow-sm
+                p-10
+                text-center
+            ">
 
-                <div class="text-4xl">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl">
                     🎯
                 </div>
 
-                <h4 class="font-semibold text-slate-900 mt-3">
+                <h4 class="font-semibold text-slate-900 mt-4">
                     Noch keine Budgets
                 </h4>
 
                 <p class="text-sm text-slate-500 mt-1">
-                    Lege dein erstes Budget an.
+                    Lege dein erstes Budget an, um deine Ausgaben besser zu planen.
                 </p>
 
                 <a
@@ -837,12 +970,12 @@
                         mt-5
                         rounded-xl
                         bg-slate-950
-                        px-5
-                        py-3
+                        px-5 py-3
                         text-sm
                         font-medium
                         text-white
                         hover:bg-slate-800
+                        transition
                     "
                 >
                     + Budget erstellen
@@ -850,9 +983,7 @@
 
             </div>
 
-
         @else
-
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
@@ -864,11 +995,11 @@
                             block
                             bg-white
                             rounded-3xl
-                            border
-                            border-slate-100
+                            border border-slate-100
                             shadow-sm
                             p-5
                             hover:shadow-md
+                            hover:-translate-y-0.5
                             transition
                         "
                     >
@@ -877,19 +1008,13 @@
 
                             <div
                                 class="
-                                    w-11
-                                    h-11
+                                    w-11 h-11
                                     rounded-2xl
-                                    flex
-                                    items-center
-                                    justify-center
+                                    flex items-center justify-center
                                     text-xl
                                     flex-shrink-0
                                 "
-                                style="
-                                    background-color:
-                                    {{ $budget->color ?: '#f1f5f9' }}
-                                "
+                                style="background-color: {{ $budget->color ?: '#ecfdf5' }}"
                             >
                                 {{ $budget->icon ?: '🎯' }}
                             </div>
@@ -910,9 +1035,7 @@
                                         2,
                                         ',',
                                         '.'
-                                    ) }}
-
-                                    €
+                                    ) }} €
 
                                 </p>
 
@@ -957,9 +1080,7 @@
                                         2,
                                         ',',
                                         '.'
-                                    ) }}
-
-                                    €
+                                    ) }} €
 
                                 </span>
 
@@ -980,13 +1101,7 @@
                                                     : 'bg-emerald-500'
                                             ) }}
                                     "
-                                    style="
-                                        width:
-                                        {{ min(
-                                            $budget->calculated_percentage,
-                                            100
-                                        ) }}%
-                                    "
+                                    style="width: {{ min($budget->calculated_percentage, 100) }}%"
                                 ></div>
 
                             </div>
@@ -1017,9 +1132,7 @@
                                             2,
                                             ',',
                                             '.'
-                                        ) }}
-
-                                        €
+                                        ) }} €
 
                                     </span>
 
@@ -1028,15 +1141,11 @@
                                     <span class="text-xs font-medium text-red-600">
 
                                         {{ number_format(
-                                            abs(
-                                                $budget->calculated_remaining
-                                            ),
+                                            abs($budget->calculated_remaining),
                                             2,
                                             ',',
                                             '.'
-                                        ) }}
-
-                                        € über Budget
+                                        ) }} € über Budget
 
                                     </span>
 
@@ -1053,16 +1162,13 @@
 
                                 @foreach ($budget->categories->take(3) as $category)
 
-                                    <span
-                                        class="
-                                            rounded-full
-                                            bg-slate-100
-                                            px-2.5
-                                            py-1
-                                            text-xs
-                                            text-slate-600
-                                        "
-                                    >
+                                    <span class="
+                                        rounded-full
+                                        bg-slate-100
+                                        px-2.5 py-1
+                                        text-xs
+                                        text-slate-600
+                                    ">
 
                                         {{ $category->icon ?: '📁' }}
 
@@ -1103,7 +1209,11 @@
 
                 <div>
 
-                    <h3 class="font-semibold text-slate-900">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                        Konten
+                    </p>
+
+                    <h3 class="font-semibold text-slate-900 mt-1">
                         Deine Konten
                     </h3>
 
@@ -1115,7 +1225,7 @@
 
                 <a
                     href="{{ route('accounts.index') }}"
-                    class="text-sm text-slate-500 hover:text-slate-900"
+                    class="text-sm text-slate-500 hover:text-slate-900 transition"
                 >
                     Alle anzeigen →
                 </a>
@@ -1127,17 +1237,26 @@
 
                 <div class="p-10 text-center">
 
-                    <div class="text-4xl">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-2xl">
                         🏦
                     </div>
 
-                    <p class="font-medium text-slate-900 mt-3">
+                    <p class="font-medium text-slate-900 mt-4">
                         Noch keine Konten
                     </p>
 
                     <a
                         href="{{ route('accounts.create') }}"
-                        class="inline-flex mt-4 rounded-xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
+                        class="
+                            inline-flex
+                            mt-4
+                            rounded-xl
+                            bg-slate-950
+                            px-4 py-2
+                            text-sm
+                            font-medium
+                            text-white
+                        "
                     >
                         Konto erstellen
                     </a>
@@ -1152,7 +1271,12 @@
 
                         <a
                             href="{{ route('accounts.edit', $account) }}"
-                            class="flex items-center gap-4 p-5 hover:bg-slate-50 transition"
+                            class="
+                                flex items-center gap-4
+                                p-5
+                                hover:bg-slate-50
+                                transition
+                            "
                         >
 
                             <div
@@ -1188,14 +1312,12 @@
 
                             <div class="text-right">
 
-                                <p
-                                    class="
-                                        font-semibold
-                                        {{ $account->calculated_balance >= 0
-                                            ? 'text-slate-900'
-                                            : 'text-red-600' }}
-                                    "
-                                >
+                                <p class="
+                                    font-semibold
+                                    {{ $account->calculated_balance >= 0
+                                        ? 'text-slate-900'
+                                        : 'text-red-600' }}
+                                ">
 
                                     {{ number_format(
                                         $account->calculated_balance,
@@ -1208,7 +1330,15 @@
 
                                 </p>
 
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Kontostand
+                                </p>
+
                             </div>
+
+                            <span class="text-slate-300">
+                                →
+                            </span>
 
                         </a>
 
@@ -1227,8 +1357,12 @@
 
             <div class="p-6 border-b border-slate-100">
 
-                <h3 class="font-semibold text-slate-900">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
                     Ausgaben
+                </p>
+
+                <h3 class="font-semibold text-slate-900 mt-1">
+                    Nach Kategorie
                 </h3>
 
                 <p class="text-sm text-slate-500 mt-1">
@@ -1242,11 +1376,11 @@
 
                 <div class="p-8 text-center">
 
-                    <div class="text-3xl">
+                    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-xl">
                         📊
                     </div>
 
-                    <p class="text-sm text-slate-500 mt-3">
+                    <p class="text-sm text-slate-500 mt-4">
                         Noch keine Ausgaben.
                     </p>
 
@@ -1295,9 +1429,7 @@
                                         2,
                                         ',',
                                         '.'
-                                    ) }}
-
-                                    €
+                                    ) }} €
 
                                 </span>
 
@@ -1337,7 +1469,11 @@
 
             <div>
 
-                <h3 class="font-semibold text-slate-900">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    Aktivitäten
+                </p>
+
+                <h3 class="font-semibold text-slate-900 mt-1">
                     Letzte Buchungen
                 </h3>
 
@@ -1350,7 +1486,7 @@
 
             <a
                 href="{{ route('transactions.index') }}"
-                class="text-sm text-slate-500 hover:text-slate-900"
+                class="text-sm text-slate-500 hover:text-slate-900 transition"
             >
                 Alle anzeigen →
             </a>
@@ -1362,13 +1498,29 @@
 
             <div class="p-10 text-center">
 
-                <div class="text-4xl">
-                    💸
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-2xl">
+                    💳
                 </div>
 
-                <p class="font-medium text-slate-900 mt-3">
+                <p class="font-medium text-slate-900 mt-4">
                     Noch keine Buchungen
                 </p>
+
+                <a
+                    href="{{ route('transactions.create') }}"
+                    class="
+                        inline-flex
+                        mt-4
+                        rounded-xl
+                        bg-slate-950
+                        px-4 py-2
+                        text-sm
+                        font-medium
+                        text-white
+                    "
+                >
+                    Erste Buchung erstellen
+                </a>
 
             </div>
 
@@ -1379,21 +1531,20 @@
                 @foreach ($recentTransactions as $transaction)
 
                     <a
-                        href="{{ route(
-                            'transactions.edit',
-                            $transaction
-                        ) }}"
-                        class="flex items-center gap-4 p-5 hover:bg-slate-50 transition"
+                        href="{{ route('transactions.edit', $transaction) }}"
+                        class="
+                            flex items-center gap-4
+                            p-5
+                            hover:bg-slate-50
+                            transition
+                        "
                     >
 
                         <div
                             class="
-                                w-11
-                                h-11
+                                w-11 h-11
                                 rounded-2xl
-                                flex
-                                items-center
-                                justify-center
+                                flex items-center justify-center
                                 flex-shrink-0
                                 {{ $transaction->type === 'income'
                                     ? 'bg-emerald-50'
@@ -1433,30 +1584,29 @@
                         </div>
 
 
-                        <p
-                            class="
-                                font-semibold
-                                whitespace-nowrap
-                                {{ $transaction->type === 'income'
-                                    ? 'text-emerald-600'
-                                    : 'text-red-600' }}
-                            "
-                        >
-
+                        <p class="
+                            font-semibold
+                            whitespace-nowrap
                             {{ $transaction->type === 'income'
-                                ? '+'
-                                : '-' }}
+                                ? 'text-emerald-600'
+                                : 'text-red-600' }}
+                        ">
+
+                            {{ $transaction->type === 'income' ? '+' : '-' }}
 
                             {{ number_format(
                                 $transaction->amount,
                                 2,
                                 ',',
                                 '.'
-                            ) }}
-
-                            €
+                            ) }} €
 
                         </p>
+
+
+                        <span class="hidden sm:block text-slate-300">
+                            →
+                        </span>
 
                     </a>
 
@@ -1471,126 +1621,147 @@
 
 
     {{-- ========================================================= --}}
-    {{-- JAHRESÜBERSICHT --}}
-    {{-- ========================================================= --}}
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
-
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-
-            <p class="text-sm text-slate-500">
-                Einnahmen dieses Jahr
-            </p>
-
-            <p class="text-2xl font-semibold text-emerald-600 mt-2">
-
-                +{{ number_format(
-                    $yearlyIncome,
-                    2,
-                    ',',
-                    '.'
-                ) }}
-
-                €
-
-            </p>
-
-        </div>
-
-
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-
-            <p class="text-sm text-slate-500">
-                Ausgaben dieses Jahr
-            </p>
-
-            <p class="text-2xl font-semibold text-red-600 mt-2">
-
-                -{{ number_format(
-                    $yearlyExpense,
-                    2,
-                    ',',
-                    '.'
-                ) }}
-
-                €
-
-            </p>
-
-        </div>
-
-    </div>
-
-
-
-    {{-- ========================================================= --}}
     {{-- SCHNELLZUGRIFF --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5">
+    <div class="mt-5">
 
-        <a
-            href="{{ route('accounts.index') }}"
-            class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:bg-slate-50 transition"
-        >
+        <div class="flex items-center justify-between mb-4">
 
-            <span class="text-2xl">
-                🏦
-            </span>
+            <div>
 
-            <p class="font-medium text-slate-900 mt-3">
-                Konten
-            </p>
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    Schnellzugriff
+                </p>
 
-        </a>
+                <h3 class="font-semibold text-slate-900 mt-1">
+                    Was möchtest du tun?
+                </h3>
 
+            </div>
 
-        <a
-            href="{{ route('transactions.index') }}"
-            class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:bg-slate-50 transition"
-        >
-
-            <span class="text-2xl">
-                💳
-            </span>
-
-            <p class="font-medium text-slate-900 mt-3">
-                Buchungen
-            </p>
-
-        </a>
+        </div>
 
 
-        <a
-            href="{{ route('categories.index') }}"
-            class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:bg-slate-50 transition"
-        >
-
-            <span class="text-2xl">
-                🗂️
-            </span>
-
-            <p class="font-medium text-slate-900 mt-3">
-                Kategorien
-            </p>
-
-        </a>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
 
-        <a
-            href="{{ route('budgets.index') }}"
-            class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:bg-slate-50 transition"
-        >
+            <a
+                href="{{ route('accounts.index') }}"
+                class="
+                    bg-white
+                    rounded-2xl
+                    border border-slate-100
+                    shadow-sm
+                    p-5
+                    hover:shadow-md
+                    hover:-translate-y-0.5
+                    transition
+                "
+            >
 
-            <span class="text-2xl">
-                🎯
-            </span>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
+                    🏦
+                </div>
 
-            <p class="font-medium text-slate-900 mt-3">
-                Budgets
-            </p>
+                <p class="font-medium text-slate-900 mt-4">
+                    Konten
+                </p>
 
-        </a>
+                <p class="text-xs text-slate-400 mt-1">
+                    Verwalten
+                </p>
+
+            </a>
+
+
+            <a
+                href="{{ route('transactions.index') }}"
+                class="
+                    bg-white
+                    rounded-2xl
+                    border border-slate-100
+                    shadow-sm
+                    p-5
+                    hover:shadow-md
+                    hover:-translate-y-0.5
+                    transition
+                "
+            >
+
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
+                    💳
+                </div>
+
+                <p class="font-medium text-slate-900 mt-4">
+                    Buchungen
+                </p>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Verwalten
+                </p>
+
+            </a>
+
+
+            <a
+                href="{{ route('categories.index') }}"
+                class="
+                    bg-white
+                    rounded-2xl
+                    border border-slate-100
+                    shadow-sm
+                    p-5
+                    hover:shadow-md
+                    hover:-translate-y-0.5
+                    transition
+                "
+            >
+
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
+                    🗂️
+                </div>
+
+                <p class="font-medium text-slate-900 mt-4">
+                    Kategorien
+                </p>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Verwalten
+                </p>
+
+            </a>
+
+
+            <a
+                href="{{ route('budgets.index') }}"
+                class="
+                    bg-white
+                    rounded-2xl
+                    border border-slate-100
+                    shadow-sm
+                    p-5
+                    hover:shadow-md
+                    hover:-translate-y-0.5
+                    transition
+                "
+            >
+
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
+                    🎯
+                </div>
+
+                <p class="font-medium text-slate-900 mt-4">
+                    Budgets
+                </p>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Verwalten
+                </p>
+
+            </a>
+
+        </div>
 
     </div>
 
