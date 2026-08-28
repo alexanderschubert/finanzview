@@ -7,48 +7,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-use App\Models\Account;
-use App\Models\Category;
-use App\Models\Tag;
-use App\Models\Transaction;
-use App\Models\Budget;
-use App\Models\Loan;
-use App\Models\CreditCard;
-use App\Models\RecurringTransaction;
-
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Felder, die per Mass Assignment gesetzt werden dürfen.
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'theme',
     ];
 
-
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Felder, die verborgen werden.
      */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Casts.
      */
     protected function casts(): array
     {
@@ -58,75 +40,35 @@ class User extends Authenticatable
         ];
     }
 
-
     /**
-     * Financial accounts belonging to the user.
+     * Konten des Benutzers.
      */
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
     }
 
-
     /**
-     * Categories belonging to the user.
-     */
-    public function categories(): HasMany
-    {
-        return $this->hasMany(Category::class);
-    }
-
-
-    /**
-     * Tags belonging to the user.
-     */
-    public function tags(): HasMany
-    {
-        return $this->hasMany(Tag::class);
-    }
-
-
-    /**
-     * Transactions belonging to the user.
+     * Buchungen des Benutzers.
      */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
     }
 
+    /**
+     * Kategorien des Benutzers.
+     */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
 
     /**
-     * Budgets belonging to the user.
+     * Budgets des Benutzers.
      */
     public function budgets(): HasMany
     {
         return $this->hasMany(Budget::class);
-    }
-
-
-    /**
-     * Loans belonging to the user.
-     */
-    public function loans(): HasMany
-    {
-        return $this->hasMany(Loan::class);
-    }
-
-
-    /**
-     * Credit cards belonging to the user.
-     */
-    public function creditCards(): HasMany
-    {
-        return $this->hasMany(CreditCard::class);
-    }
-
-
-    /**
-     * Recurring transactions belonging to the user.
-     */
-    public function recurringTransactions(): HasMany
-    {
-        return $this->hasMany(RecurringTransaction::class);
     }
 }

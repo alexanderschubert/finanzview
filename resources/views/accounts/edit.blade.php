@@ -6,44 +6,38 @@
 
 @section('page_title', 'Konto bearbeiten')
 
-
 @section('content')
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-
-    {{-- ========================================================= --}}
     {{-- HEADER --}}
-    {{-- ========================================================= --}}
 
     <div class="mb-6">
 
         <a
             href="{{ route('accounts.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-900"
+            class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
         >
             ← Konten
         </a>
-
 
         <div class="flex items-center gap-4 mt-4">
 
             <div
                 id="header-icon"
-                class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
+                class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
                 style="background-color: {{ $account->color ?: '#f1f5f9' }}"
             >
                 {{ $account->icon ?: '🏦' }}
             </div>
 
-
             <div class="min-w-0">
 
-                <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">
+                <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white">
                     Konto bearbeiten
                 </h2>
 
-                <p class="text-slate-500 mt-1 truncate">
+                <p class="text-slate-500 dark:text-slate-400 mt-1 truncate">
                     {{ $account->name }}
                 </p>
 
@@ -54,10 +48,7 @@
     </div>
 
 
-
-    {{-- ========================================================= --}}
     {{-- FEHLER --}}
-    {{-- ========================================================= --}}
 
     @if ($errors->any())
 
@@ -65,12 +56,11 @@
             class="
                 mb-6
                 rounded-2xl
-                bg-red-50
-                border
-                border-red-100
+                bg-red-50 dark:bg-red-950/40
+                border border-red-100 dark:border-red-900
                 p-4
                 text-sm
-                text-red-700
+                text-red-700 dark:text-red-300
             "
         >
 
@@ -81,11 +71,7 @@
             <ul class="list-disc list-inside space-y-1">
 
                 @foreach ($errors->all() as $error)
-
-                    <li>
-                        {{ $error }}
-                    </li>
-
+                    <li>{{ $error }}</li>
                 @endforeach
 
             </ul>
@@ -95,10 +81,7 @@
     @endif
 
 
-
-    {{-- ========================================================= --}}
     {{-- FORMULAR --}}
-    {{-- ========================================================= --}}
 
     <form
         method="POST"
@@ -106,51 +89,41 @@
     >
 
         @csrf
-
         @method('PUT')
-
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
 
-            {{-- ================================================= --}}
             {{-- HAUPTBEREICH --}}
-            {{-- ================================================= --}}
 
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-6 min-w-0">
 
 
-                {{-- ================================================= --}}
                 {{-- KONTOINFORMATIONEN --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
-                        p-6
-                        sm:p-8
+                        border border-slate-100 dark:border-slate-800
+                        p-6 sm:p-8
                     "
                 >
 
                     <div class="mb-6">
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">
                             Kontoinformationen
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1">
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                             Grundlegende Angaben zum Konto.
                         </p>
 
                     </div>
 
-
                     <div class="space-y-6">
-
 
                         {{-- NAME --}}
 
@@ -158,7 +131,7 @@
 
                             <label
                                 for="name"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Kontoname
                             </label>
@@ -171,20 +144,23 @@
                                 required
                                 autofocus
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- INSTITUTION --}}
@@ -193,7 +169,7 @@
 
                             <label
                                 for="institution"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Bank / Anbieter
                                 <span class="font-normal text-slate-400">
@@ -208,20 +184,23 @@
                                 value="{{ old('institution', $account->institution) }}"
                                 placeholder="z. B. ING, DKB, PayPal"
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- KONTOART --}}
@@ -230,7 +209,7 @@
 
                             <label
                                 for="type"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Kontoart
                             </label>
@@ -240,72 +219,50 @@
                                 name="type"
                                 required
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
-                                <option
-                                    value="checking"
-                                    @selected(old('type', $account->type) === 'checking')
-                                >
+                                <option value="checking" @selected(old('type', $account->type) === 'checking')>
                                     Girokonto
                                 </option>
 
-                                <option
-                                    value="savings"
-                                    @selected(old('type', $account->type) === 'savings')
-                                >
+                                <option value="savings" @selected(old('type', $account->type) === 'savings')>
                                     Sparkonto
                                 </option>
 
-                                <option
-                                    value="credit_card"
-                                    @selected(old('type', $account->type) === 'credit_card')
-                                >
+                                <option value="credit_card" @selected(old('type', $account->type) === 'credit_card')>
                                     Kreditkarte
                                 </option>
 
-                                <option
-                                    value="paypal"
-                                    @selected(old('type', $account->type) === 'paypal')
-                                >
+                                <option value="paypal" @selected(old('type', $account->type) === 'paypal')>
                                     PayPal
                                 </option>
 
-                                <option
-                                    value="cash"
-                                    @selected(old('type', $account->type) === 'cash')
-                                >
+                                <option value="cash" @selected(old('type', $account->type) === 'cash')>
                                     Bargeld
                                 </option>
 
-                                <option
-                                    value="investment"
-                                    @selected(old('type', $account->type) === 'investment')
-                                >
+                                <option value="investment" @selected(old('type', $account->type) === 'investment')>
                                     Investment
                                 </option>
 
-                                <option
-                                    value="loan"
-                                    @selected(old('type', $account->type) === 'loan')
-                                >
+                                <option value="loan" @selected(old('type', $account->type) === 'loan')>
                                     Kredit
                                 </option>
 
-                                <option
-                                    value="other"
-                                    @selected(old('type', $account->type) === 'other')
-                                >
+                                <option value="other" @selected(old('type', $account->type) === 'other')>
                                     Sonstiges
                                 </option>
 
@@ -314,14 +271,13 @@
                         </div>
 
 
-
                         {{-- WÄHRUNG --}}
 
                         <div>
 
                             <label
                                 for="currency"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Währung
                             </label>
@@ -331,44 +287,34 @@
                                 name="currency"
                                 required
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
-                                <option
-                                    value="EUR"
-                                    @selected(old('currency', $account->currency) === 'EUR')
-                                >
+                                <option value="EUR" @selected(old('currency', $account->currency) === 'EUR')>
                                     🇪🇺 EUR – Euro
                                 </option>
 
-                                <option
-                                    value="USD"
-                                    @selected(old('currency', $account->currency) === 'USD')
-                                >
+                                <option value="USD" @selected(old('currency', $account->currency) === 'USD')>
                                     🇺🇸 USD – US-Dollar
                                 </option>
 
-                                <option
-                                    value="GBP"
-                                    @selected(old('currency', $account->currency) === 'GBP')
-                                >
+                                <option value="GBP" @selected(old('currency', $account->currency) === 'GBP')>
                                     🇬🇧 GBP – Britisches Pfund
                                 </option>
 
-                                <option
-                                    value="CHF"
-                                    @selected(old('currency', $account->currency) === 'CHF')
-                                >
+                                <option value="CHF" @selected(old('currency', $account->currency) === 'CHF')>
                                     🇨🇭 CHF – Schweizer Franken
                                 </option>
 
@@ -381,80 +327,68 @@
                 </div>
 
 
-
-                {{-- ================================================= --}}
                 {{-- STARTSALDO --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
-                        p-6
-                        sm:p-8
+                        border border-slate-100 dark:border-slate-800
+                        p-6 sm:p-8
                     "
                 >
 
                     <div class="mb-6">
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">
                             Startsaldo
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1">
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                             Ausgangssaldo des Kontos.
                         </p>
 
                     </div>
 
-
                     <div>
 
                         <label
                             for="opening_balance"
-                            class="block text-sm font-medium text-slate-700 mb-2"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                         >
                             Eröffnungssaldo
                         </label>
 
-
-                        <div class="relative">
+                        <div class="relative min-w-0">
 
                             <input
                                 type="number"
                                 id="opening_balance"
                                 name="opening_balance"
                                 step="0.01"
-                                value="{{ old(
-                                    'opening_balance',
-                                    $account->opening_balance
-                                ) }}"
+                                value="{{ old('opening_balance', $account->opening_balance) }}"
                                 required
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-2xl
-                                    border
-                                    border-slate-200
-                                    px-5
-                                    py-4
-                                    pr-14
-                                    text-2xl
-                                    font-semibold
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-5 py-4 pr-14
+                                    text-2xl font-semibold
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                             <span
                                 class="
-                                    absolute
-                                    right-5
-                                    top-1/2
-                                    -translate-y-1/2
+                                    absolute right-5 top-1/2 -translate-y-1/2
                                     text-slate-400
                                     font-medium
                                 "
@@ -463,7 +397,6 @@
                             </span>
 
                         </div>
-
 
                         <p class="text-xs text-slate-400 mt-2">
                             Bereits erfasste Buchungen werden zusätzlich berücksichtigt.
@@ -474,38 +407,31 @@
                 </div>
 
 
-
-                {{-- ================================================= --}}
                 {{-- BANKDATEN --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
-                        p-6
-                        sm:p-8
+                        border border-slate-100 dark:border-slate-800
+                        p-6 sm:p-8
                     "
                 >
 
                     <div class="mb-6">
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">
                             Kontodaten
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1">
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                             Optionale Angaben zum Konto.
                         </p>
 
                     </div>
 
-
                     <div class="space-y-6">
-
 
                         {{-- IBAN --}}
 
@@ -513,7 +439,7 @@
 
                             <label
                                 for="iban"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 IBAN
                                 <span class="font-normal text-slate-400">
@@ -529,20 +455,23 @@
                                 autocomplete="off"
                                 placeholder="DE00 0000 0000 0000 0000 00"
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- KONTO NUMMER --}}
@@ -551,7 +480,7 @@
 
                             <label
                                 for="account_number"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Kontonummer
                                 <span class="font-normal text-slate-400">
@@ -563,25 +492,25 @@
                                 type="text"
                                 id="account_number"
                                 name="account_number"
-                                value="{{ old(
-                                    'account_number',
-                                    $account->account_number
-                                ) }}"
+                                value="{{ old('account_number', $account->account_number) }}"
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- NOTIZEN --}}
@@ -590,7 +519,7 @@
 
                             <label
                                 for="notes"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Notizen
                                 <span class="font-normal text-slate-400">
@@ -603,16 +532,20 @@
                                 name="notes"
                                 rows="4"
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
                                     resize-none
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >{{ old('notes', $account->notes) }}</textarea>
 
@@ -625,96 +558,92 @@
             </div>
 
 
-
-            {{-- ================================================= --}}
             {{-- SIDEBAR --}}
-            {{-- ================================================= --}}
 
-            <div class="space-y-6">
+            <div class="space-y-6 min-w-0">
 
 
-                {{-- ================================================= --}}
                 {{-- DARSTELLUNG --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
                     "
                 >
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Darstellung
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1 mb-5">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-5">
                         Icon und Farbe des Kontos.
                     </p>
 
 
                     {{-- ICON --}}
 
-                    <div>
+                    <div class="min-w-0 w-full">
 
                         <label
                             for="icon"
-                            class="block text-sm font-medium text-slate-700 mb-2"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                         >
                             Icon
                         </label>
 
-
-                        <div class="flex gap-3">
+                        <div class="flex gap-3 min-w-0 w-full">
 
                             <div
                                 id="icon-preview"
                                 class="
-                                    w-14
-                                    h-14
-                                    rounded-2xl
+                                    w-12
+                                    h-12
+                                    rounded-xl
                                     flex
                                     items-center
                                     justify-center
-                                    text-2xl
+                                    text-xl
                                     flex-shrink-0
+                                    bg-slate-100
+                                    dark:bg-slate-800
                                 "
                                 style="
                                     background-color:
-                                    {{ old(
-                                        'color',
-                                        $account->color ?: '#f1f5f9'
-                                    ) }};
+                                    {{ old('color', $account->color ?: '#f1f5f9') }};
                                 "
                             >
                                 {{ old('icon', $account->icon ?: '🏦') }}
                             </div>
 
-
                             <input
                                 type="text"
                                 id="icon"
                                 name="icon"
-                                value="{{ old(
-                                    'icon',
-                                    $account->icon ?: '🏦'
-                                ) }}"
+                                value="{{ old('icon', $account->icon ?: '🏦') }}"
                                 maxlength="10"
                                 class="
+                                    min-w-0
+                                    w-0
                                     flex-1
+                                    box-border
+                                    max-w-full
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
                                     text-xl
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
@@ -723,33 +652,31 @@
                     </div>
 
 
-
                     {{-- FARBE --}}
 
-                    <div class="mt-5">
+                    <div class="mt-5 min-w-0">
 
                         <label
                             for="color"
-                            class="block text-sm font-medium text-slate-700 mb-2"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                         >
                             Farbe
                         </label>
-
 
                         <input
                             type="color"
                             id="color"
                             name="color"
-                            value="{{ old(
-                                'color',
-                                $account->color ?: '#f1f5f9'
-                            ) }}"
+                            value="{{ old('color', $account->color ?: '#f1f5f9') }}"
                             class="
+                                box-border
+                                block
                                 w-full
+                                max-w-full
                                 h-12
                                 rounded-xl
-                                border
-                                border-slate-200
+                                border border-slate-200 dark:border-slate-700
+                                bg-white dark:bg-slate-800
                                 cursor-pointer
                             "
                         >
@@ -759,29 +686,26 @@
                 </div>
 
 
-
-                {{-- ================================================= --}}
                 {{-- OPTIONEN --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
                     "
                 >
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Optionen
                     </h3>
 
-
                     <div class="space-y-4 mt-5">
-
 
                         {{-- AKTIV --}}
 
@@ -791,36 +715,30 @@
                                 type="checkbox"
                                 name="is_active"
                                 value="1"
-                                @checked(
-                                    old(
-                                        'is_active',
-                                        $account->is_active
-                                    )
-                                )
+                                @checked(old('is_active', $account->is_active))
                                 class="
-                                    w-5
-                                    h-5
-                                    mt-0.5
-                                    rounded
-                                    border-slate-300
+                                    w-5 h-5 mt-0.5 rounded
+                                    border-slate-300 dark:border-slate-600
+                                    bg-white dark:bg-slate-800
+                                    text-emerald-600
+                                    focus:ring-emerald-500
+                                    flex-shrink-0
                                 "
                             >
 
+                            <span class="min-w-0">
 
-                            <span>
-
-                                <span class="block text-sm font-medium text-slate-900">
+                                <span class="block text-sm font-medium text-slate-900 dark:text-white">
                                     Konto aktiv
                                 </span>
 
-                                <span class="block text-xs text-slate-500 mt-1">
+                                <span class="block text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     Das Konto kann für neue Buchungen verwendet werden.
                                 </span>
 
                             </span>
 
                         </label>
-
 
 
                         {{-- GESAMTVERMÖGEN --}}
@@ -831,29 +749,24 @@
                                 type="checkbox"
                                 name="include_in_total"
                                 value="1"
-                                @checked(
-                                    old(
-                                        'include_in_total',
-                                        $account->include_in_total
-                                    )
-                                )
+                                @checked(old('include_in_total', $account->include_in_total))
                                 class="
-                                    w-5
-                                    h-5
-                                    mt-0.5
-                                    rounded
-                                    border-slate-300
+                                    w-5 h-5 mt-0.5 rounded
+                                    border-slate-300 dark:border-slate-600
+                                    bg-white dark:bg-slate-800
+                                    text-emerald-600
+                                    focus:ring-emerald-500
+                                    flex-shrink-0
                                 "
                             >
 
+                            <span class="min-w-0">
 
-                            <span>
-
-                                <span class="block text-sm font-medium text-slate-900">
+                                <span class="block text-sm font-medium text-slate-900 dark:text-white">
                                     Im Gesamtvermögen
                                 </span>
 
-                                <span class="block text-xs text-slate-500 mt-1">
+                                <span class="block text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     Der Kontostand wird im Gesamtvermögen berücksichtigt.
                                 </span>
 
@@ -866,13 +779,12 @@
                 </div>
 
 
-
-                {{-- ================================================= --}}
                 {{-- AKTUELLER STATUS --}}
-                {{-- ================================================= --}}
 
                 <div
                     class="
+                        w-full
+                        box-border
                         rounded-3xl
                         bg-slate-950
                         text-white
@@ -908,47 +820,35 @@
         </div>
 
 
-
-        {{-- ========================================================= --}}
         {{-- AKTIONEN --}}
-        {{-- ========================================================= --}}
 
         <div
             class="
                 mt-6
-                bg-white
+                w-full
+                box-border
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 shadow-sm
-                border
-                border-slate-100
+                border border-slate-100 dark:border-slate-800
                 p-5
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
+                flex flex-col sm:flex-row
+                sm:items-center sm:justify-between
                 gap-3
             "
         >
-
-            {{-- LÖSCHEN --}}
 
             <button
                 type="button"
                 onclick="deleteAccount()"
                 class="
-                    w-full
-                    sm:w-auto
-                    inline-flex
-                    items-center
-                    justify-center
+                    w-full sm:w-auto
+                    inline-flex items-center justify-center
                     rounded-xl
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-red-600
-                    hover:bg-red-50
+                    px-5 py-3
+                    text-sm font-medium
+                    text-red-600 dark:text-red-400
+                    hover:bg-red-50 dark:hover:bg-red-950/30
                     transition
                 "
             >
@@ -956,46 +856,35 @@
             </button>
 
 
-            {{-- RECHTS --}}
-
             <div class="flex flex-col sm:flex-row gap-3">
 
                 <a
                     href="{{ route('accounts.index') }}"
                     class="
-                        inline-flex
-                        items-center
-                        justify-center
+                        inline-flex items-center justify-center
                         rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        text-slate-600
-                        hover:bg-slate-50
+                        border border-slate-200 dark:border-slate-700
+                        bg-white dark:bg-slate-800
+                        px-5 py-3
+                        text-sm font-medium
+                        text-slate-600 dark:text-slate-300
+                        hover:bg-slate-50 dark:hover:bg-slate-700
+                        transition
                     "
                 >
                     Abbrechen
                 </a>
 
-
                 <button
                     type="submit"
                     class="
-                        inline-flex
-                        items-center
-                        justify-center
+                        inline-flex items-center justify-center
                         rounded-xl
-                        bg-slate-950
-                        px-6
-                        py-3
-                        text-sm
-                        font-medium
-                        text-white
-                        hover:bg-slate-800
+                        bg-slate-950 dark:bg-white
+                        px-6 py-3
+                        text-sm font-medium
+                        text-white dark:text-slate-950
+                        hover:bg-slate-800 dark:hover:bg-slate-200
                         transition
                     "
                 >
@@ -1011,10 +900,7 @@
 </div>
 
 
-
-{{-- ========================================================= --}}
 {{-- LÖSCH-FORMULAR --}}
-{{-- ========================================================= --}}
 
 <form
     id="delete-account-form"
@@ -1024,16 +910,12 @@
 >
 
     @csrf
-
     @method('DELETE')
 
 </form>
 
 
-
-{{-- ========================================================= --}}
 {{-- JAVASCRIPT --}}
-{{-- ========================================================= --}}
 
 <script>
 
@@ -1081,18 +963,13 @@ document.addEventListener('DOMContentLoaded', function () {
             function () {
 
                 if (iconPreview) {
-
                     iconPreview.style.backgroundColor =
                         this.value;
-
                 }
 
-
                 if (headerIcon) {
-
                     headerIcon.style.backgroundColor =
                         this.value;
-
                 }
 
             }
@@ -1111,11 +988,9 @@ function deleteAccount()
             'Möchtest du das Konto „{{ addslashes($account->name) }}“ wirklich löschen?'
         );
 
-
     if (!confirmed) {
         return;
     }
-
 
     document
         .getElementById('delete-account-form')

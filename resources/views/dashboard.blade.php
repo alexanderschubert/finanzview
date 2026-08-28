@@ -26,11 +26,11 @@
 
             </div>
 
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mt-2">
+            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-2">
                 Hallo, {{ auth()->user()->name }}
             </h2>
 
-            <p class="text-slate-500 mt-2">
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
                 Hier ist deine finanzielle Übersicht für {{ $currentMonth }}.
             </p>
 
@@ -52,10 +52,13 @@
                     class="
                         rounded-xl
                         border border-slate-200
+                        dark:border-slate-700
                         bg-white
+                        dark:bg-slate-800
                         px-4 py-3
                         text-sm
                         text-slate-700
+                        dark:text-slate-200
                         focus:outline-none
                         focus:ring-2
                         focus:ring-emerald-500/20
@@ -68,12 +71,16 @@
                     class="
                         rounded-xl
                         border border-slate-200
+                        dark:border-slate-700
                         bg-white
+                        dark:bg-slate-800
                         px-4 py-3
                         text-sm
                         font-medium
                         text-slate-700
+                        dark:text-slate-200
                         hover:bg-slate-50
+                        dark:hover:bg-slate-700
                         transition
                     "
                 >
@@ -90,23 +97,22 @@
                     items-center
                     justify-center
                     rounded-xl
-                    bg-slate-950
+                    bg-emerald-600
                     px-5 py-3
                     text-sm
                     font-medium
                     text-white
-                    hover:bg-slate-800
+                    hover:bg-emerald-700
                     transition
                 "
             >
-                <span class="mr-2 text-emerald-400">+</span>
+                <span class="mr-2 text-emerald-200">+</span>
                 Neue Buchung
             </a>
 
         </div>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -160,15 +166,21 @@
 
         {{-- EINNAHMEN --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            p-6
+        ">
 
             <div class="flex items-center justify-between">
 
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     Einnahmen
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center">
                     ↗
                 </div>
 
@@ -196,15 +208,21 @@
 
         {{-- AUSGABEN --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            p-6
+        ">
 
             <div class="flex items-center justify-between">
 
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     Ausgaben
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
+                <div class="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center">
                     ↘
                 </div>
 
@@ -232,15 +250,21 @@
 
         {{-- SPARQUOTE --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            p-6
+        ">
 
             <div class="flex items-center justify-between">
 
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     Sparquote
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                     %
                 </div>
 
@@ -251,7 +275,7 @@
                 font-semibold
                 mt-5
                 {{ $savingsRate >= 0
-                    ? 'text-slate-900'
+                    ? 'text-slate-900 dark:text-white'
                     : 'text-red-600' }}
             ">
 
@@ -275,7 +299,6 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- MONATSSALDO + JAHRESWERTE --}}
     {{-- ========================================================= --}}
@@ -291,15 +314,15 @@
             border
             p-6
             {{ $monthlyBalance >= 0
-                ? 'bg-emerald-50 border-emerald-100'
-                : 'bg-red-50 border-red-100' }}
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900'
+                : 'bg-red-50 dark:bg-red-950/40 border-red-100 dark:border-red-900' }}
         ">
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                 <div>
 
-                    <p class="text-sm font-medium text-slate-600">
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
                         Monatssaldo
                     </p>
 
@@ -308,8 +331,8 @@
                         font-semibold
                         mt-2
                         {{ $monthlyBalance >= 0
-                            ? 'text-emerald-700'
-                            : 'text-red-700' }}
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-red-700 dark:text-red-400' }}
                     ">
 
                         {{ $monthlyBalance >= 0 ? '+' : '' }}
@@ -337,8 +360,8 @@
                     font-medium
                     self-start
                     {{ $monthlyBalance >= 0
-                        ? 'bg-white text-emerald-700'
-                        : 'bg-white text-red-700' }}
+                        ? 'bg-white dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-white dark:bg-red-900/60 text-red-700 dark:text-red-300' }}
                 ">
 
                     {{ $monthlyBalance >= 0
@@ -354,9 +377,15 @@
 
         {{-- JAHRESWERTE --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            p-6
+        ">
 
-            <p class="text-sm font-medium text-slate-500">
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Dieses Jahr
             </p>
 
@@ -364,7 +393,7 @@
 
                 <div class="flex items-center justify-between">
 
-                    <span class="text-sm text-slate-500">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">
                         Einnahmen
                     </span>
 
@@ -382,7 +411,7 @@
 
                 <div class="flex items-center justify-between">
 
-                    <span class="text-sm text-slate-500">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">
                         Ausgaben
                     </span>
 
@@ -398,16 +427,16 @@
                 </div>
 
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
 
-                    <span class="text-sm font-medium text-slate-700">
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                         Jahressaldo
                     </span>
 
                     <span class="
                         font-semibold
                         {{ ($yearlyIncome - $yearlyExpense) >= 0
-                            ? 'text-slate-900'
+                            ? 'text-slate-900 dark:text-white'
                             : 'text-red-600' }}
                     ">
 
@@ -431,12 +460,18 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- EINNAHMEN / AUSGABEN --}}
     {{-- ========================================================= --}}
 
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm mt-5 overflow-hidden">
+    <div class="
+        bg-white dark:bg-slate-900
+        rounded-3xl
+        border border-slate-100 dark:border-slate-800
+        shadow-sm
+        mt-5
+        overflow-hidden
+    ">
 
         <div class="p-6 sm:p-8">
 
@@ -448,18 +483,18 @@
                         Entwicklung
                     </p>
 
-                    <h3 class="text-xl font-semibold text-slate-900 mt-1">
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
                         Einnahmen & Ausgaben
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Vergleich der letzten sechs Monate.
                     </p>
 
                 </div>
 
 
-                <div class="flex items-center gap-4 text-xs text-slate-500">
+                <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
 
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -499,7 +534,7 @@
 
                         <div class="flex items-center justify-between mb-2">
 
-                            <span class="text-sm font-medium text-slate-700">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 {{ $chartMonth['label'] }}
                             </span>
 
@@ -535,7 +570,7 @@
                                 Einnahmen
                             </span>
 
-                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
 
                                 <div
                                     class="h-full bg-emerald-500 rounded-full transition-all"
@@ -544,7 +579,7 @@
 
                             </div>
 
-                            <span class="w-24 text-right text-xs font-medium text-slate-700">
+                            <span class="w-24 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
 
                                 {{ number_format(
                                     $chartMonth['income'],
@@ -566,7 +601,7 @@
                                 Ausgaben
                             </span>
 
-                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
 
                                 <div
                                     class="h-full bg-red-500 rounded-full transition-all"
@@ -575,7 +610,7 @@
 
                             </div>
 
-                            <span class="w-24 text-right text-xs font-medium text-slate-700">
+                            <span class="w-24 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
 
                                 {{ number_format(
                                     $chartMonth['expense'],
@@ -597,7 +632,6 @@
         </div>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -711,7 +745,14 @@
     @endphp
 
 
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm mt-5 overflow-hidden">
+    <div class="
+        bg-white dark:bg-slate-900
+        rounded-3xl
+        border border-slate-100 dark:border-slate-800
+        shadow-sm
+        mt-5
+        overflow-hidden
+    ">
 
         <div class="p-6 sm:p-8">
 
@@ -723,11 +764,11 @@
                         Vermögen
                     </p>
 
-                    <h3 class="text-xl font-semibold text-slate-900 mt-1">
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
                         Vermögensentwicklung
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Entwicklung deines Gesamtvermögens über die letzten sechs Monate.
                     </p>
 
@@ -740,7 +781,7 @@
                         Aktuell
                     </p>
 
-                    <p class="text-xl font-semibold text-slate-900 mt-1">
+                    <p class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
 
                         {{ number_format(
                             $totalBalance,
@@ -786,7 +827,8 @@
                                     y1="{{ $lineY }}"
                                     x2="{{ $svgWidth - $paddingRight }}"
                                     y2="{{ $lineY }}"
-                                    stroke="#e2e8f0"
+                                    stroke="currentColor"
+                                    class="text-slate-200 dark:text-slate-700"
                                     stroke-width="1"
                                 />
 
@@ -822,7 +864,7 @@
                                     cx="{{ $point['x'] }}"
                                     cy="{{ $point['y'] }}"
                                     r="6"
-                                    fill="white"
+                                    class="fill-white dark:fill-slate-900"
                                     stroke="#10b981"
                                     stroke-width="3"
                                 />
@@ -839,7 +881,8 @@
                                     y="{{ $svgHeight - 15 }}"
                                     text-anchor="middle"
                                     font-size="13"
-                                    fill="#94a3b8"
+                                    fill="currentColor"
+                                    class="text-slate-400"
                                 >
                                     {{ $point['label'] }}
                                 </text>
@@ -857,7 +900,11 @@
 
                     @foreach ($wealthMonths as $wealthMonth)
 
-                        <div class="rounded-2xl bg-slate-50 px-3 py-3">
+                        <div class="
+                            rounded-2xl
+                            bg-slate-50 dark:bg-slate-800
+                            px-3 py-3
+                        ">
 
                             <p class="text-xs text-slate-400">
                                 {{ $wealthMonth['full_label'] }}
@@ -868,7 +915,7 @@
                                 font-semibold
                                 mt-1
                                 {{ $wealthMonth['balance'] >= 0
-                                    ? 'text-slate-900'
+                                    ? 'text-slate-900 dark:text-white'
                                     : 'text-red-600' }}
                             ">
 
@@ -889,9 +936,9 @@
 
             @else
 
-                <div class="mt-8 rounded-2xl bg-slate-50 p-8 text-center">
+                <div class="mt-8 rounded-2xl bg-slate-50 dark:bg-slate-800 p-8 text-center">
 
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Noch keine Vermögensdaten vorhanden.
                     </p>
 
@@ -902,7 +949,6 @@
         </div>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -919,11 +965,11 @@
                     Planung
                 </p>
 
-                <h3 class="text-xl font-semibold text-slate-900 mt-1">
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
                     Deine Budgets
                 </h3>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Budgetverbrauch für {{ $currentMonth }}
                 </p>
 
@@ -932,7 +978,7 @@
 
             <a
                 href="{{ route('budgets.index') }}"
-                class="text-sm font-medium text-slate-500 hover:text-slate-900 transition"
+                class="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
             >
                 Alle Budgets →
             </a>
@@ -943,23 +989,23 @@
         @if ($budgets->isEmpty())
 
             <div class="
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
-                border border-slate-100
+                border border-slate-100 dark:border-slate-800
                 shadow-sm
                 p-10
                 text-center
             ">
 
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-2xl">
                     🎯
                 </div>
 
-                <h4 class="font-semibold text-slate-900 mt-4">
+                <h4 class="font-semibold text-slate-900 dark:text-white mt-4">
                     Noch keine Budgets
                 </h4>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Lege dein erstes Budget an, um deine Ausgaben besser zu planen.
                 </p>
 
@@ -969,12 +1015,12 @@
                         inline-flex
                         mt-5
                         rounded-xl
-                        bg-slate-950
+                        bg-emerald-600
                         px-5 py-3
                         text-sm
                         font-medium
                         text-white
-                        hover:bg-slate-800
+                        hover:bg-emerald-700
                         transition
                     "
                 >
@@ -993,13 +1039,15 @@
                         href="{{ route('budgets.show', $budget) }}"
                         class="
                             block
-                            bg-white
+                            bg-white dark:bg-slate-900
                             rounded-3xl
-                            border border-slate-100
+                            border border-slate-100 dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
                             hover:-translate-y-0.5
+                            hover:bg-slate-50
+                            dark:hover:bg-slate-800
                             transition
                         "
                     >
@@ -1022,7 +1070,7 @@
 
                             <div class="flex-1 min-w-0">
 
-                                <p class="font-semibold text-slate-900 truncate">
+                                <p class="font-semibold text-slate-900 dark:text-white truncate">
                                     {{ $budget->name }}
                                 </p>
 
@@ -1044,19 +1092,19 @@
 
                             @if ($budget->calculated_exceeded)
 
-                                <span class="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
+                                <span class="rounded-full bg-red-50 dark:bg-red-950/50 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400">
                                     Überschritten
                                 </span>
 
                             @elseif ($budget->calculated_percentage >= 80)
 
-                                <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
+                                <span class="rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
                                     Achtung
                                 </span>
 
                             @else
 
-                                <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
+                                <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                                     OK
                                 </span>
 
@@ -1069,11 +1117,11 @@
 
                             <div class="flex items-center justify-between">
 
-                                <span class="text-sm text-slate-500">
+                                <span class="text-sm text-slate-500 dark:text-slate-400">
                                     Verbrauch
                                 </span>
 
-                                <span class="text-sm font-semibold text-slate-900">
+                                <span class="text-sm font-semibold text-slate-900 dark:text-white">
 
                                     {{ number_format(
                                         $budget->calculated_spent,
@@ -1087,7 +1135,7 @@
                             </div>
 
 
-                            <div class="h-3 bg-slate-100 rounded-full overflow-hidden mt-3">
+                            <div class="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-3">
 
                                 <div
                                     class="
@@ -1123,7 +1171,7 @@
 
                                 @if ($budget->calculated_remaining >= 0)
 
-                                    <span class="text-xs text-emerald-600">
+                                    <span class="text-xs text-emerald-600 dark:text-emerald-400">
 
                                         Noch
 
@@ -1138,7 +1186,7 @@
 
                                 @else
 
-                                    <span class="text-xs font-medium text-red-600">
+                                    <span class="text-xs font-medium text-red-600 dark:text-red-400">
 
                                         {{ number_format(
                                             abs($budget->calculated_remaining),
@@ -1164,10 +1212,10 @@
 
                                     <span class="
                                         rounded-full
-                                        bg-slate-100
+                                        bg-slate-100 dark:bg-slate-800
                                         px-2.5 py-1
                                         text-xs
-                                        text-slate-600
+                                        text-slate-600 dark:text-slate-300
                                     ">
 
                                         {{ $category->icon ?: '📁' }}
@@ -1193,7 +1241,6 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- KONTEN + AUSGABEN --}}
     {{-- ========================================================= --}}
@@ -1203,9 +1250,16 @@
 
         {{-- KONTEN --}}
 
-        <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="
+            lg:col-span-2
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            overflow-hidden
+        ">
 
-            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 
                 <div>
 
@@ -1213,11 +1267,11 @@
                         Konten
                     </p>
 
-                    <h3 class="font-semibold text-slate-900 mt-1">
+                    <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
                         Deine Konten
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Aktuelle Kontostände
                     </p>
 
@@ -1225,7 +1279,7 @@
 
                 <a
                     href="{{ route('accounts.index') }}"
-                    class="text-sm text-slate-500 hover:text-slate-900 transition"
+                    class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
                 >
                     Alle anzeigen →
                 </a>
@@ -1237,11 +1291,11 @@
 
                 <div class="p-10 text-center">
 
-                    <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-2xl">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
                         🏦
                     </div>
 
-                    <p class="font-medium text-slate-900 mt-4">
+                    <p class="font-medium text-slate-900 dark:text-white mt-4">
                         Noch keine Konten
                     </p>
 
@@ -1251,11 +1305,12 @@
                             inline-flex
                             mt-4
                             rounded-xl
-                            bg-slate-950
+                            bg-emerald-600
                             px-4 py-2
                             text-sm
                             font-medium
                             text-white
+                            hover:bg-emerald-700
                         "
                     >
                         Konto erstellen
@@ -1265,7 +1320,7 @@
 
             @else
 
-                <div class="divide-y divide-slate-100">
+                <div class="divide-y divide-slate-100 dark:divide-slate-800">
 
                     @foreach ($accounts as $account)
 
@@ -1275,6 +1330,7 @@
                                 flex items-center gap-4
                                 p-5
                                 hover:bg-slate-50
+                                dark:hover:bg-slate-800
                                 transition
                             "
                         >
@@ -1289,11 +1345,11 @@
 
                             <div class="flex-1 min-w-0">
 
-                                <p class="font-medium text-slate-900 truncate">
+                                <p class="font-medium text-slate-900 dark:text-white truncate">
                                     {{ $account->name }}
                                 </p>
 
-                                <p class="text-sm text-slate-500 mt-1 truncate">
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
 
                                     @if ($account->institution)
 
@@ -1315,7 +1371,7 @@
                                 <p class="
                                     font-semibold
                                     {{ $account->calculated_balance >= 0
-                                        ? 'text-slate-900'
+                                        ? 'text-slate-900 dark:text-white'
                                         : 'text-red-600' }}
                                 ">
 
@@ -1336,7 +1392,7 @@
 
                             </div>
 
-                            <span class="text-slate-300">
+                            <span class="text-slate-300 dark:text-slate-600">
                                 →
                             </span>
 
@@ -1353,19 +1409,25 @@
 
         {{-- AUSGABEN --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="
+            bg-white dark:bg-slate-900
+            rounded-3xl
+            border border-slate-100 dark:border-slate-800
+            shadow-sm
+            overflow-hidden
+        ">
 
-            <div class="p-6 border-b border-slate-100">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
 
                 <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
                     Ausgaben
                 </p>
 
-                <h3 class="font-semibold text-slate-900 mt-1">
+                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
                     Nach Kategorie
                 </h3>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {{ $currentMonth }}
                 </p>
 
@@ -1376,11 +1438,11 @@
 
                 <div class="p-8 text-center">
 
-                    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-xl">
+                    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl">
                         📊
                     </div>
 
-                    <p class="text-sm text-slate-500 mt-4">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-4">
                         Noch keine Ausgaben.
                     </p>
 
@@ -1415,14 +1477,14 @@
                                         {{ $item['category']?->icon ?: '📁' }}
                                     </span>
 
-                                    <span class="text-slate-700 truncate">
+                                    <span class="text-slate-700 dark:text-slate-300 truncate">
                                         {{ $item['category']?->name ?: 'Ohne Kategorie' }}
                                     </span>
 
                                 </div>
 
 
-                                <span class="font-medium text-slate-900 whitespace-nowrap ml-3">
+                                <span class="font-medium text-slate-900 dark:text-white whitespace-nowrap ml-3">
 
                                     {{ number_format(
                                         $item['amount'],
@@ -1436,10 +1498,10 @@
                             </div>
 
 
-                            <div class="h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
 
                                 <div
-                                    class="h-full bg-slate-900 rounded-full"
+                                    class="h-full bg-slate-900 dark:bg-emerald-500 rounded-full"
                                     style="width: {{ min($percentage, 100) }}%"
                                 ></div>
 
@@ -1458,14 +1520,20 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- LETZTE BUCHUNGEN --}}
     {{-- ========================================================= --}}
 
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm mt-5 overflow-hidden">
+    <div class="
+        bg-white dark:bg-slate-900
+        rounded-3xl
+        border border-slate-100 dark:border-slate-800
+        shadow-sm
+        mt-5
+        overflow-hidden
+    ">
 
-        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 
             <div>
 
@@ -1473,11 +1541,11 @@
                     Aktivitäten
                 </p>
 
-                <h3 class="font-semibold text-slate-900 mt-1">
+                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
                     Letzte Buchungen
                 </h3>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Deine zuletzt erfassten Transaktionen
                 </p>
 
@@ -1486,7 +1554,7 @@
 
             <a
                 href="{{ route('transactions.index') }}"
-                class="text-sm text-slate-500 hover:text-slate-900 transition"
+                class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
             >
                 Alle anzeigen →
             </a>
@@ -1498,11 +1566,11 @@
 
             <div class="p-10 text-center">
 
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-2xl">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
                     💳
                 </div>
 
-                <p class="font-medium text-slate-900 mt-4">
+                <p class="font-medium text-slate-900 dark:text-white mt-4">
                     Noch keine Buchungen
                 </p>
 
@@ -1512,11 +1580,12 @@
                         inline-flex
                         mt-4
                         rounded-xl
-                        bg-slate-950
+                        bg-emerald-600
                         px-4 py-2
                         text-sm
                         font-medium
                         text-white
+                        hover:bg-emerald-700
                     "
                 >
                     Erste Buchung erstellen
@@ -1526,7 +1595,7 @@
 
         @else
 
-            <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
 
                 @foreach ($recentTransactions as $transaction)
 
@@ -1536,6 +1605,7 @@
                             flex items-center gap-4
                             p-5
                             hover:bg-slate-50
+                            dark:hover:bg-slate-800
                             transition
                         "
                     >
@@ -1547,8 +1617,8 @@
                                 flex items-center justify-center
                                 flex-shrink-0
                                 {{ $transaction->type === 'income'
-                                    ? 'bg-emerald-50'
-                                    : 'bg-red-50' }}
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/50'
+                                    : 'bg-red-50 dark:bg-red-950/50' }}
                             "
                         >
 
@@ -1559,11 +1629,11 @@
 
                         <div class="flex-1 min-w-0">
 
-                            <p class="font-medium text-slate-900 truncate">
+                            <p class="font-medium text-slate-900 dark:text-white truncate">
                                 {{ $transaction->description }}
                             </p>
 
-                            <p class="text-sm text-slate-500 mt-1 truncate">
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
 
                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
@@ -1604,7 +1674,7 @@
                         </p>
 
 
-                        <span class="hidden sm:block text-slate-300">
+                        <span class="hidden sm:block text-slate-300 dark:text-slate-600">
                             →
                         </span>
 
@@ -1617,7 +1687,6 @@
         @endif
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -1634,7 +1703,7 @@
                     Schnellzugriff
                 </p>
 
-                <h3 class="font-semibold text-slate-900 mt-1">
+                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
                     Was möchtest du tun?
                 </h3>
 
@@ -1646,120 +1715,60 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
 
-            <a
-                href="{{ route('accounts.index') }}"
-                class="
-                    bg-white
-                    rounded-2xl
-                    border border-slate-100
-                    shadow-sm
-                    p-5
-                    hover:shadow-md
-                    hover:-translate-y-0.5
-                    transition
-                "
-            >
+            @foreach ([
+                [
+                    'route' => 'accounts.index',
+                    'icon' => '🏦',
+                    'title' => 'Konten',
+                ],
+                [
+                    'route' => 'transactions.index',
+                    'icon' => '💳',
+                    'title' => 'Buchungen',
+                ],
+                [
+                    'route' => 'categories.index',
+                    'icon' => '🗂️',
+                    'title' => 'Kategorien',
+                ],
+                [
+                    'route' => 'budgets.index',
+                    'icon' => '🎯',
+                    'title' => 'Budgets',
+                ],
+            ] as $quickAction)
 
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
-                    🏦
-                </div>
+                <a
+                    href="{{ route($quickAction['route']) }}"
+                    class="
+                        bg-white dark:bg-slate-900
+                        rounded-2xl
+                        border border-slate-100 dark:border-slate-800
+                        shadow-sm
+                        p-5
+                        hover:shadow-md
+                        hover:-translate-y-0.5
+                        hover:bg-slate-50
+                        dark:hover:bg-slate-800
+                        transition
+                    "
+                >
 
-                <p class="font-medium text-slate-900 mt-4">
-                    Konten
-                </p>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-xl">
+                        {{ $quickAction['icon'] }}
+                    </div>
 
-                <p class="text-xs text-slate-400 mt-1">
-                    Verwalten
-                </p>
+                    <p class="font-medium text-slate-900 dark:text-white mt-4">
+                        {{ $quickAction['title'] }}
+                    </p>
 
-            </a>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Verwalten
+                    </p>
 
+                </a>
 
-            <a
-                href="{{ route('transactions.index') }}"
-                class="
-                    bg-white
-                    rounded-2xl
-                    border border-slate-100
-                    shadow-sm
-                    p-5
-                    hover:shadow-md
-                    hover:-translate-y-0.5
-                    transition
-                "
-            >
-
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
-                    💳
-                </div>
-
-                <p class="font-medium text-slate-900 mt-4">
-                    Buchungen
-                </p>
-
-                <p class="text-xs text-slate-400 mt-1">
-                    Verwalten
-                </p>
-
-            </a>
-
-
-            <a
-                href="{{ route('categories.index') }}"
-                class="
-                    bg-white
-                    rounded-2xl
-                    border border-slate-100
-                    shadow-sm
-                    p-5
-                    hover:shadow-md
-                    hover:-translate-y-0.5
-                    transition
-                "
-            >
-
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
-                    🗂️
-                </div>
-
-                <p class="font-medium text-slate-900 mt-4">
-                    Kategorien
-                </p>
-
-                <p class="text-xs text-slate-400 mt-1">
-                    Verwalten
-                </p>
-
-            </a>
-
-
-            <a
-                href="{{ route('budgets.index') }}"
-                class="
-                    bg-white
-                    rounded-2xl
-                    border border-slate-100
-                    shadow-sm
-                    p-5
-                    hover:shadow-md
-                    hover:-translate-y-0.5
-                    transition
-                "
-            >
-
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">
-                    🎯
-                </div>
-
-                <p class="font-medium text-slate-900 mt-4">
-                    Budgets
-                </p>
-
-                <p class="text-xs text-slate-400 mt-1">
-                    Verwalten
-                </p>
-
-            </a>
+            @endforeach
 
         </div>
 

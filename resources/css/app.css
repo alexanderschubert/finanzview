@@ -1,5 +1,20 @@
 @import 'tailwindcss';
 
+/*
+|--------------------------------------------------------------------------
+| Finanzblick – Tailwind Dark Mode
+|--------------------------------------------------------------------------
+|
+| Der Dark Mode wird von Finanzblick über die Klasse "dark"
+| auf dem <html>-Element gesteuert.
+|
+| Dadurch funktionieren alle dark:* Klassen unabhängig
+| von der Systemeinstellung.
+|
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
