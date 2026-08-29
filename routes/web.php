@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use Illuminate\Support\Facades\Route;
 
@@ -123,5 +124,22 @@ Route::middleware('auth')->group(function () {
      */
 
     Route::resource('budgets', BudgetController::class);
+
+
+    /*
+     * =========================================================
+     * KREDITE
+     * =========================================================
+     */
+
+    Route::resource('loans', LoanController::class);
+
+    /*
+     * Sondertilgung
+     */
+    Route::post('/loans/{loan}/extra-payment', [
+        LoanController::class,
+        'storeExtraPayment',
+    ])->name('loans.extra-payment');
 
 });

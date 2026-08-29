@@ -16,6 +16,7 @@ class LoanPayment extends Model
         'installment_number',
         'due_date',
         'amount',
+        'payment_type',
         'paid_date',
         'status',
     ];
@@ -37,5 +38,20 @@ class LoanPayment extends Model
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
+    }
+
+    public function isExtraPayment(): bool
+    {
+        return $this->payment_type === 'extra';
+    }
+
+    public function isRegularPayment(): bool
+    {
+        return $this->payment_type === 'regular';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid';
     }
 }

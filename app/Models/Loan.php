@@ -16,6 +16,9 @@ class Loan extends Model
         'user_id',
         'account_id',
         'name',
+        'creditor_name',
+        'creditor_icon',
+        'creditor_color',
         'principal_amount',
         'paid_amount',
         'interest_rate',
@@ -42,6 +45,12 @@ class Loan extends Model
         ];
     }
 
+    /*
+     * =========================================================
+     * BEZIEHUNGEN
+     * =========================================================
+     */
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -55,5 +64,99 @@ class Loan extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(LoanPayment::class);
+    }
+
+
+    /*
+     * =========================================================
+     * BERECHNETE WERTE
+     * =========================================================
+     */
+
+    /**
+     * Aktuelle Restschuld.
+     */
+    public function getRemainingAmountAttribute(): float
+    {
+        return max(
+            0,
+            (float) $this->principal_amount - (float) $this->paid_amount
+        );
+    }
+
+
+    /**
+     * Tilgungsfortschritt in Prozent.
+     */
+    public function getProgressAttribute(): float
+    {
+        $principal = (float) $this->principal_amount;
+
+        if ($principal <= 0) {
+            return 0;
+        }
+
+        return min(
+            100,
+            max(
+                0,
+                ((float) $this->paid_amount / $principal) * 100
+            )
+        );
+    }
+
+
+    /**
+     * Noch verbleibende Raten.
+     */
+    public function getRemainingInstallmentsAttribute(): ?int
+    {
+        if ($this->total_installments === null) {
+            return null;
+        }
+
+        return max(
+            0,
+            (int) $this->total_installments -
+            (int) $this->paid_installments
+        );
+    }
+
+
+    /**
+     * Bereits bezahlte reguläre Raten.
+     */
+    public function getRegularPaidAmountAttribute(): float
+    {
+        if (!$this->relationLoaded('payments')) {
+            return (float) $this->payments()
+                ->where('payment_type', 'regular')
+                ->where('status', 'paid')
+                ->sum('amount');
+        }
+
+        return (float) $this->payments
+            ->where('payment_type', 'regular')
+            ->where('status', 'paid')
+            ->sum('amount');
+    }
+
+
+    /**
+     * Summe aller Sondertilgungen.
+     */
+    public function getExtraPaidAmountAttribute(): float
+    {
+        if (!$this->relationLoaded('payments')) {
+            return (float) $this->payments()
+                ->where('payment_type', 'extra')
+                ->where('status', 'paid')
+                ->sum('amount');
+        }
+
+        return (float) $this->payments
+            ->where('payment_type', 'extra')
+            ->where('status', 'paid')
+            ->sum('amount');
     }
 }
