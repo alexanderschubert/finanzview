@@ -1,11 +1,7 @@
 services:
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-
-    image: finanzblick:latest
+    image: gitea.alxserver.de/alexander/finanzblick:latest
     container_name: finanzblick-app
     restart: unless-stopped
 
