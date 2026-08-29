@@ -442,7 +442,23 @@
                                 name="icon"
                                 value="{{ old('icon', '🏦') }}"
                                 maxlength="10"
-                                class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                                class="
+                                    min-w-0
+                                    w-0
+                                    flex-1
+                                    box-border
+                                    max-w-full
+                                    rounded-xl
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    text-xl
+                                    focus:outline-none
+                                    focus:ring-2
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
+                                "
                             >
 
                         </div>
