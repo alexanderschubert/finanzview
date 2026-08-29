@@ -56,7 +56,13 @@ class LoanController extends Controller
             );
 
         $overallProgress = $totalPrincipal > 0
-            ? min(100, max(0, ($totalPaid / $totalPrincipal) * 100))
+            ? min(
+                100,
+                max(
+                    0,
+                    ($totalPaid / $totalPrincipal) * 100
+                )
+            )
             : 0;
 
         return view('loans.index', compact(
@@ -71,7 +77,6 @@ class LoanController extends Controller
         ));
     }
 
-
     /**
      * Formular zum Erstellen eines Kredits.
      */
@@ -81,214 +86,46 @@ class LoanController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('loans.create', compact('accounts'));
+        return view(
+            'loans.create',
+            compact('accounts')
+        );
     }
 
-
     /**
-     * Kredit speichern und automatisch Tilgungsplan erstellen.
+     * Kredit speichern.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-
-            'creditor_name' => ['nullable', 'string', 'max:255'],
-            'creditor_icon' => ['nullable', 'string', 'max:20'],
-            'creditor_color' => ['nullable', 'string', 'max:20'],
-
-            'account_id' => ['nullable', 'integer'],
-
-            'principal_amount' => ['required', 'numeric', 'min:0.01'],
-            'paid_amount' => ['nullable', 'numeric', 'min:0'],
-
-            'interest_rate' => ['nullable', 'numeric', 'min:0'],
-
-            'installment_amount' => [
+            'name' => [
                 'required',
-                'numeric',
-                'min:0.01',
+                'string',
+                'max:255',
             ],
 
-            'total_installments' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-
-            'paid_installments' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-
-            'start_date' => [
-                'nullable',
-                'date',
-            ],
-
-            'end_date' => [
-                'nullable',
-                'date',
-                'after_or_equal:start_date',
-            ],
-
-            'type' => [
-                'required',
-                'in:loan,installment,paypal_installment,other',
-            ],
-
-            'is_active' => [
-                'nullable',
-                'boolean',
-            ],
-
-            'notes' => [
+            'creditor_name' => [
                 'nullable',
                 'string',
+                'max:255',
             ],
-        ]);
 
-        /*
-         * Konto muss zum angemeldeten Benutzer gehören.
-         */
-        if (!empty($validated['account_id'])) {
-            Account::where('user_id', auth()->id())
-                ->findOrFail($validated['account_id']);
-        }
+            'creditor_icon' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-        $validated['user_id'] = auth()->id();
+            'creditor_color' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-        $validated['paid_amount'] =
-            (float) ($validated['paid_amount'] ?? 0);
-
-        $validated['paid_installments'] =
-            (int) ($validated['paid_installments'] ?? 0);
-
-        $validated['is_active'] =
-            $request->boolean('is_active', true);
-
-        /*
-         * Bereits getilgter Betrag darf den Kreditbetrag
-         * nicht überschreiten.
-         */
-        if ($validated['paid_amount'] > $validated['principal_amount']) {
-            return back()
-                ->withErrors([
-                    'paid_amount' =>
-                        'Der bereits getilgte Betrag darf nicht größer als der Kreditbetrag sein.',
-                ])
-                ->withInput();
-        }
-
-        /*
-         * Bereits bezahlte Raten dürfen nicht größer
-         * als die Gesamtzahl der Raten sein.
-         */
-        if (
-            !empty($validated['total_installments']) &&
-            $validated['paid_installments'] >
-            $validated['total_installments']
-        ) {
-            return back()
-                ->withErrors([
-                    'paid_installments' =>
-                        'Die bereits bezahlten Raten dürfen nicht größer als die Gesamtzahl der Raten sein.',
-                ])
-                ->withInput();
-        }
-
-        DB::transaction(function () use (
-            $validated,
-            &$loan
-        ) {
-            /*
-             * Kredit anlegen.
-             */
-            $loan = Loan::create($validated);
-
-            /*
-             * Tilgungsplan erzeugen.
-             */
-            $this->generatePaymentPlan($loan);
-        });
-
-        return redirect()
-            ->route('loans.show', $loan)
-            ->with(
-                'success',
-                'Kredit wurde erfolgreich angelegt und der Tilgungsplan wurde erstellt.'
-            );
-    }
-
-
-    /**
-     * Kreditdetails.
-     */
-    public function show(Loan $loan): View
-    {
-        $this->authorizeLoan($loan);
-
-        $loan->load([
-            'account',
-            'payments.transaction',
-        ]);
-
-        $payments = $loan->payments()
-            ->orderBy('due_date')
-            ->orderBy('installment_number')
-            ->get();
-
-        $regularPayments = $payments
-            ->where('payment_type', 'regular');
-
-        $extraPayments = $payments
-            ->where('payment_type', 'extra');
-
-        return view('loans.show', compact(
-            'loan',
-            'payments',
-            'regularPayments',
-            'extraPayments'
-        ));
-    }
-
-
-    /**
-     * Bearbeitungsformular.
-     */
-    public function edit(Loan $loan): View
-    {
-        $this->authorizeLoan($loan);
-
-        $accounts = Account::where('user_id', auth()->id())
-            ->orderBy('name')
-            ->get();
-
-        return view('loans.edit', compact(
-            'loan',
-            'accounts'
-        ));
-    }
-
-
-    /**
-     * Kredit aktualisieren.
-     */
-    public function update(
-        Request $request,
-        Loan $loan
-    ): RedirectResponse {
-        $this->authorizeLoan($loan);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-
-            'creditor_name' => ['nullable', 'string', 'max:255'],
-            'creditor_icon' => ['nullable', 'string', 'max:20'],
-            'creditor_color' => ['nullable', 'string', 'max:20'],
-
-            'account_id' => ['nullable', 'integer'],
+            'account_id' => [
+                'nullable',
+                'integer',
+            ],
 
             'principal_amount' => [
                 'required',
@@ -353,36 +190,219 @@ class LoanController extends Controller
             ],
         ]);
 
+        /*
+         * Prüfen, ob das gewählte Konto
+         * tatsächlich dem angemeldeten Benutzer gehört.
+         */
         if (!empty($validated['account_id'])) {
             Account::where('user_id', auth()->id())
                 ->findOrFail($validated['account_id']);
         }
 
-        if (
-            isset($validated['paid_amount']) &&
-            $validated['paid_amount'] >
-            $validated['principal_amount']
-        ) {
-            return back()
-                ->withErrors([
-                    'paid_amount' =>
-                        'Der bereits getilgte Betrag darf nicht größer als der Kreditbetrag sein.',
-                ])
-                ->withInput();
-        }
+        $validated['user_id'] = auth()->id();
 
-        if (
-            !empty($validated['total_installments']) &&
-            isset($validated['paid_installments']) &&
-            $validated['paid_installments'] >
-            $validated['total_installments']
+        $validated['paid_amount'] =
+            $validated['paid_amount'] ?? 0;
+
+        $validated['paid_installments'] =
+            $validated['paid_installments'] ?? 0;
+
+        $validated['is_active'] =
+            $request->boolean(
+                'is_active',
+                true
+            );
+
+        DB::transaction(function () use (
+            $validated,
+            &$loan
         ) {
-            return back()
-                ->withErrors([
-                    'paid_installments' =>
-                        'Die bereits bezahlten Raten dürfen nicht größer als die Gesamtzahl der Raten sein.',
-                ])
-                ->withInput();
+            /*
+             * Kredit anlegen.
+             */
+            $loan = Loan::create($validated);
+
+            /*
+             * Tilgungsplan erzeugen.
+             */
+            $this->generatePaymentPlan($loan);
+        });
+
+        return redirect()
+            ->route('loans.show', $loan)
+            ->with(
+                'success',
+                'Kredit wurde erfolgreich angelegt.'
+            );
+    }
+
+    /**
+     * Kreditdetails.
+     */
+    public function show(Loan $loan): View
+    {
+        $this->authorizeLoan($loan);
+
+        $loan->load([
+            'account',
+            'payments.transaction',
+        ]);
+
+        $payments = $loan->payments()
+            ->orderBy('installment_number')
+            ->get();
+
+        $regularPayments = $payments
+            ->where(
+                'payment_type',
+                'regular'
+            );
+
+        $extraPayments = $payments
+            ->where(
+                'payment_type',
+                'extra'
+            );
+
+        return view(
+            'loans.show',
+            compact(
+                'loan',
+                'payments',
+                'regularPayments',
+                'extraPayments'
+            )
+        );
+    }
+
+    /**
+     * Bearbeitungsformular.
+     */
+    public function edit(Loan $loan): View
+    {
+        $this->authorizeLoan($loan);
+
+        $accounts = Account::where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
+
+        return view(
+            'loans.edit',
+            compact(
+                'loan',
+                'accounts'
+            )
+        );
+    }
+
+    /**
+     * Kredit aktualisieren.
+     */
+    public function update(
+        Request $request,
+        Loan $loan
+    ): RedirectResponse {
+        $this->authorizeLoan($loan);
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'creditor_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'creditor_icon' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'creditor_color' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'account_id' => [
+                'nullable',
+                'integer',
+            ],
+
+            'principal_amount' => [
+                'required',
+                'numeric',
+                'min:0.01',
+            ],
+
+            'paid_amount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'interest_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'installment_amount' => [
+                'required',
+                'numeric',
+                'min:0.01',
+            ],
+
+            'total_installments' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+
+            'paid_installments' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'start_date' => [
+                'nullable',
+                'date',
+            ],
+
+            'end_date' => [
+                'nullable',
+                'date',
+                'after_or_equal:start_date',
+            ],
+
+            'type' => [
+                'required',
+                'in:loan,installment,paypal_installment,other',
+            ],
+
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'notes' => [
+                'nullable',
+                'string',
+            ],
+        ]);
+
+        /*
+         * Konto-Zugriff absichern.
+         */
+        if (!empty($validated['account_id'])) {
+            Account::where('user_id', auth()->id())
+                ->findOrFail($validated['account_id']);
         }
 
         $validated['is_active'] =
@@ -391,19 +411,22 @@ class LoanController extends Controller
         $loan->update($validated);
 
         return redirect()
-            ->route('loans.show', $loan)
+            ->route(
+                'loans.show',
+                $loan
+            )
             ->with(
                 'success',
                 'Kredit wurde aktualisiert.'
             );
     }
 
-
     /**
      * Kredit löschen.
      */
-    public function destroy(Loan $loan): RedirectResponse
-    {
+    public function destroy(
+        Loan $loan
+    ): RedirectResponse {
         $this->authorizeLoan($loan);
 
         $loan->delete();
@@ -415,7 +438,6 @@ class LoanController extends Controller
                 'Kredit wurde gelöscht.'
             );
     }
-
 
     /**
      * Sondertilgung speichern.
@@ -448,10 +470,19 @@ class LoanController extends Controller
         $amount = (float) $validated['amount'];
 
         /*
-         * Eine Sondertilgung darf die Restschuld
+         * Aktuelle Restschuld berechnen.
+         */
+        $remainingAmount = max(
+            0,
+            (float) $loan->principal_amount
+                - (float) $loan->paid_amount
+        );
+
+        /*
+         * Sondertilgung darf die Restschuld
          * nicht überschreiten.
          */
-        if ($amount > $loan->remaining_amount) {
+        if ($amount > $remainingAmount) {
             return back()
                 ->withErrors([
                     'amount' =>
@@ -466,31 +497,22 @@ class LoanController extends Controller
             $amount
         ) {
             /*
-             * Sondertilgungen bekommen eine eigene Nummer,
-             * damit sie nicht als normale Rate gezählt werden.
+             * Nächste freie Nummer verwenden.
              *
-             * Negative Zahlen werden dafür verwendet.
-             *
-             * Beispiel:
-             *
-             * -1 = erste Sondertilgung
-             * -2 = zweite Sondertilgung
+             * Dadurch entsteht kein Konflikt mit
+             * den bereits vorhandenen normalen Raten.
              */
-            $nextExtraNumber = ((int) $loan->payments()
-                ->where('payment_type', 'extra')
-                ->min('installment_number'));
-
-            if ($nextExtraNumber >= 0 || $nextExtraNumber === null) {
-                $nextExtraNumber = -1;
-            } else {
-                $nextExtraNumber--;
-            }
+            $nextNumber = (
+                (int) $loan->payments()
+                    ->max('installment_number')
+            ) + 1;
 
             LoanPayment::create([
                 'loan_id' => $loan->id,
+
                 'transaction_id' => null,
 
-                'installment_number' => abs($nextExtraNumber),
+                'installment_number' => $nextNumber,
 
                 'due_date' => $validated['paid_date'],
 
@@ -504,7 +526,7 @@ class LoanController extends Controller
             ]);
 
             /*
-             * Gesamte Tilgung erhöhen.
+             * Gesamte bisherige Tilgung erhöhen.
              */
             $loan->increment(
                 'paid_amount',
@@ -513,62 +535,79 @@ class LoanController extends Controller
         });
 
         return redirect()
-            ->route('loans.show', $loan)
+            ->route(
+                'loans.show',
+                $loan
+            )
             ->with(
                 'success',
                 'Sondertilgung wurde erfolgreich erfasst.'
             );
     }
 
-
     /**
-     * Automatischen Tilgungsplan erzeugen.
+     * Tilgungsplan erzeugen.
      */
-    private function generatePaymentPlan(Loan $loan): void
-    {
+    private function generatePaymentPlan(
+        Loan $loan
+    ): void {
         /*
-         * Ohne Startdatum oder Anzahl der Raten
-         * kann kein automatischer Plan erstellt werden.
+         * Ohne Startdatum oder Ratenanzahl
+         * kann kein Tilgungsplan erzeugt werden.
          */
         if (
             !$loan->start_date ||
-            !$loan->total_installments
+            !$loan->total_installments ||
+            !$loan->installment_amount
         ) {
             return;
         }
 
         /*
-         * Falls bereits ein Tilgungsplan existiert,
-         * nichts doppelt anlegen.
+         * Bereits vorhandene Zahlungen vermeiden.
          */
-        if ($loan->payments()->exists()) {
-            return;
-        }
+        $existingNumbers = $loan->payments()
+            ->pluck('installment_number')
+            ->map(fn ($number) => (int) $number)
+            ->all();
 
         $startDate = $loan->start_date->copy();
 
-        $totalInstallments =
-            (int) $loan->total_installments;
-
         $paidInstallments =
-            min(
-                (int) $loan->paid_installments,
-                $totalInstallments
-            );
-
-        $installmentAmount =
-            (float) $loan->installment_amount;
+            (int) $loan->paid_installments;
 
         for (
             $number = 1;
-            $number <= $totalInstallments;
+            $number <= $loan->total_installments;
             $number++
         ) {
+            /*
+             * Falls die Rate bereits existiert,
+             * nichts neu anlegen.
+             */
+            if (
+                in_array(
+                    $number,
+                    $existingNumbers,
+                    true
+                )
+            ) {
+                continue;
+            }
+
             $dueDate = $startDate
                 ->copy()
                 ->addMonths($number - 1);
 
-            $isPaid = $number <= $paidInstallments;
+            $status =
+                $number <= $paidInstallments
+                    ? 'paid'
+                    : 'planned';
+
+            $paidDate =
+                $status === 'paid'
+                    ? $dueDate
+                    : null;
 
             LoanPayment::create([
                 'loan_id' => $loan->id,
@@ -579,27 +618,24 @@ class LoanController extends Controller
 
                 'due_date' => $dueDate,
 
-                'amount' => $installmentAmount,
+                'amount' =>
+                    $loan->installment_amount,
 
                 'payment_type' => 'regular',
 
-                'paid_date' => $isPaid
-                    ? $dueDate
-                    : null,
+                'paid_date' => $paidDate,
 
-                'status' => $isPaid
-                    ? 'paid'
-                    : 'planned',
+                'status' => $status,
             ]);
         }
     }
 
-
     /**
      * Route-Sicherheit.
      */
-    private function authorizeLoan(Loan $loan): void
-    {
+    private function authorizeLoan(
+        Loan $loan
+    ): void {
         abort_unless(
             $loan->user_id === auth()->id(),
             403
