@@ -48,7 +48,6 @@
 
         </div>
 
-
         <a
             href="{{ route('transactions.create') }}"
             class="
@@ -193,7 +192,6 @@
                 </div>
 
             </div>
-
 
             <a
                 href="{{ route('transactions.index') }}"
@@ -742,10 +740,6 @@
 
         @if ($transactions->isEmpty())
 
-            {{-- ================================================= --}}
-            {{-- LEER --}}
-            {{-- ================================================= --}}
-
             <div class="p-10 sm:p-14 text-center">
 
                 <div
@@ -796,9 +790,7 @@
 
             </div>
 
-
         @else
-
 
             {{-- ================================================= --}}
             {{-- LISTE --}}
@@ -822,7 +814,9 @@
                         "
                     >
 
+                        {{-- ================================================= --}}
                         {{-- MOBILE --}}
+                        {{-- ================================================= --}}
 
                         <div class="md:hidden">
 
@@ -853,9 +847,44 @@
 
                                         <div class="min-w-0">
 
-                                            <p class="font-medium text-slate-900 dark:text-white truncate">
-                                                {{ $transaction->description }}
-                                            </p>
+                                            <div class="flex items-center gap-2 flex-wrap">
+
+                                                <p class="font-medium text-slate-900 dark:text-white truncate">
+                                                    {{ $transaction->description }}
+                                                </p>
+
+
+                                                {{-- ================================================= --}}
+                                                {{-- WIEDERKEHREND MOBILE --}}
+                                                {{-- ================================================= --}}
+
+                                                @if ($transaction->recurring_transaction_id)
+
+                                                    <span
+                                                        class="
+                                                            inline-flex
+                                                            items-center
+                                                            gap-1
+                                                            rounded-full
+                                                            px-2
+                                                            py-0.5
+                                                            text-[10px]
+                                                            font-medium
+                                                            whitespace-nowrap
+                                                            bg-violet-100
+                                                            text-violet-700
+                                                            dark:bg-violet-900
+                                                            dark:text-violet-200
+                                                        "
+                                                    >
+                                                        <span>↻</span>
+                                                        <span>Wiederkehrend</span>
+                                                    </span>
+
+                                                @endif
+
+                                            </div>
+
 
                                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
 
@@ -937,7 +966,9 @@
                         </div>
 
 
+                        {{-- ================================================= --}}
                         {{-- DESKTOP --}}
+                        {{-- ================================================= --}}
 
                         <div
                             class="
@@ -974,9 +1005,43 @@
 
                                 <div class="min-w-0">
 
-                                    <p class="font-medium text-slate-900 dark:text-white truncate">
-                                        {{ $transaction->description }}
-                                    </p>
+                                    <div class="flex items-center gap-2 flex-wrap">
+
+                                        <p class="font-medium text-slate-900 dark:text-white truncate">
+                                            {{ $transaction->description }}
+                                        </p>
+
+
+                                        {{-- ================================================= --}}
+                                        {{-- WIEDERKEHREND DESKTOP --}}
+                                        {{-- ================================================= --}}
+
+                                        @if ($transaction->recurring_transaction_id)
+
+                                            <span
+                                                class="
+                                                    inline-flex
+                                                    items-center
+                                                    gap-1
+                                                    rounded-full
+                                                    px-2
+                                                    py-0.5
+                                                    text-[10px]
+                                                    font-medium
+                                                    whitespace-nowrap
+                                                    bg-violet-100
+                                                    text-violet-700
+                                                    dark:bg-violet-900
+                                                    dark:text-violet-200
+                                                "
+                                            >
+                                                <span>↻</span>
+                                                <span>Wiederkehrend</span>
+                                            </span>
+
+                                        @endif
+
+                                    </div>
 
 
                                     <div class="flex items-center gap-2 mt-1 flex-wrap">
@@ -1107,7 +1172,6 @@
                 </div>
 
             @endif
-
 
         @endif
 
