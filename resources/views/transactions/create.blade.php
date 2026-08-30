@@ -9,30 +9,50 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
     {{-- ========================================================= --}}
 
-    <div class="mb-6">
+    <div class="mb-8">
 
         <a
             href="{{ route('transactions.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-900"
+            class="
+                inline-flex
+                items-center
+                text-sm
+                text-slate-400
+                hover:text-slate-100
+                transition
+            "
         >
             ← Buchungen
         </a>
 
 
-        <div class="mt-4">
+        <div class="mt-5">
 
-            <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">
+            <p class="text-sm text-slate-500">
+                Finanzverwaltung
+            </p>
+
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-100
+                    mt-1
+                "
+            >
                 Neue Buchung
             </h2>
 
-            <p class="text-slate-500 mt-1">
+            <p class="text-slate-400 mt-2">
                 Erfasse eine Einnahme oder Ausgabe.
             </p>
 
@@ -52,12 +72,13 @@
             class="
                 mb-6
                 rounded-2xl
-                bg-red-50
                 border
-                border-red-100
-                p-4
+                border-red-500/30
+                bg-red-500/10
+                px-5
+                py-4
                 text-sm
-                text-red-700
+                text-red-300
             "
         >
 
@@ -91,11 +112,11 @@
 
         <div
             class="
-                bg-white
                 rounded-3xl
-                shadow-sm
                 border
-                border-slate-100
+                border-slate-700
+                bg-slate-900/70
+                shadow-sm
                 p-8
                 sm:p-12
                 text-center
@@ -108,7 +129,9 @@
                     w-16
                     h-16
                     rounded-2xl
-                    bg-slate-100
+                    bg-slate-800
+                    border
+                    border-slate-700
                     flex
                     items-center
                     justify-center
@@ -119,12 +142,12 @@
             </div>
 
 
-            <h2 class="text-lg font-semibold text-slate-900 mt-5">
+            <h2 class="text-lg font-semibold text-slate-100 mt-5">
                 Noch kein Konto vorhanden
             </h2>
 
 
-            <p class="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+            <p class="text-sm text-slate-400 mt-2 max-w-md mx-auto">
                 Bevor du eine Buchung erfassen kannst,
                 musst du mindestens ein Konto erstellen.
             </p>
@@ -138,13 +161,14 @@
                     justify-center
                     mt-6
                     rounded-xl
-                    bg-slate-950
+                    bg-slate-100
                     px-5
                     py-3
                     text-sm
-                    font-medium
-                    text-white
-                    hover:bg-slate-800
+                    font-semibold
+                    text-slate-900
+                    hover:bg-white
+                    transition
                 "
             >
                 Konto erstellen
@@ -185,11 +209,11 @@
 
                     <div
                         class="
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                             sm:p-8
                         "
@@ -199,11 +223,11 @@
 
                             <div>
 
-                                <h3 class="font-semibold text-slate-900">
+                                <h3 class="font-semibold text-slate-100">
                                     Buchung
                                 </h3>
 
-                                <p class="text-sm text-slate-500 mt-1">
+                                <p class="text-sm text-slate-400 mt-1">
                                     Grundlegende Angaben
                                 </p>
 
@@ -215,7 +239,9 @@
                                     w-10
                                     h-10
                                     rounded-xl
-                                    bg-slate-100
+                                    bg-slate-800
+                                    border
+                                    border-slate-700
                                     flex
                                     items-center
                                     justify-center
@@ -233,14 +259,21 @@
                         <div>
 
                             <label
-                                for="transaction_type"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="
+                                    block
+                                    text-sm
+                                    font-medium
+                                    text-slate-300
+                                    mb-3
+                                "
                             >
                                 Art
                             </label>
 
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                                {{-- AUSGABE --}}
 
                                 <label class="cursor-pointer">
 
@@ -255,12 +288,14 @@
                                     <div
                                         class="
                                             rounded-2xl
-                                            border-2
-                                            border-slate-200
+                                            border
+                                            border-slate-700
+                                            bg-slate-950/40
                                             p-4
                                             transition
+                                            hover:border-slate-500
                                             peer-checked:border-red-500
-                                            peer-checked:bg-red-50
+                                            peer-checked:bg-red-500/10
                                         "
                                     >
 
@@ -268,11 +303,17 @@
                                             ↘️
                                         </div>
 
-                                        <p class="font-medium text-slate-900 mt-2">
+                                        <p
+                                            class="
+                                                font-medium
+                                                text-slate-100
+                                                mt-2
+                                            "
+                                        >
                                             Ausgabe
                                         </p>
 
-                                        <p class="text-xs text-slate-500 mt-1">
+                                        <p class="text-xs text-slate-400 mt-1">
                                             Geld wird ausgegeben
                                         </p>
 
@@ -280,6 +321,8 @@
 
                                 </label>
 
+
+                                {{-- EINNAHME --}}
 
                                 <label class="cursor-pointer">
 
@@ -294,12 +337,14 @@
                                     <div
                                         class="
                                             rounded-2xl
-                                            border-2
-                                            border-slate-200
+                                            border
+                                            border-slate-700
+                                            bg-slate-950/40
                                             p-4
                                             transition
+                                            hover:border-slate-500
                                             peer-checked:border-emerald-500
-                                            peer-checked:bg-emerald-50
+                                            peer-checked:bg-emerald-500/10
                                         "
                                     >
 
@@ -307,11 +352,17 @@
                                             ↗️
                                         </div>
 
-                                        <p class="font-medium text-slate-900 mt-2">
+                                        <p
+                                            class="
+                                                font-medium
+                                                text-slate-100
+                                                mt-2
+                                            "
+                                        >
                                             Einnahme
                                         </p>
 
-                                        <p class="text-xs text-slate-500 mt-1">
+                                        <p class="text-xs text-slate-400 mt-1">
                                             Geld kommt hinzu
                                         </p>
 
@@ -331,7 +382,13 @@
 
                             <label
                                 for="amount"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="
+                                    block
+                                    text-sm
+                                    font-medium
+                                    text-slate-300
+                                    mb-2
+                                "
                             >
                                 Betrag
                             </label>
@@ -352,16 +409,20 @@
                                         w-full
                                         rounded-2xl
                                         border
-                                        border-slate-200
+                                        border-slate-700
+                                        bg-slate-950/60
                                         px-5
                                         py-4
                                         pr-14
                                         text-2xl
                                         font-semibold
-                                        text-slate-900
+                                        text-slate-100
+                                        placeholder:text-slate-600
                                         focus:outline-none
+                                        focus:border-slate-500
                                         focus:ring-2
-                                        focus:ring-slate-200
+                                        focus:ring-slate-500/30
+                                        transition
                                     "
                                 >
 
@@ -393,11 +454,11 @@
 
                     <div
                         class="
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                             sm:p-8
                         "
@@ -405,11 +466,11 @@
 
                         <div class="mb-6">
 
-                            <h3 class="font-semibold text-slate-900">
+                            <h3 class="font-semibold text-slate-100">
                                 Details
                             </h3>
 
-                            <p class="text-sm text-slate-500 mt-1">
+                            <p class="text-sm text-slate-400 mt-1">
                                 Weitere Informationen zur Buchung
                             </p>
 
@@ -426,7 +487,13 @@
 
                                 <label
                                     for="description"
-                                    class="block text-sm font-medium text-slate-700 mb-2"
+                                    class="
+                                        block
+                                        text-sm
+                                        font-medium
+                                        text-slate-300
+                                        mb-2
+                                    "
                                 >
                                     Beschreibung
                                 </label>
@@ -442,12 +509,17 @@
                                         w-full
                                         rounded-xl
                                         border
-                                        border-slate-200
+                                        border-slate-700
+                                        bg-slate-950/60
                                         px-4
                                         py-3
+                                        text-slate-100
+                                        placeholder:text-slate-600
                                         focus:outline-none
+                                        focus:border-slate-500
                                         focus:ring-2
-                                        focus:ring-slate-200
+                                        focus:ring-slate-500/30
+                                        transition
                                     "
                                 >
 
@@ -461,12 +533,20 @@
 
                                 <label
                                     for="merchant"
-                                    class="block text-sm font-medium text-slate-700 mb-2"
+                                    class="
+                                        block
+                                        text-sm
+                                        font-medium
+                                        text-slate-300
+                                        mb-2
+                                    "
                                 >
                                     Händler
-                                    <span class="font-normal text-slate-400">
+
+                                    <span class="font-normal text-slate-500">
                                         (optional)
                                     </span>
+
                                 </label>
 
                                 <input
@@ -479,12 +559,17 @@
                                         w-full
                                         rounded-xl
                                         border
-                                        border-slate-200
+                                        border-slate-700
+                                        bg-slate-950/60
                                         px-4
                                         py-3
+                                        text-slate-100
+                                        placeholder:text-slate-600
                                         focus:outline-none
+                                        focus:border-slate-500
                                         focus:ring-2
-                                        focus:ring-slate-200
+                                        focus:ring-slate-500/30
+                                        transition
                                     "
                                 >
 
@@ -498,12 +583,20 @@
 
                                 <label
                                     for="notes"
-                                    class="block text-sm font-medium text-slate-700 mb-2"
+                                    class="
+                                        block
+                                        text-sm
+                                        font-medium
+                                        text-slate-300
+                                        mb-2
+                                    "
                                 >
                                     Notizen
-                                    <span class="font-normal text-slate-400">
+
+                                    <span class="font-normal text-slate-500">
                                         (optional)
                                     </span>
+
                                 </label>
 
                                 <textarea
@@ -515,13 +608,18 @@
                                         w-full
                                         rounded-xl
                                         border
-                                        border-slate-200
+                                        border-slate-700
+                                        bg-slate-950/60
                                         px-4
                                         py-3
+                                        text-slate-100
+                                        placeholder:text-slate-600
                                         resize-none
                                         focus:outline-none
+                                        focus:border-slate-500
                                         focus:ring-2
-                                        focus:ring-slate-200
+                                        focus:ring-slate-500/30
+                                        transition
                                     "
                                 >{{ old('notes') }}</textarea>
 
@@ -549,20 +647,20 @@
 
                     <div
                         class="
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                         "
                     >
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-100">
                             Konto
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1 mb-4">
+                        <p class="text-sm text-slate-400 mt-1 mb-4">
                             Wo wurde die Buchung erfasst?
                         </p>
 
@@ -575,18 +673,24 @@
                                 w-full
                                 rounded-xl
                                 border
-                                border-slate-200
-                                bg-white
+                                border-slate-700
+                                bg-slate-950/60
                                 px-4
                                 py-3
                                 text-sm
+                                text-slate-100
                                 focus:outline-none
+                                focus:border-slate-500
                                 focus:ring-2
-                                focus:ring-slate-200
+                                focus:ring-slate-500/30
+                                transition
                             "
                         >
 
-                            <option value="">
+                            <option
+                                value=""
+                                class="bg-slate-900 text-slate-400"
+                            >
                                 Konto auswählen
                             </option>
 
@@ -597,6 +701,7 @@
                                     @selected(
                                         old('account_id') == $account->id
                                     )
+                                    class="bg-slate-900 text-slate-100"
                                 >
 
                                     {{ $account->icon ?: '🏦' }}
@@ -618,20 +723,20 @@
 
                     <div
                         class="
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                         "
                     >
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-100">
                             Kategorie
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1 mb-4">
+                        <p class="text-sm text-slate-400 mt-1 mb-4">
                             Ordne die Buchung einer Kategorie zu.
                         </p>
 
@@ -643,18 +748,24 @@
                                 w-full
                                 rounded-xl
                                 border
-                                border-slate-200
-                                bg-white
+                                border-slate-700
+                                bg-slate-950/60
                                 px-4
                                 py-3
                                 text-sm
+                                text-slate-100
                                 focus:outline-none
+                                focus:border-slate-500
                                 focus:ring-2
-                                focus:ring-slate-200
+                                focus:ring-slate-500/30
+                                transition
                             "
                         >
 
-                            <option value="">
+                            <option
+                                value=""
+                                class="bg-slate-900 text-slate-400"
+                            >
                                 Keine Kategorie
                             </option>
 
@@ -669,6 +780,7 @@
                                     @selected(
                                         old('category_id') == $category->id
                                     )
+                                    class="bg-slate-900 text-slate-100"
                                 >
 
                                     {{ $category->icon ?: '📁' }}
@@ -690,20 +802,20 @@
 
                     <div
                         class="
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                         "
                     >
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-100">
                             Datum
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1 mb-4">
+                        <p class="text-sm text-slate-400 mt-1 mb-4">
                             Wann wurde die Buchung durchgeführt?
                         </p>
 
@@ -720,13 +832,17 @@
                                 w-full
                                 rounded-xl
                                 border
-                                border-slate-200
+                                border-slate-700
+                                bg-slate-950/60
                                 px-4
                                 py-3
                                 text-sm
+                                text-slate-100
                                 focus:outline-none
+                                focus:border-slate-500
                                 focus:ring-2
-                                focus:ring-slate-200
+                                focus:ring-slate-500/30
+                                transition
                             "
                         >
 
@@ -743,13 +859,15 @@
                             flex
                             items-start
                             gap-3
-                            bg-white
                             rounded-3xl
-                            shadow-sm
                             border
-                            border-slate-100
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
                             p-6
                             cursor-pointer
+                            hover:border-slate-600
+                            transition
                         "
                     >
 
@@ -763,17 +881,34 @@
                                 h-5
                                 mt-0.5
                                 rounded
-                                border-slate-300
+                                border-slate-600
+                                bg-slate-950
+                                text-blue-500
+                                focus:ring-blue-500/30
                             "
                         >
 
                         <span>
 
-                            <span class="block text-sm font-medium text-slate-900">
+                            <span
+                                class="
+                                    block
+                                    text-sm
+                                    font-medium
+                                    text-slate-100
+                                "
+                            >
                                 Ausstehend
                             </span>
 
-                            <span class="block text-xs text-slate-500 mt-1">
+                            <span
+                                class="
+                                    block
+                                    text-xs
+                                    text-slate-400
+                                    mt-1
+                                "
+                            >
                                 Buchung ist noch nicht endgültig gebucht.
                             </span>
 
@@ -794,11 +929,11 @@
             <div
                 class="
                     mt-6
-                    bg-white
                     rounded-3xl
-                    shadow-sm
                     border
-                    border-slate-100
+                    border-slate-700
+                    bg-slate-900/70
+                    shadow-sm
                     p-5
                     flex
                     flex-col-reverse
@@ -817,14 +952,16 @@
                         justify-center
                         rounded-xl
                         border
-                        border-slate-200
-                        bg-white
+                        border-slate-700
+                        bg-slate-950/40
                         px-5
                         py-3
                         text-sm
                         font-medium
-                        text-slate-600
-                        hover:bg-slate-50
+                        text-slate-300
+                        hover:bg-slate-800
+                        hover:text-slate-100
+                        transition
                     "
                 >
                     Abbrechen
@@ -838,13 +975,14 @@
                         items-center
                         justify-center
                         rounded-xl
-                        bg-slate-950
+                        bg-slate-100
                         px-6
                         py-3
                         text-sm
-                        font-medium
-                        text-white
-                        hover:bg-slate-800
+                        font-semibold
+                        text-slate-900
+                        hover:bg-white
+                        transition
                     "
                 >
                     Buchung speichern
@@ -931,6 +1069,9 @@ document.addEventListener('DOMContentLoaded', function () {
         emptyOption.textContent =
             'Keine Kategorie';
 
+        emptyOption.className =
+            'bg-slate-900 text-slate-400';
+
         categorySelect.appendChild(
             emptyOption
         );
@@ -958,6 +1099,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 category.icon +
                 ' ' +
                 category.name;
+
+            option.className =
+                'bg-slate-900 text-slate-100';
 
             categorySelect.appendChild(
                 option

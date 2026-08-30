@@ -18,17 +18,17 @@
 
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
 
-        <div>
+        <div class="min-w-0">
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Finanzverwaltung
             </p>
 
-            <h2 class="text-3xl font-semibold text-slate-900 mt-1">
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
                 Buchungen
             </h2>
 
-            <p class="text-slate-500 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
                 Verwalte deine Einnahmen und Ausgaben.
             </p>
 
@@ -43,13 +43,17 @@
                 justify-center
                 rounded-xl
                 bg-slate-950
+                dark:bg-white
                 px-5
                 py-3
                 text-sm
                 font-medium
                 text-white
+                dark:text-slate-950
                 hover:bg-slate-800
+                dark:hover:bg-slate-200
                 transition
+                flex-shrink-0
             "
         >
             + Buchung
@@ -69,12 +73,15 @@
             class="
                 mt-6
                 rounded-2xl
-                bg-emerald-50
                 border
                 border-emerald-100
+                dark:border-emerald-900
+                bg-emerald-50
+                dark:bg-emerald-950/40
                 p-4
                 text-sm
                 text-emerald-700
+                dark:text-emerald-300
             "
         >
             {{ session('success') }}
@@ -89,12 +96,15 @@
             class="
                 mt-6
                 rounded-2xl
-                bg-red-50
                 border
                 border-red-100
+                dark:border-red-900
+                bg-red-50
+                dark:bg-red-950/40
                 p-4
                 text-sm
                 text-red-700
+                dark:text-red-300
             "
         >
             {{ session('error') }}
@@ -111,26 +121,28 @@
     <div
         class="
             bg-white
+            dark:bg-slate-900
             rounded-3xl
             shadow-sm
             border
             border-slate-100
-            p-5
-            sm:p-6
+            dark:border-slate-800
+            p-6
+            sm:p-8
             mt-8
         "
     >
 
-        <div class="flex items-center justify-between mb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
 
             <div>
 
-                <h3 class="font-semibold text-slate-900">
+                <h3 class="font-semibold text-slate-900 dark:text-white">
                     Filter
                 </h3>
 
-                <p class="text-sm text-slate-500 mt-1">
-                    Grenzen deine Buchungen ein.
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Grenze deine Buchungen nach Zeitraum, Art und Konto ein.
                 </p>
 
             </div>
@@ -138,9 +150,18 @@
 
             <a
                 href="{{ route('transactions.index') }}"
-                class="text-sm text-slate-500 hover:text-slate-900"
+                class="
+                    inline-flex
+                    items-center
+                    text-sm
+                    text-slate-500
+                    dark:text-slate-400
+                    hover:text-slate-900
+                    dark:hover:text-white
+                    transition
+                "
             >
-                Zurücksetzen
+                Filter zurücksetzen
             </a>
 
         </div>
@@ -155,11 +176,18 @@
 
             {{-- MONAT --}}
 
-            <div>
+            <div class="min-w-0">
 
                 <label
                     for="month"
-                    class="block text-xs font-medium text-slate-500 mb-2"
+                    class="
+                        block
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-300
+                        mb-2
+                    "
                 >
                     Monat
                 </label>
@@ -170,16 +198,24 @@
                     name="month"
                     value="{{ request('month') }}"
                     class="
+                        box-border
                         w-full
+                        min-w-0
                         rounded-xl
                         border
                         border-slate-200
-                        px-3
-                        py-2.5
+                        dark:border-slate-700
+                        bg-white
+                        dark:bg-slate-800
+                        text-slate-900
+                        dark:text-white
+                        px-4
+                        py-3
                         text-sm
                         focus:outline-none
                         focus:ring-2
-                        focus:ring-slate-200
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
                     "
                 >
 
@@ -189,11 +225,18 @@
 
             {{-- TYP --}}
 
-            <div>
+            <div class="min-w-0">
 
                 <label
                     for="type"
-                    class="block text-xs font-medium text-slate-500 mb-2"
+                    class="
+                        block
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-300
+                        mb-2
+                    "
                 >
                     Art
                 </label>
@@ -202,22 +245,29 @@
                     id="type"
                     name="type"
                     class="
+                        box-border
                         w-full
+                        min-w-0
                         rounded-xl
                         border
                         border-slate-200
+                        dark:border-slate-700
                         bg-white
-                        px-3
-                        py-2.5
+                        dark:bg-slate-800
+                        text-slate-900
+                        dark:text-white
+                        px-4
+                        py-3
                         text-sm
                         focus:outline-none
                         focus:ring-2
-                        focus:ring-slate-200
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
                     "
                 >
 
                     <option value="">
-                        Alle
+                        Alle Buchungen
                     </option>
 
                     <option
@@ -242,11 +292,18 @@
 
             {{-- KONTO --}}
 
-            <div>
+            <div class="min-w-0">
 
                 <label
                     for="account_id"
-                    class="block text-xs font-medium text-slate-500 mb-2"
+                    class="
+                        block
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-300
+                        mb-2
+                    "
                 >
                     Konto
                 </label>
@@ -255,17 +312,24 @@
                     id="account_id"
                     name="account_id"
                     class="
+                        box-border
                         w-full
+                        min-w-0
                         rounded-xl
                         border
                         border-slate-200
+                        dark:border-slate-700
                         bg-white
-                        px-3
-                        py-2.5
+                        dark:bg-slate-800
+                        text-slate-900
+                        dark:text-white
+                        px-4
+                        py-3
                         text-sm
                         focus:outline-none
                         focus:ring-2
-                        focus:ring-slate-200
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
                     "
                 >
 
@@ -297,11 +361,18 @@
 
             {{-- KATEGORIE --}}
 
-            <div>
+            <div class="min-w-0">
 
                 <label
                     for="category_id"
-                    class="block text-xs font-medium text-slate-500 mb-2"
+                    class="
+                        block
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-300
+                        mb-2
+                    "
                 >
                     Kategorie
                 </label>
@@ -310,17 +381,24 @@
                     id="category_id"
                     name="category_id"
                     class="
+                        box-border
                         w-full
+                        min-w-0
                         rounded-xl
                         border
                         border-slate-200
+                        dark:border-slate-700
                         bg-white
-                        px-3
-                        py-2.5
+                        dark:bg-slate-800
+                        text-slate-900
+                        dark:text-white
+                        px-4
+                        py-3
                         text-sm
                         focus:outline-none
                         focus:ring-2
-                        focus:ring-slate-200
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
                     "
                 >
 
@@ -350,7 +428,7 @@
 
 
 
-            {{-- SUCHEN --}}
+            {{-- FILTERN --}}
 
             <div class="flex items-end">
 
@@ -358,14 +436,20 @@
                     type="submit"
                     class="
                         w-full
+                        inline-flex
+                        items-center
+                        justify-center
                         rounded-xl
                         bg-slate-950
-                        px-4
-                        py-2.5
+                        dark:bg-white
+                        px-5
+                        py-3
                         text-sm
                         font-medium
                         text-white
+                        dark:text-slate-950
                         hover:bg-slate-800
+                        dark:hover:bg-slate-200
                         transition
                     "
                 >
@@ -392,20 +476,26 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 border
                 border-slate-100
+                dark:border-slate-800
                 shadow-sm
                 p-5
             "
         >
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Buchungen
             </p>
 
-            <p class="text-2xl font-semibold text-slate-900 mt-2">
+            <p class="text-2xl font-semibold text-slate-900 dark:text-white mt-2">
                 {{ $transactions->total() }}
+            </p>
+
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Gefundene Buchungen
             </p>
 
         </div>
@@ -417,20 +507,26 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 border
                 border-slate-100
+                dark:border-slate-800
                 shadow-sm
                 p-5
             "
         >
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Einnahmen
             </p>
 
-            <p class="text-2xl font-semibold text-emerald-600 mt-2">
+            <p class="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
                 +{{ number_format($totalIncome ?? 0, 2, ',', '.') }} €
+            </p>
+
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Gesamtbetrag
             </p>
 
         </div>
@@ -442,20 +538,26 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 border
                 border-slate-100
+                dark:border-slate-800
                 shadow-sm
                 p-5
             "
         >
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Ausgaben
             </p>
 
-            <p class="text-2xl font-semibold text-red-600 mt-2">
+            <p class="text-2xl font-semibold text-red-600 dark:text-red-400 mt-2">
                 -{{ number_format($totalExpense ?? 0, 2, ',', '.') }} €
+            </p>
+
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Gesamtbetrag
             </p>
 
         </div>
@@ -471,10 +573,12 @@
     <div
         class="
             bg-white
+            dark:bg-slate-900
             rounded-3xl
             shadow-sm
             border
             border-slate-100
+            dark:border-slate-800
             overflow-hidden
             mt-6
         "
@@ -493,10 +597,13 @@
                 py-4
                 border-b
                 border-slate-100
+                dark:border-slate-800
                 bg-slate-50
+                dark:bg-slate-800/60
                 text-xs
                 font-medium
                 text-slate-500
+                dark:text-slate-400
             "
         >
 
@@ -535,6 +642,7 @@
                         h-16
                         rounded-2xl
                         bg-slate-100
+                        dark:bg-slate-800
                         flex
                         items-center
                         justify-center
@@ -545,12 +653,12 @@
                 </div>
 
 
-                <h3 class="font-semibold text-slate-900 mt-5">
+                <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
                     Keine Buchungen gefunden
                 </h3>
 
 
-                <p class="text-sm text-slate-500 mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
                     Für die aktuellen Filter wurden keine Buchungen gefunden.
                 </p>
 
@@ -564,12 +672,16 @@
                         mt-6
                         rounded-xl
                         bg-slate-950
+                        dark:bg-white
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-white
+                        dark:text-slate-950
                         hover:bg-slate-800
+                        dark:hover:bg-slate-200
+                        transition
                     "
                 >
                     + Erste Buchung
@@ -585,7 +697,7 @@
             {{-- LISTE --}}
             {{-- ================================================= --}}
 
-            <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
 
                 @foreach ($transactions as $transaction)
 
@@ -595,7 +707,10 @@
                             block
                             p-5
                             sm:px-6
+                            bg-white
+                            dark:bg-slate-900
                             hover:bg-slate-50
+                            dark:hover:bg-slate-800
                             transition
                         "
                     >
@@ -617,8 +732,8 @@
                                         text-lg
                                         flex-shrink-0
                                         {{ $transaction->type === 'income'
-                                            ? 'bg-emerald-50'
-                                            : 'bg-red-50' }}
+                                            ? 'bg-emerald-50 dark:bg-emerald-950/40'
+                                            : 'bg-red-50 dark:bg-red-950/40' }}
                                     "
                                 >
                                     {{ $transaction->category?->icon ?: '💳' }}
@@ -631,11 +746,11 @@
 
                                         <div class="min-w-0">
 
-                                            <p class="font-medium text-slate-900 truncate">
+                                            <p class="font-medium text-slate-900 dark:text-white truncate">
                                                 {{ $transaction->description }}
                                             </p>
 
-                                            <p class="text-xs text-slate-500 mt-1">
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
 
                                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
@@ -655,8 +770,8 @@
                                                 font-semibold
                                                 whitespace-nowrap
                                                 {{ $transaction->type === 'income'
-                                                    ? 'text-emerald-600'
-                                                    : 'text-red-600' }}
+                                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                                    : 'text-red-600 dark:text-red-400' }}
                                             "
                                         >
 
@@ -677,9 +792,9 @@
                                     </div>
 
 
-                                    <div class="flex items-center gap-2 mt-3">
+                                    <div class="flex items-center gap-2 mt-3 flex-wrap">
 
-                                        <span class="text-xs text-slate-500">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400">
 
                                             {{ $transaction->account?->icon ?: '🏦' }}
 
@@ -695,7 +810,9 @@
                                                     text-[10px]
                                                     font-medium
                                                     text-amber-700
+                                                    dark:text-amber-300
                                                     bg-amber-50
+                                                    dark:bg-amber-950/40
                                                     px-2
                                                     py-1
                                                     rounded-full
@@ -744,8 +861,8 @@
                                         text-lg
                                         flex-shrink-0
                                         {{ $transaction->type === 'income'
-                                            ? 'bg-emerald-50'
-                                            : 'bg-red-50' }}
+                                            ? 'bg-emerald-50 dark:bg-emerald-950/40'
+                                            : 'bg-red-50 dark:bg-red-950/40' }}
                                     "
                                 >
                                     {{ $transaction->category?->icon ?: '💳' }}
@@ -754,16 +871,16 @@
 
                                 <div class="min-w-0">
 
-                                    <p class="font-medium text-slate-900 truncate">
+                                    <p class="font-medium text-slate-900 dark:text-white truncate">
                                         {{ $transaction->description }}
                                     </p>
 
 
-                                    <div class="flex items-center gap-2 mt-1">
+                                    <div class="flex items-center gap-2 mt-1 flex-wrap">
 
                                         @if ($transaction->category)
 
-                                            <span class="text-xs text-slate-500">
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">
                                                 {{ $transaction->category->name }}
                                             </span>
 
@@ -772,7 +889,7 @@
 
                                         @if ($transaction->merchant)
 
-                                            <span class="text-xs text-slate-400">
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">
                                                 · {{ $transaction->merchant }}
                                             </span>
 
@@ -786,7 +903,9 @@
                                                     text-[10px]
                                                     font-medium
                                                     text-amber-700
+                                                    dark:text-amber-300
                                                     bg-amber-50
+                                                    dark:bg-amber-950/40
                                                     px-2
                                                     py-1
                                                     rounded-full
@@ -807,7 +926,7 @@
 
                             {{-- KONTO --}}
 
-                            <div class="text-sm text-slate-600 truncate">
+                            <div class="text-sm text-slate-600 dark:text-slate-300 truncate">
 
                                 {{ $transaction->account?->icon ?: '🏦' }}
 
@@ -819,7 +938,7 @@
 
                             {{-- DATUM --}}
 
-                            <div class="text-sm text-slate-500">
+                            <div class="text-sm text-slate-500 dark:text-slate-400">
 
                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
@@ -835,8 +954,8 @@
                                     font-semibold
                                     whitespace-nowrap
                                     {{ $transaction->type === 'income'
-                                        ? 'text-emerald-600'
-                                        : 'text-red-600' }}
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-red-600 dark:text-red-400' }}
                                 "
                             >
 
@@ -877,6 +996,9 @@
                         py-5
                         border-t
                         border-slate-100
+                        dark:border-slate-800
+                        bg-white
+                        dark:bg-slate-900
                     "
                 >
 

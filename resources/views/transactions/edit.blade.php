@@ -6,11 +6,9 @@
 
 @section('page_title', 'Buchung bearbeiten')
 
-
 @section('content')
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -20,26 +18,24 @@
 
         <a
             href="{{ route('transactions.index') }}"
-            class="text-sm text-slate-500 hover:text-slate-900"
+            class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
         >
             ← Buchungen
         </a>
 
-
         <div class="mt-4">
 
-            <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">
+            <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white">
                 Buchung bearbeiten
             </h2>
 
-            <p class="text-slate-500 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
                 Ändere die Angaben dieser Buchung.
             </p>
 
         </div>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -52,12 +48,11 @@
             class="
                 mb-6
                 rounded-2xl
-                bg-red-50
-                border
-                border-red-100
+                bg-red-50 dark:bg-red-950/40
+                border border-red-100 dark:border-red-900
                 p-4
                 text-sm
-                text-red-700
+                text-red-700 dark:text-red-300
             "
         >
 
@@ -82,7 +77,6 @@
     @endif
 
 
-
     {{-- ========================================================= --}}
     {{-- FORMULAR --}}
     {{-- ========================================================= --}}
@@ -105,22 +99,20 @@
             {{-- HAUPTBEREICH --}}
             {{-- ================================================= --}}
 
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-6 min-w-0">
 
 
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- BUCHUNG --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
-                        p-6
-                        sm:p-8
+                        border border-slate-100 dark:border-slate-800
+                        p-6 sm:p-8
                     "
                 >
 
@@ -128,11 +120,11 @@
 
                         <div>
 
-                            <h3 class="font-semibold text-slate-900">
+                            <h3 class="font-semibold text-slate-900 dark:text-white">
                                 Buchung
                             </h3>
 
-                            <p class="text-sm text-slate-500 mt-1">
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                 Art und Betrag
                             </p>
 
@@ -144,7 +136,7 @@
                                 w-10
                                 h-10
                                 rounded-xl
-                                bg-slate-100
+                                bg-slate-100 dark:bg-slate-800
                                 flex
                                 items-center
                                 justify-center
@@ -156,13 +148,14 @@
                     </div>
 
 
-
+                    {{-- ================================================= --}}
                     {{-- ART --}}
+                    {{-- ================================================= --}}
 
                     <div>
 
                         <label
-                            class="block text-sm font-medium text-slate-700 mb-2"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                         >
                             Art
                         </label>
@@ -189,11 +182,13 @@
                                     class="
                                         rounded-2xl
                                         border-2
-                                        border-slate-200
+                                        border-slate-200 dark:border-slate-700
+                                        bg-white dark:bg-slate-800
                                         p-4
                                         transition
+                                        hover:bg-slate-50 dark:hover:bg-slate-700
                                         peer-checked:border-red-500
-                                        peer-checked:bg-red-50
+                                        peer-checked:bg-red-950/30
                                     "
                                 >
 
@@ -201,18 +196,17 @@
                                         ↘️
                                     </div>
 
-                                    <p class="font-medium text-slate-900 mt-2">
+                                    <p class="font-medium text-slate-900 dark:text-white mt-2">
                                         Ausgabe
                                     </p>
 
-                                    <p class="text-xs text-slate-500 mt-1">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                         Geld wird ausgegeben
                                     </p>
 
                                 </div>
 
                             </label>
-
 
 
                             {{-- EINNAHME --}}
@@ -233,11 +227,13 @@
                                     class="
                                         rounded-2xl
                                         border-2
-                                        border-slate-200
+                                        border-slate-200 dark:border-slate-700
+                                        bg-white dark:bg-slate-800
                                         p-4
                                         transition
+                                        hover:bg-slate-50 dark:hover:bg-slate-700
                                         peer-checked:border-emerald-500
-                                        peer-checked:bg-emerald-50
+                                        peer-checked:bg-emerald-950/30
                                     "
                                 >
 
@@ -245,11 +241,11 @@
                                         ↗️
                                     </div>
 
-                                    <p class="font-medium text-slate-900 mt-2">
+                                    <p class="font-medium text-slate-900 dark:text-white mt-2">
                                         Einnahme
                                     </p>
 
-                                    <p class="text-xs text-slate-500 mt-1">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                         Geld kommt hinzu
                                     </p>
 
@@ -262,20 +258,21 @@
                     </div>
 
 
-
+                    {{-- ================================================= --}}
                     {{-- BETRAG --}}
+                    {{-- ================================================= --}}
 
                     <div class="mt-6">
 
                         <label
                             for="amount"
-                            class="block text-sm font-medium text-slate-700 mb-2"
+                            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                         >
                             Betrag
                         </label>
 
 
-                        <div class="relative">
+                        <div class="relative min-w-0">
 
                             <input
                                 type="number"
@@ -286,19 +283,20 @@
                                 value="{{ old('amount', $transaction->amount) }}"
                                 required
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-2xl
-                                    border
-                                    border-slate-200
-                                    px-5
-                                    py-4
-                                    pr-14
-                                    text-2xl
-                                    font-semibold
-                                    text-slate-900
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-5 py-4 pr-14
+                                    text-2xl font-semibold
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
@@ -322,31 +320,28 @@
                 </div>
 
 
-
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- DETAILS --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
-                        p-6
-                        sm:p-8
+                        border border-slate-100 dark:border-slate-800
+                        p-6 sm:p-8
                     "
                 >
 
                     <div class="mb-6">
 
-                        <h3 class="font-semibold text-slate-900">
+                        <h3 class="font-semibold text-slate-900 dark:text-white">
                             Details
                         </h3>
 
-                        <p class="text-sm text-slate-500 mt-1">
-                            Weitere Informationen
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            Weitere Informationen zur Buchung
                         </p>
 
                     </div>
@@ -361,7 +356,7 @@
 
                             <label
                                 for="description"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Beschreibung
                             </label>
@@ -376,20 +371,23 @@
                                 ) }}"
                                 required
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- HÄNDLER --}}
@@ -398,12 +396,14 @@
 
                             <label
                                 for="merchant"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Händler
+
                                 <span class="font-normal text-slate-400">
                                     (optional)
                                 </span>
+
                             </label>
 
                             <input
@@ -416,20 +416,23 @@
                                 ) }}"
                                 placeholder="z. B. REWE"
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >
 
                         </div>
-
 
 
                         {{-- NOTIZEN --}}
@@ -438,29 +441,36 @@
 
                             <label
                                 for="notes"
-                                class="block text-sm font-medium text-slate-700 mb-2"
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Notizen
+
                                 <span class="font-normal text-slate-400">
                                     (optional)
                                 </span>
+
                             </label>
 
                             <textarea
                                 id="notes"
                                 name="notes"
                                 rows="4"
+                                placeholder="Zusätzliche Informationen..."
                                 class="
+                                    box-border
                                     w-full
+                                    min-w-0
                                     rounded-xl
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
+                                    border border-slate-200 dark:border-slate-700
+                                    bg-white dark:bg-slate-800
+                                    text-slate-900 dark:text-white
+                                    px-4 py-3
                                     resize-none
+                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
-                                    focus:ring-slate-200
+                                    focus:ring-emerald-500/20
+                                    focus:border-emerald-500
                                 "
                             >{{ old('notes', $transaction->notes) }}</textarea>
 
@@ -473,35 +483,36 @@
             </div>
 
 
-
             {{-- ================================================= --}}
             {{-- SIDEBAR --}}
             {{-- ================================================= --}}
 
-            <div class="space-y-6">
+            <div class="space-y-6 min-w-0">
 
 
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- KONTO --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
                     "
                 >
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Konto
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1 mb-4">
-                        Zugehöriges Konto
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Wo wurde die Buchung erfasst?
                     </p>
 
 
@@ -510,17 +521,18 @@
                         id="account_id"
                         required
                         class="
+                            box-border
                             w-full
+                            min-w-0
                             rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            px-4
-                            py-3
-                            text-sm
+                            border border-slate-200 dark:border-slate-700
+                            bg-white dark:bg-slate-800
+                            text-slate-900 dark:text-white
+                            px-4 py-3
                             focus:outline-none
                             focus:ring-2
-                            focus:ring-slate-200
+                            focus:ring-emerald-500/20
+                            focus:border-emerald-500
                         "
                     >
 
@@ -552,28 +564,29 @@
                 </div>
 
 
-
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- KATEGORIE --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
                     "
                 >
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Kategorie
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1 mb-4">
-                        Kategorie der Buchung
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Ordne die Buchung einer Kategorie zu.
                     </p>
 
 
@@ -581,17 +594,18 @@
                         name="category_id"
                         id="category_id"
                         class="
+                            box-border
                             w-full
+                            min-w-0
                             rounded-xl
-                            border
-                            border-slate-200
-                            bg-white
-                            px-4
-                            py-3
-                            text-sm
+                            border border-slate-200 dark:border-slate-700
+                            bg-white dark:bg-slate-800
+                            text-slate-900 dark:text-white
+                            px-4 py-3
                             focus:outline-none
                             focus:ring-2
-                            focus:ring-slate-200
+                            focus:ring-emerald-500/20
+                            focus:border-emerald-500
                         "
                     >
 
@@ -627,28 +641,29 @@
                 </div>
 
 
-
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- DATUM --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
                 <div
                     class="
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
                     "
                 >
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Datum
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1 mb-4">
-                        Buchungsdatum
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Wann wurde die Buchung durchgeführt?
                     </p>
 
 
@@ -661,79 +676,85 @@
                         ) }}"
                         required
                         class="
+                            box-border
                             w-full
+                            min-w-0
                             rounded-xl
-                            border
-                            border-slate-200
-                            px-4
-                            py-3
-                            text-sm
+                            border border-slate-200 dark:border-slate-700
+                            bg-white dark:bg-slate-800
+                            text-slate-900 dark:text-white
+                            px-4 py-3
                             focus:outline-none
                             focus:ring-2
-                            focus:ring-slate-200
+                            focus:ring-emerald-500/20
+                            focus:border-emerald-500
                         "
                     >
 
                 </div>
 
 
-
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
                 {{-- STATUS --}}
-                {{-- ============================================= --}}
+                {{-- ================================================= --}}
 
-                <label
+                <div
                     class="
-                        flex
-                        items-start
-                        gap-3
-                        bg-white
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
                         rounded-3xl
                         shadow-sm
-                        border
-                        border-slate-100
+                        border border-slate-100 dark:border-slate-800
                         p-6
-                        cursor-pointer
                     "
                 >
 
-                    <input
-                        type="checkbox"
-                        name="is_pending"
-                        value="1"
-                        @checked(
-                            old(
-                                'is_pending',
-                                $transaction->is_pending
+                    <label class="flex items-start gap-3 cursor-pointer">
+
+                        <input
+                            type="checkbox"
+                            name="is_pending"
+                            value="1"
+                            @checked(
+                                old(
+                                    'is_pending',
+                                    $transaction->is_pending
+                                )
                             )
-                        )
-                        class="
-                            w-5
-                            h-5
-                            mt-0.5
-                            rounded
-                            border-slate-300
-                        "
-                    >
+                            class="
+                                w-5
+                                h-5
+                                mt-0.5
+                                rounded
+                                border-slate-300 dark:border-slate-600
+                                bg-white dark:bg-slate-800
+                                text-emerald-600
+                                focus:ring-emerald-500
+                                flex-shrink-0
+                            "
+                        >
 
-                    <span>
+                        <span class="min-w-0">
 
-                        <span class="block text-sm font-medium text-slate-900">
-                            Ausstehend
+                            <span class="block text-sm font-medium text-slate-900 dark:text-white">
+                                Ausstehend
+                            </span>
+
+                            <span class="block text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Buchung ist noch nicht endgültig gebucht.
+                            </span>
+
                         </span>
 
-                        <span class="block text-xs text-slate-500 mt-1">
-                            Buchung ist noch nicht endgültig gebucht.
-                        </span>
+                    </label>
 
-                    </span>
-
-                </label>
+                </div>
 
             </div>
 
         </div>
-
 
 
         {{-- ========================================================= --}}
@@ -743,11 +764,12 @@
         <div
             class="
                 mt-6
-                bg-white
+                w-full
+                box-border
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 shadow-sm
-                border
-                border-slate-100
+                border border-slate-100 dark:border-slate-800
                 p-5
                 flex
                 flex-col
@@ -770,12 +792,11 @@
                     items-center
                     justify-center
                     rounded-xl
-                    px-5
-                    py-3
+                    px-5 py-3
                     text-sm
                     font-medium
-                    text-red-600
-                    hover:bg-red-50
+                    text-red-600 dark:text-red-400
+                    hover:bg-red-50 dark:hover:bg-red-950/30
                     transition
                 "
             >
@@ -794,15 +815,14 @@
                         items-center
                         justify-center
                         rounded-xl
-                        border
-                        border-slate-200
-                        bg-white
-                        px-5
-                        py-3
+                        border border-slate-200 dark:border-slate-700
+                        bg-white dark:bg-slate-800
+                        px-5 py-3
                         text-sm
                         font-medium
-                        text-slate-600
-                        hover:bg-slate-50
+                        text-slate-600 dark:text-slate-300
+                        hover:bg-slate-50 dark:hover:bg-slate-700
+                        transition
                     "
                 >
                     Abbrechen
@@ -816,13 +836,13 @@
                         items-center
                         justify-center
                         rounded-xl
-                        bg-slate-950
-                        px-6
-                        py-3
+                        bg-slate-950 dark:bg-white
+                        px-6 py-3
                         text-sm
                         font-medium
-                        text-white
-                        hover:bg-slate-800
+                        text-white dark:text-slate-950
+                        hover:bg-slate-800 dark:hover:bg-slate-200
+                        transition
                     "
                 >
                     Änderungen speichern
@@ -835,7 +855,6 @@
     </form>
 
 </div>
-
 
 
 {{-- ========================================================= --}}
@@ -854,7 +873,6 @@
     @method('DELETE')
 
 </form>
-
 
 
 {{-- ========================================================= --}}
@@ -917,6 +935,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const selectedType =
             getSelectedType();
+
 
         const currentValue =
             categorySelect.value ||
@@ -1010,7 +1029,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateCategories();
 
 });
-
 
 
 function deleteTransaction()

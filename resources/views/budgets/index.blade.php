@@ -12,44 +12,178 @@
     {{-- HEADER --}}
     {{-- ========================================================= --}}
 
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+    <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
 
         <div>
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Finanzplanung
             </p>
 
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mt-1">
+            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
                 Deine Budgets
             </h2>
 
-            <p class="text-slate-500 mt-2">
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
                 Plane deine Ausgaben und behalte deine Ziele im Blick.
             </p>
 
         </div>
 
 
-        <a
-            href="{{ route('budgets.create') }}"
+        {{-- AKTIONEN --}}
+
+        <div class="flex flex-col sm:flex-row gap-3">
+
+            {{-- MONAT --}}
+
+            <form
+                method="GET"
+                action="{{ route('budgets.index') }}"
+                class="flex gap-2"
+            >
+
+                <input
+                    type="month"
+                    name="month"
+                    value="{{ $selectedMonth }}"
+                    class="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        dark:border-slate-700
+                        bg-white
+                        dark:bg-slate-900
+                        px-4
+                        py-3
+                        text-sm
+                        text-slate-700
+                        dark:text-slate-200
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-emerald-500/20
+                        focus:border-emerald-500
+                    "
+                >
+
+                <button
+                    type="submit"
+                    class="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        dark:border-slate-700
+                        bg-white
+                        dark:bg-slate-900
+                        px-4
+                        py-3
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-200
+                        hover:bg-slate-50
+                        dark:hover:bg-slate-800
+                        transition
+                    "
+                >
+                    Anzeigen
+                </button>
+
+            </form>
+
+
+            {{-- BUDGET ERSTELLEN --}}
+
+            <a
+                href="{{ route('budgets.create') }}"
+                class="
+                    inline-flex
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-emerald-600
+                    px-5
+                    py-3
+                    text-sm
+                    font-semibold
+                    text-white
+                    hover:bg-emerald-700
+                    transition
+                "
+            >
+                <span class="mr-2 text-emerald-200">+</span>
+                Budget erstellen
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {{-- ========================================================= --}}
+    {{-- BEZUGSMONAT --}}
+    {{-- ========================================================= --}}
+
+    <div
+        class="
+            mt-6
+            rounded-2xl
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-white
+            dark:bg-slate-900
+            px-5
+            py-4
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-3
+        "
+    >
+
+        <div>
+
+            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                Budgetübersicht
+            </p>
+
+            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+
+                Budgetverbrauch für
+
+                <span class="font-semibold text-slate-900 dark:text-white">
+                    {{ $referenceMonth->translatedFormat('F Y') }}
+                </span>
+
+            </p>
+
+        </div>
+
+
+        <span
             class="
                 inline-flex
                 items-center
-                justify-center
-                rounded-xl
-                bg-slate-950
-                px-5
-                py-3
-                text-sm
+                rounded-full
+                bg-slate-100
+                dark:bg-slate-800
+                px-3
+                py-1.5
+                text-xs
                 font-medium
-                text-white
-                hover:bg-slate-800
-                transition
+                text-slate-600
+                dark:text-slate-300
             "
         >
-            + Budget erstellen
-        </a>
+
+            {{ $budgets->count() }}
+
+            {{ $budgets->count() === 1 ? 'Budget' : 'Budgets' }}
+
+        </span>
 
     </div>
 
@@ -62,15 +196,18 @@
 
         <div
             class="
-                mt-6
+                mt-5
                 rounded-2xl
                 border
-                border-emerald-100
+                border-emerald-200
+                dark:border-emerald-900
                 bg-emerald-50
+                dark:bg-emerald-950/40
                 px-5
                 py-4
                 text-sm
                 text-emerald-700
+                dark:text-emerald-400
             "
         >
             {{ session('success') }}
@@ -80,7 +217,7 @@
 
 
     {{-- ========================================================= --}}
-    {{-- BUDGETÜBERSICHT --}}
+    {{-- KEINE BUDGETS --}}
     {{-- ========================================================= --}}
 
     @if ($budgets->isEmpty())
@@ -89,24 +226,39 @@
             class="
                 mt-8
                 bg-white
+                dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
+                dark:border-slate-700
                 shadow-sm
                 p-10
                 text-center
             "
         >
 
-            <div class="text-5xl">
+            <div
+                class="
+                    w-14
+                    h-14
+                    mx-auto
+                    rounded-2xl
+                    bg-emerald-50
+                    dark:bg-emerald-950/50
+                    flex
+                    items-center
+                    justify-center
+                    text-2xl
+                "
+            >
                 🎯
             </div>
 
-            <h3 class="font-semibold text-slate-900 mt-4">
+            <h3 class="font-semibold text-slate-900 dark:text-white mt-4">
                 Noch keine Budgets
             </h3>
 
-            <p class="text-sm text-slate-500 mt-2">
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
                 Erstelle dein erstes Budget, um deine Ausgaben zu planen.
             </p>
 
@@ -116,41 +268,68 @@
                     inline-flex
                     mt-5
                     rounded-xl
-                    bg-slate-950
+                    bg-emerald-600
                     px-5
                     py-3
                     text-sm
                     font-medium
                     text-white
-                    hover:bg-slate-800
+                    hover:bg-emerald-700
+                    transition
                 "
             >
-                Erstes Budget erstellen
+                + Budget erstellen
             </a>
 
         </div>
 
     @else
 
-
         {{-- ===================================================== --}}
-        {{-- BUDGET KARTEN --}}
+        {{-- BUDGETKARTEN --}}
         {{-- ===================================================== --}}
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-8">
 
             @foreach ($budgets as $budget)
 
+                @php
+
+                    $isApplicable =
+                        (bool) ($budget->calculated_applicable ?? false);
+
+                    $percentage =
+                        max(
+                            0,
+                            (float) ($budget->calculated_percentage ?? 0)
+                        );
+
+                    $remaining =
+                        (float) ($budget->calculated_remaining ?? 0);
+
+                    $spent =
+                        (float) ($budget->calculated_spent ?? 0);
+
+                    $budgetAmount =
+                        (float) $budget->amount;
+
+                @endphp
+
+
                 <div
                     class="
                         bg-white
+                        dark:bg-slate-900
                         rounded-3xl
                         border
-                        border-slate-100
+                        border-slate-200
+                        dark:border-slate-700
                         shadow-sm
                         overflow-hidden
-                        hover:shadow-md
                         transition
+                        {{ !$budget->is_active || !$isApplicable
+                            ? 'opacity-75'
+                            : 'hover:shadow-md hover:-translate-y-0.5' }}
                     "
                 >
 
@@ -159,7 +338,6 @@
                     {{-- ================================================= --}}
 
                     <div class="p-6">
-
 
                         {{-- HEADER --}}
 
@@ -180,7 +358,7 @@
                                     "
                                     style="
                                         background-color:
-                                        {{ $budget->color ?: '#f1f5f9' }}
+                                        {{ $budget->color ?: '#ecfdf5' }}
                                     "
                                 >
                                     {{ $budget->icon ?: '🎯' }}
@@ -189,12 +367,34 @@
 
                                 <div class="min-w-0">
 
-                                    <h3 class="font-semibold text-slate-900 truncate">
+                                    <h3
+                                        class="
+                                            font-semibold
+                                            text-slate-900
+                                            dark:text-white
+                                            truncate
+                                        "
+                                    >
                                         {{ $budget->name }}
                                     </h3>
 
-                                    <p class="text-xs text-slate-400 mt-1">
-                                        {{ ucfirst($budget->period) }}
+                                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+
+                                        @switch($budget->period)
+
+                                            @case('monthly')
+                                                Monatlich
+                                                @break
+
+                                            @case('yearly')
+                                                Jährlich
+                                                @break
+
+                                            @default
+                                                Benutzerdefiniert
+
+                                        @endswitch
+
                                     </p>
 
                                 </div>
@@ -202,21 +402,82 @@
                             </div>
 
 
-                            @if ($budget->is_active)
+                            {{-- STATUS --}}
+
+                            @if (!$budget->is_active)
 
                                 <span
                                     class="
                                         flex-shrink-0
                                         rounded-full
-                                        bg-emerald-50
+                                        bg-slate-100
+                                        dark:bg-slate-800
                                         px-2.5
                                         py-1
                                         text-xs
                                         font-medium
-                                        text-emerald-700
+                                        text-slate-500
+                                        dark:text-slate-400
                                     "
                                 >
-                                    Aktiv
+                                    Inaktiv
+                                </span>
+
+                            @elseif (!$isApplicable)
+
+                                <span
+                                    class="
+                                        flex-shrink-0
+                                        rounded-full
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-slate-500
+                                        dark:text-slate-400
+                                    "
+                                >
+                                    Nicht gültig
+                                </span>
+
+                            @elseif ($budget->calculated_exceeded)
+
+                                <span
+                                    class="
+                                        flex-shrink-0
+                                        rounded-full
+                                        bg-red-50
+                                        dark:bg-red-950/40
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-red-600
+                                        dark:text-red-400
+                                    "
+                                >
+                                    Überschritten
+                                </span>
+
+                            @elseif ($percentage >= 80)
+
+                                <span
+                                    class="
+                                        flex-shrink-0
+                                        rounded-full
+                                        bg-amber-50
+                                        dark:bg-amber-950/40
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-amber-600
+                                        dark:text-amber-400
+                                    "
+                                >
+                                    Achtung
                                 </span>
 
                             @else
@@ -225,15 +486,17 @@
                                     class="
                                         flex-shrink-0
                                         rounded-full
-                                        bg-slate-100
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/40
                                         px-2.5
                                         py-1
                                         text-xs
                                         font-medium
-                                        text-slate-500
+                                        text-emerald-600
+                                        dark:text-emerald-400
                                     "
                                 >
-                                    Inaktiv
+                                    OK
                                 </span>
 
                             @endif
@@ -241,193 +504,224 @@
                         </div>
 
 
+                        {{-- ================================================= --}}
                         {{-- ZEITRAUM --}}
+                        {{-- ================================================= --}}
 
                         <div class="mt-5">
 
-                            <p class="text-xs text-slate-400">
-                                Zeitraum
+                            <p class="text-xs text-slate-400 dark:text-slate-500">
+                                Berechnungszeitraum
                             </p>
 
-                            <p class="text-sm text-slate-600 mt-1">
+                            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
 
-                                {{ $budget->start_date->format('d.m.Y') }}
+                                {{ $budget->calculated_start_date->format('d.m.Y') }}
 
                                 –
 
-                                {{ $budget->end_date->format('d.m.Y') }}
+                                {{ $budget->calculated_end_date->format('d.m.Y') }}
 
                             </p>
 
                         </div>
 
 
+                        {{-- ================================================= --}}
                         {{-- BUDGETBETRAG --}}
+                        {{-- ================================================= --}}
 
                         <div class="mt-6">
 
-                            <p class="text-xs text-slate-400">
+                            <p class="text-xs text-slate-400 dark:text-slate-500">
                                 Budget
                             </p>
 
-                            <p class="text-3xl font-semibold text-slate-900 mt-1">
+                            <p class="text-3xl font-semibold text-slate-900 dark:text-white mt-1">
 
                                 {{ number_format(
-                                    $budget->amount,
+                                    $budgetAmount,
                                     2,
                                     ',',
                                     '.'
-                                ) }}
-
-                                €
+                                ) }} €
 
                             </p>
 
                         </div>
 
 
+                        {{-- ================================================= --}}
                         {{-- VERBRAUCH --}}
+                        {{-- ================================================= --}}
 
-                        <div class="mt-6">
-
-                            <div class="flex items-center justify-between">
-
-                                <span class="text-sm text-slate-500">
-                                    Ausgegeben
-                                </span>
-
-                                <span
-                                    class="
-                                        text-sm
-                                        font-semibold
-                                        {{ $budget->calculated_exceeded
-                                            ? 'text-red-600'
-                                            : 'text-slate-900' }}
-                                    "
-                                >
-
-                                    {{ number_format(
-                                        $budget->calculated_spent,
-                                        2,
-                                        ',',
-                                        '.'
-                                    ) }}
-
-                                    €
-
-                                </span>
-
-                            </div>
-
-
-                            {{-- PROGRESSBAR --}}
+                        @if (!$isApplicable)
 
                             <div
                                 class="
-                                    h-3
-                                    bg-slate-100
-                                    rounded-full
-                                    overflow-hidden
-                                    mt-3
+                                    mt-6
+                                    rounded-2xl
+                                    bg-slate-50
+                                    dark:bg-slate-800
+                                    px-4
+                                    py-4
                                 "
                             >
 
+                                <div class="flex items-center gap-2">
+
+                                    <span class="text-base">
+                                        🕐
+                                    </span>
+
+                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                        In diesem Monat nicht gültig
+                                    </p>
+
+                                </div>
+
+                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                    Für {{ $referenceMonth->translatedFormat('F Y') }}
+                                    werden keine Ausgaben angerechnet.
+                                </p>
+
+                            </div>
+
+                        @else
+
+                            <div class="mt-6">
+
+                                <div class="flex items-center justify-between">
+
+                                    <span class="text-sm text-slate-500 dark:text-slate-400">
+                                        Ausgegeben
+                                    </span>
+
+                                    <span
+                                        class="
+                                            text-sm
+                                            font-semibold
+                                            {{ $budget->calculated_exceeded
+                                                ? 'text-red-600 dark:text-red-400'
+                                                : 'text-slate-900 dark:text-white' }}
+                                        "
+                                    >
+
+                                        {{ number_format(
+                                            $spent,
+                                            2,
+                                            ',',
+                                            '.'
+                                        ) }} €
+
+                                    </span>
+
+                                </div>
+
+
+                                {{-- PROGRESSBAR --}}
+
                                 <div
                                     class="
-                                        h-full
+                                        h-3
+                                        bg-slate-100
+                                        dark:bg-slate-800
                                         rounded-full
-                                        transition-all
-                                        {{ $budget->calculated_exceeded
-                                            ? 'bg-red-500'
-                                            : (
-                                                $budget->calculated_percentage >= 80
-                                                    ? 'bg-amber-500'
-                                                    : 'bg-emerald-500'
-                                            ) }}
+                                        overflow-hidden
+                                        mt-3
                                     "
-                                    style="
-                                        width:
-                                        {{ min(
-                                            $budget->calculated_percentage,
-                                            100
-                                        ) }}%
-                                    "
-                                ></div>
+                                >
 
-                            </div>
+                                    <div
+                                        class="
+                                            h-full
+                                            rounded-full
+                                            transition-all
+                                            {{ $budget->calculated_exceeded
+                                                ? 'bg-red-500'
+                                                : (
+                                                    $percentage >= 80
+                                                        ? 'bg-amber-500'
+                                                        : 'bg-emerald-500'
+                                                ) }}
+                                        "
+                                        style="
+                                            width:
+                                            {{ min($percentage, 100) }}%
+                                        "
+                                    ></div>
 
-
-                            {{-- PROZENT --}}
-
-                            <div class="flex items-center justify-between mt-2">
-
-                                <span class="text-xs text-slate-400">
-
-                                    {{ number_format(
-                                        $budget->calculated_percentage,
-                                        1,
-                                        ',',
-                                        '.'
-                                    ) }} %
-
-                                </span>
+                                </div>
 
 
-                                @if ($budget->calculated_remaining >= 0)
+                                {{-- PROZENT / REST --}}
 
-                                    <span class="text-xs text-emerald-600">
+                                <div class="flex items-center justify-between mt-2">
 
-                                        Noch
+                                    <span class="text-xs text-slate-400 dark:text-slate-500">
 
                                         {{ number_format(
-                                            $budget->calculated_remaining,
-                                            2,
+                                            $percentage,
+                                            1,
                                             ',',
                                             '.'
-                                        ) }}
-
-                                        €
+                                        ) }} %
 
                                     </span>
 
-                                @else
 
-                                    <span class="text-xs font-medium text-red-600">
+                                    @if ($remaining >= 0)
 
-                                        {{ number_format(
-                                            abs(
-                                                $budget->calculated_remaining
-                                            ),
-                                            2,
-                                            ',',
-                                            '.'
-                                        ) }}
+                                        <span class="text-xs text-emerald-600 dark:text-emerald-400">
 
-                                        €
+                                            Noch
 
-                                        über Budget
+                                            {{ number_format(
+                                                $remaining,
+                                                2,
+                                                ',',
+                                                '.'
+                                            ) }} €
 
-                                    </span>
+                                        </span>
 
-                                @endif
+                                    @else
+
+                                        <span class="text-xs font-medium text-red-600 dark:text-red-400">
+
+                                            {{ number_format(
+                                                abs($remaining),
+                                                2,
+                                                ',',
+                                                '.'
+                                            ) }} €
+
+                                            über Budget
+
+                                        </span>
+
+                                    @endif
+
+                                </div>
 
                             </div>
 
-                        </div>
+                        @endif
 
 
+                        {{-- ================================================= --}}
                         {{-- KATEGORIEN --}}
+                        {{-- ================================================= --}}
 
                         <div class="mt-6">
 
-                            <p class="text-xs text-slate-400 mb-2">
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mb-2">
                                 Kategorien
                             </p>
 
-
                             @if ($budget->categories->isEmpty())
 
-                                <span class="text-sm text-slate-400">
+                                <span class="text-sm text-slate-400 dark:text-slate-500">
                                     Keine Kategorien zugeordnet
                                 </span>
 
@@ -444,10 +738,12 @@
                                                 gap-1.5
                                                 rounded-full
                                                 bg-slate-100
+                                                dark:bg-slate-800
                                                 px-2.5
                                                 py-1
                                                 text-xs
                                                 text-slate-600
+                                                dark:text-slate-200
                                             "
                                         >
 
@@ -475,22 +771,33 @@
                     <div
                         class="
                             border-t
-                            border-slate-100
+                            border-slate-200
+                            dark:border-slate-700
                             px-6
                             py-4
                             flex
                             items-center
                             justify-between
+                            gap-4
                         "
                     >
 
                         <a
-                            href="{{ route('budgets.show', $budget) }}"
+                            href="{{ route(
+                                'budgets.show',
+                                [
+                                    'budget' => $budget,
+                                    'month' => $selectedMonth,
+                                ]
+                            ) }}"
                             class="
                                 text-sm
                                 font-medium
-                                text-slate-600
-                                hover:text-slate-900
+                                text-slate-700
+                                dark:text-slate-200
+                                hover:text-slate-950
+                                dark:hover:text-white
+                                transition
                             "
                         >
                             Details →
@@ -504,7 +811,10 @@
                                 class="
                                     text-sm
                                     text-slate-500
+                                    dark:text-slate-400
                                     hover:text-slate-900
+                                    dark:hover:text-white
+                                    transition
                                 "
                             >
                                 Bearbeiten
@@ -526,7 +836,10 @@
                                     class="
                                         text-sm
                                         text-red-500
+                                        dark:text-red-400
                                         hover:text-red-700
+                                        dark:hover:text-red-300
+                                        transition
                                     "
                                 >
                                     Löschen

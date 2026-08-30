@@ -110,7 +110,7 @@
 
     {{-- PASSWORT --}}
 
-    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
 
         <div class="p-6 sm:p-8">
 
@@ -183,7 +183,7 @@
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white
+                            bg-white dark:bg-slate-900
                             px-4
                             py-3
                             text-sm
@@ -231,7 +231,7 @@
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white
+                            bg-white dark:bg-slate-900
                             px-4
                             py-3
                             text-sm
@@ -283,7 +283,7 @@
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white
+                            bg-white dark:bg-slate-900
                             px-4
                             py-3
                             text-sm
@@ -332,7 +332,7 @@
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white
+                            bg-white dark:bg-slate-900
                             px-5
                             py-3
                             text-sm

@@ -12,19 +12,18 @@
 
     <a
         href="{{ route('budgets.index') }}"
-        class="inline-flex items-center text-sm text-slate-500 hover:text-slate-900"
+        class="inline-flex items-center text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
     >
         ← Budgets
     </a>
 
-
     <div class="mt-5">
 
-        <h2 class="text-3xl font-semibold tracking-tight text-slate-900">
+        <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
             Budget bearbeiten
         </h2>
 
-        <p class="text-slate-500 mt-2">
+        <p class="text-slate-500 dark:text-slate-400 mt-2">
             Ändere die Einstellungen deines Budgets.
         </p>
 
@@ -35,7 +34,7 @@
 
     @if ($errors->any())
 
-        <div class="mt-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-red-700">
+        <div class="mt-6 rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5 text-red-700 dark:text-red-400">
 
             <p class="font-medium mb-2">
                 Bitte überprüfe deine Eingaben.
@@ -44,9 +43,7 @@
             <ul class="list-disc list-inside text-sm space-y-1">
 
                 @foreach ($errors->all() as $error)
-
                     <li>{{ $error }}</li>
-
                 @endforeach
 
             </ul>
@@ -63,17 +60,16 @@
     >
 
         @csrf
-
         @method('PUT')
 
 
         {{-- NAME --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
             <label
                 for="name"
-                class="block text-sm font-medium text-slate-700"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-200"
             >
                 Name des Budgets
             </label>
@@ -91,11 +87,17 @@
                     rounded-xl
                     border
                     border-slate-200
+                    dark:border-slate-600
+                    bg-white
+                    dark:bg-slate-950
+                    text-slate-900
+                    dark:text-white
                     px-4
                     py-3
                     focus:outline-none
                     focus:ring-2
-                    focus:ring-slate-200
+                    focus:ring-slate-400
+                    dark:focus:ring-slate-600
                 "
             >
 
@@ -104,11 +106,11 @@
 
         {{-- BETRAG --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
             <label
                 for="amount"
-                class="block text-sm font-medium text-slate-700"
+                class="block text-sm font-medium text-slate-700 dark:text-slate-200"
             >
                 Budgetbetrag
             </label>
@@ -123,7 +125,24 @@
                     required
                     min="0.01"
                     step="0.01"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                    class="
+                        w-full
+                        rounded-xl
+                        border
+                        border-slate-200
+                        dark:border-slate-600
+                        bg-white
+                        dark:bg-slate-950
+                        text-slate-900
+                        dark:text-white
+                        px-4
+                        py-3
+                        pr-12
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-slate-400
+                        dark:focus:ring-slate-600
+                    "
                 >
 
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -137,9 +156,9 @@
 
         {{-- ZEITRAUM --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
-            <h3 class="font-semibold text-slate-900">
+            <h3 class="font-semibold text-slate-900 dark:text-white">
                 Zeitraum
             </h3>
 
@@ -149,7 +168,7 @@
 
                     <label
                         for="start_date"
-                        class="block text-sm font-medium text-slate-700"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
                         Von
                     </label>
@@ -158,22 +177,31 @@
                         id="start_date"
                         type="date"
                         name="start_date"
-                        value="{{ old(
-                            'start_date',
-                            $budget->start_date->format('Y-m-d')
-                        ) }}"
+                        value="{{ old('start_date', $budget->start_date->format('Y-m-d')) }}"
                         required
-                        class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                        class="
+                            mt-2
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-600
+                            bg-white
+                            dark:bg-slate-950
+                            text-slate-900
+                            dark:text-white
+                            px-4
+                            py-3
+                        "
                     >
 
                 </div>
-
 
                 <div>
 
                     <label
                         for="end_date"
-                        class="block text-sm font-medium text-slate-700"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
                         Bis
                     </label>
@@ -182,22 +210,31 @@
                         id="end_date"
                         type="date"
                         name="end_date"
-                        value="{{ old(
-                            'end_date',
-                            $budget->end_date->format('Y-m-d')
-                        ) }}"
+                        value="{{ old('end_date', $budget->end_date->format('Y-m-d')) }}"
                         required
-                        class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                        class="
+                            mt-2
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-600
+                            bg-white
+                            dark:bg-slate-950
+                            text-slate-900
+                            dark:text-white
+                            px-4
+                            py-3
+                        "
                     >
 
                 </div>
-
 
                 <div>
 
                     <label
                         for="period"
-                        class="block text-sm font-medium text-slate-700"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
                         Wiederholung
                     </label>
@@ -206,27 +243,31 @@
                         id="period"
                         name="period"
                         required
-                        class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 bg-white"
+                        class="
+                            mt-2
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-600
+                            bg-white
+                            dark:bg-slate-950
+                            text-slate-900
+                            dark:text-white
+                            px-4
+                            py-3
+                        "
                     >
 
-                        <option
-                            value="monthly"
-                            @selected(old('period', $budget->period) === 'monthly')
-                        >
+                        <option value="monthly" @selected(old('period', $budget->period) === 'monthly')>
                             Monatlich
                         </option>
 
-                        <option
-                            value="yearly"
-                            @selected(old('period', $budget->period) === 'yearly')
-                        >
+                        <option value="yearly" @selected(old('period', $budget->period) === 'yearly')>
                             Jährlich
                         </option>
 
-                        <option
-                            value="custom"
-                            @selected(old('period', $budget->period) === 'custom')
-                        >
+                        <option value="custom" @selected(old('period', $budget->period) === 'custom')>
                             Benutzerdefiniert
                         </option>
 
@@ -241,16 +282,15 @@
 
         {{-- KATEGORIEN --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
-            <h3 class="font-semibold text-slate-900">
+            <h3 class="font-semibold text-slate-900 dark:text-white">
                 Kategorien
             </h3>
 
-            <p class="text-sm text-slate-500 mt-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Kategorien für dieses Budget auswählen.
             </p>
-
 
             @php
                 $selectedCategories = old(
@@ -258,7 +298,6 @@
                     $budget->categories->pluck('id')->toArray()
                 );
             @endphp
-
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
 
@@ -272,9 +311,11 @@
                             rounded-2xl
                             border
                             border-slate-200
+                            dark:border-slate-600
                             p-4
                             cursor-pointer
                             hover:bg-slate-50
+                            dark:hover:bg-slate-800
                         "
                     >
 
@@ -282,20 +323,15 @@
                             type="checkbox"
                             name="categories[]"
                             value="{{ $category->id }}"
-                            @checked(
-                                in_array(
-                                    $category->id,
-                                    $selectedCategories
-                                )
-                            )
-                            class="w-4 h-4 rounded border-slate-300"
+                            @checked(in_array($category->id, $selectedCategories))
+                            class="w-4 h-4 rounded border-slate-300 dark:border-slate-500"
                         >
 
                         <span class="text-xl">
                             {{ $category->icon ?: '📁' }}
                         </span>
 
-                        <span class="text-sm font-medium text-slate-700">
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-200">
                             {{ $category->name }}
                         </span>
 
@@ -310,9 +346,9 @@
 
         {{-- DARSTELLUNG --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
-            <h3 class="font-semibold text-slate-900">
+            <h3 class="font-semibold text-slate-900 dark:text-white">
                 Darstellung
             </h3>
 
@@ -322,7 +358,7 @@
 
                     <label
                         for="icon"
-                        class="block text-sm font-medium text-slate-700"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
                         Icon
                     </label>
@@ -333,17 +369,29 @@
                         name="icon"
                         value="{{ old('icon', $budget->icon ?: '🎯') }}"
                         maxlength="255"
-                        class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                        class="
+                            mt-2
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-600
+                            bg-white
+                            dark:bg-slate-950
+                            text-slate-900
+                            dark:text-white
+                            px-4
+                            py-3
+                        "
                     >
 
                 </div>
-
 
                 <div>
 
                     <label
                         for="color"
-                        class="block text-sm font-medium text-slate-700"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-200"
                     >
                         Farbe
                     </label>
@@ -354,7 +402,20 @@
                         name="color"
                         value="{{ old('color', $budget->color ?: '#f1f5f9') }}"
                         maxlength="255"
-                        class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                        class="
+                            mt-2
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-600
+                            bg-white
+                            dark:bg-slate-950
+                            text-slate-900
+                            dark:text-white
+                            px-4
+                            py-3
+                        "
                     >
 
                 </div>
@@ -366,7 +427,7 @@
 
         {{-- AKTIV --}}
 
-        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
             <label class="flex items-center gap-3 cursor-pointer">
 
@@ -375,12 +436,12 @@
                     name="is_active"
                     value="1"
                     @checked(old('is_active', $budget->is_active))
-                    class="w-4 h-4 rounded border-slate-300"
+                    class="w-4 h-4 rounded border-slate-300 dark:border-slate-500"
                 >
 
                 <div>
 
-                    <p class="text-sm font-medium text-slate-700">
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
                         Budget aktiv
                     </p>
 
@@ -401,14 +462,42 @@
 
             <a
                 href="{{ route('budgets.index') }}"
-                class="flex-1 rounded-xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+                class="
+                    flex-1
+                    rounded-xl
+                    border
+                    border-slate-200
+                    dark:border-slate-600
+                    bg-transparent
+                    px-5
+                    py-3
+                    text-center
+                    text-sm
+                    font-medium
+                    text-slate-700
+                    dark:text-slate-200
+                    hover:bg-slate-800
+                "
             >
                 Abbrechen
             </a>
 
             <button
                 type="submit"
-                class="flex-1 rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
+                class="
+                    flex-1
+                    rounded-xl
+                    bg-white
+                    dark:bg-slate-950
+                    px-5
+                    py-3
+                    text-sm
+                    font-medium
+                    text-slate-900
+                    dark:text-white
+                    hover:bg-slate-100
+                    dark:hover:bg-slate-800
+                "
             >
                 Änderungen speichern
             </button>

@@ -34,3 +34,123 @@
     --color-finanz-900: #14532d;
     --color-finanz-950: #052e16;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Finanzblick – Globale Darkmode Formulare
+|--------------------------------------------------------------------------
+*/
+
+@layer base {
+
+    /*
+     * Formulare
+     */
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    .dark select,
+    .dark textarea {
+        background-color: #1e293b;
+        color: #f8fafc;
+        border-color: #334155;
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"])::placeholder,
+    .dark textarea::placeholder {
+        color: #64748b;
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+    .dark select:focus,
+    .dark textarea:focus {
+        border-color: #10b981;
+        outline: none;
+        box-shadow: 0 0 0 2px rgb(16 185 129 / 0.15);
+    }
+
+    /*
+     * Select-Optionen
+     */
+
+    .dark select option {
+        background-color: #1e293b;
+        color: #f8fafc;
+    }
+
+    /*
+     * Checkboxen
+     */
+
+    .dark input[type="checkbox"],
+    .dark input[type="radio"] {
+        background-color: #1e293b;
+        border-color: #475569;
+    }
+
+    /*
+     * Karten mit bg-white
+     *
+     * Dadurch werden bestehende Views automatisch dunkel,
+     * auch wenn dort noch kein dark:bg-* vorhanden ist.
+     */
+
+    .dark .bg-white {
+        background-color: #0f172a;
+    }
+
+    /*
+     * Helle Borders
+     */
+
+    .dark .border-slate-100 {
+        border-color: #1e293b;
+    }
+
+    .dark .border-slate-200 {
+        border-color: #334155;
+    }
+
+    /*
+     * Textfarben
+     */
+
+    .dark .text-slate-900 {
+        color: #f8fafc;
+    }
+
+    .dark .text-slate-800 {
+        color: #f1f5f9;
+    }
+
+    .dark .text-slate-700 {
+        color: #cbd5e1;
+    }
+
+    .dark .text-slate-600 {
+        color: #94a3b8;
+    }
+
+    /*
+     * Helle Hintergründe
+     */
+
+    .dark .bg-slate-50 {
+        background-color: #0f172a;
+    }
+
+    .dark .bg-slate-100 {
+        background-color: #020617;
+    }
+
+    /*
+     * Hover-Zustände
+     */
+
+    .dark .hover\:bg-slate-50:hover {
+        background-color: #1e293b;
+    }
+
+    .dark .hover\:bg-slate-100:hover {
+        background-color: #1e293b;
+    }
+}

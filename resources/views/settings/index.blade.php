@@ -47,7 +47,7 @@
             href="{{ route('settings.profile') }}"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -109,7 +109,7 @@
             href="{{ route('settings.appearance') }}"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -171,7 +171,7 @@
             href="#"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -233,7 +233,7 @@
             href="#"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -295,7 +295,7 @@
             href="{{ route('settings.security') }}"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -357,7 +357,7 @@
             href="#"
             class="
                 group
-                bg-white
+                bg-white dark:bg-slate-900
                 rounded-3xl
                 border
                 border-slate-100
@@ -419,7 +419,7 @@
 
     <div
         class="
-            bg-white
+            bg-white dark:bg-slate-900
             rounded-3xl
             border
             border-slate-100

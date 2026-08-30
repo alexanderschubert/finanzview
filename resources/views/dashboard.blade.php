@@ -14,19 +14,29 @@
 
     <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
 
-        <div>
+        <div class="min-w-0">
 
             <div class="flex items-center gap-2">
 
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
 
-                <p class="text-sm font-medium text-emerald-600">
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
                     Finanzübersicht
                 </p>
 
             </div>
 
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-2">
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-900
+                    dark:text-white
+                    mt-2
+                "
+            >
                 Hallo, {{ auth()->user()->name }}
             </h2>
 
@@ -36,8 +46,9 @@
 
         </div>
 
-
         <div class="flex flex-col sm:flex-row gap-3">
+
+            {{-- MONAT --}}
 
             <form
                 method="GET"
@@ -51,11 +62,13 @@
                     value="{{ $selectedMonth }}"
                     class="
                         rounded-xl
-                        border border-slate-200
+                        border
+                        border-slate-200
                         dark:border-slate-700
                         bg-white
                         dark:bg-slate-800
-                        px-4 py-3
+                        px-4
+                        py-3
                         text-sm
                         text-slate-700
                         dark:text-slate-200
@@ -70,11 +83,13 @@
                     type="submit"
                     class="
                         rounded-xl
-                        border border-slate-200
+                        border
+                        border-slate-200
                         dark:border-slate-700
                         bg-white
                         dark:bg-slate-800
-                        px-4 py-3
+                        px-4
+                        py-3
                         text-sm
                         font-medium
                         text-slate-700
@@ -89,6 +104,7 @@
 
             </form>
 
+            {{-- NEUE BUCHUNG --}}
 
             <a
                 href="{{ route('transactions.create') }}"
@@ -98,15 +114,20 @@
                     justify-center
                     rounded-xl
                     bg-emerald-600
-                    px-5 py-3
+                    px-5
+                    py-3
                     text-sm
                     font-medium
                     text-white
                     hover:bg-emerald-700
                     transition
+                    flex-shrink-0
                 "
             >
-                <span class="mr-2 text-emerald-200">+</span>
+                <span class="mr-2 text-emerald-200">
+                    +
+                </span>
+
                 Neue Buchung
             </a>
 
@@ -121,12 +142,31 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
 
+        {{-- GESAMTVERMÖGEN --}}
 
-        {{-- VERMÖGEN --}}
+        <div
+            class="
+                relative
+                overflow-hidden
+                rounded-3xl
+                bg-slate-950
+                dark:bg-slate-800
+                text-white
+                p-6
+            "
+        >
 
-        <div class="bg-slate-950 text-white rounded-3xl p-6 relative overflow-hidden">
-
-            <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-emerald-500/10"></div>
+            <div
+                class="
+                    absolute
+                    -right-8
+                    -top-8
+                    w-32
+                    h-32
+                    rounded-full
+                    bg-emerald-500/10
+                "
+            ></div>
 
             <div class="relative">
 
@@ -136,7 +176,17 @@
                         Gesamtvermögen
                     </p>
 
-                    <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                    <div
+                        class="
+                            w-9
+                            h-9
+                            rounded-xl
+                            bg-white/10
+                            flex
+                            items-center
+                            justify-center
+                        "
+                    >
                         💰
                     </div>
 
@@ -149,9 +199,7 @@
                         2,
                         ',',
                         '.'
-                    ) }}
-
-                    €
+                    ) }} €
 
                 </p>
 
@@ -166,13 +214,18 @@
 
         {{-- EINNAHMEN --}}
 
-        <div class="
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            p-6
-        ">
+        <div
+            class="
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                p-6
+            "
+        >
 
             <div class="flex items-center justify-between">
 
@@ -180,26 +233,37 @@
                     Einnahmen
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center">
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-emerald-600
+                        dark:text-emerald-400
+                    "
+                >
                     ↗
                 </div>
 
             </div>
 
-            <p class="text-3xl font-semibold text-emerald-600 mt-5">
+            <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400 mt-5">
 
                 +{{ number_format(
                     $monthlyIncome,
                     2,
                     ',',
                     '.'
-                ) }}
-
-                €
+                ) }} €
 
             </p>
 
-            <p class="text-xs text-slate-400 mt-2">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 {{ $currentMonth }}
             </p>
 
@@ -208,13 +272,18 @@
 
         {{-- AUSGABEN --}}
 
-        <div class="
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            p-6
-        ">
+        <div
+            class="
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                p-6
+            "
+        >
 
             <div class="flex items-center justify-between">
 
@@ -222,26 +291,37 @@
                     Ausgaben
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center">
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-red-50
+                        dark:bg-red-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-red-600
+                        dark:text-red-400
+                    "
+                >
                     ↘
                 </div>
 
             </div>
 
-            <p class="text-3xl font-semibold text-red-600 mt-5">
+            <p class="text-3xl font-semibold text-red-600 dark:text-red-400 mt-5">
 
                 -{{ number_format(
                     $monthlyExpense,
                     2,
                     ',',
                     '.'
-                ) }}
-
-                €
+                ) }} €
 
             </p>
 
-            <p class="text-xs text-slate-400 mt-2">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 {{ $currentMonth }}
             </p>
 
@@ -250,13 +330,18 @@
 
         {{-- SPARQUOTE --}}
 
-        <div class="
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            p-6
-        ">
+        <div
+            class="
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                p-6
+            "
+        >
 
             <div class="flex items-center justify-between">
 
@@ -264,33 +349,46 @@
                     Sparquote
                 </p>
 
-                <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-slate-100
+                        dark:bg-slate-800
+                        flex
+                        items-center
+                        justify-center
+                        text-slate-600
+                        dark:text-slate-300
+                    "
+                >
                     %
                 </div>
 
             </div>
 
-            <p class="
-                text-3xl
-                font-semibold
-                mt-5
-                {{ $savingsRate >= 0
-                    ? 'text-slate-900 dark:text-white'
-                    : 'text-red-600' }}
-            ">
+            <p
+                class="
+                    text-3xl
+                    font-semibold
+                    mt-5
+                    {{ $savingsRate >= 0
+                        ? 'text-slate-900 dark:text-white'
+                        : 'text-red-600 dark:text-red-400' }}
+                "
+            >
 
                 {{ number_format(
                     $savingsRate,
                     1,
                     ',',
                     '.'
-                ) }}
-
-                %
+                ) }} %
 
             </p>
 
-            <p class="text-xs text-slate-400 mt-2">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 Einnahmen minus Ausgaben
             </p>
 
@@ -305,20 +403,30 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
 
-
         {{-- MONATSSALDO --}}
 
-        <div class="
-            lg:col-span-2
-            rounded-3xl
-            border
-            p-6
-            {{ $monthlyBalance >= 0
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900'
-                : 'bg-red-50 dark:bg-red-950/40 border-red-100 dark:border-red-900' }}
-        ">
+        <div
+            class="
+                lg:col-span-2
+                rounded-3xl
+                border
+                p-6
+                {{ $monthlyBalance >= 0
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900'
+                    : 'bg-red-50 dark:bg-red-950/40 border-red-100 dark:border-red-900' }}
+            "
+        >
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div
+                class="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                    gap-4
+                "
+            >
 
                 <div>
 
@@ -326,14 +434,16 @@
                         Monatssaldo
                     </p>
 
-                    <p class="
-                        text-3xl
-                        font-semibold
-                        mt-2
-                        {{ $monthlyBalance >= 0
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-red-700 dark:text-red-400' }}
-                    ">
+                    <p
+                        class="
+                            text-3xl
+                            font-semibold
+                            mt-2
+                            {{ $monthlyBalance >= 0
+                                ? 'text-emerald-700 dark:text-emerald-400'
+                                : 'text-red-700 dark:text-red-400' }}
+                        "
+                    >
 
                         {{ $monthlyBalance >= 0 ? '+' : '' }}
 
@@ -342,27 +452,27 @@
                             2,
                             ',',
                             '.'
-                        ) }}
-
-                        €
+                        ) }} €
 
                     </p>
 
                 </div>
 
-
-                <div class="
-                    inline-flex
-                    items-center
-                    rounded-full
-                    px-4 py-2
-                    text-sm
-                    font-medium
-                    self-start
-                    {{ $monthlyBalance >= 0
-                        ? 'bg-white dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
-                        : 'bg-white dark:bg-red-900/60 text-red-700 dark:text-red-300' }}
-                ">
+                <div
+                    class="
+                        inline-flex
+                        items-center
+                        rounded-full
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        self-start
+                        {{ $monthlyBalance >= 0
+                            ? 'bg-white dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-white dark:bg-red-900/60 text-red-700 dark:text-red-300' }}
+                    "
+                >
 
                     {{ $monthlyBalance >= 0
                         ? 'Positiver Monat'
@@ -377,13 +487,18 @@
 
         {{-- JAHRESWERTE --}}
 
-        <div class="
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            p-6
-        ">
+        <div
+            class="
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                p-6
+            "
+        >
 
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Dieses Jahr
@@ -391,54 +506,56 @@
 
             <div class="mt-4 space-y-4">
 
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
 
                     <span class="text-sm text-slate-500 dark:text-slate-400">
                         Einnahmen
                     </span>
 
-                    <span class="font-semibold text-emerald-600">
-                        +{{ number_format(
-                            $yearlyIncome,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
+                    <span class="font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                        +{{ number_format($yearlyIncome, 2, ',', '.') }} €
                     </span>
 
                 </div>
 
-
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
 
                     <span class="text-sm text-slate-500 dark:text-slate-400">
                         Ausgaben
                     </span>
 
-                    <span class="font-semibold text-red-600">
-                        -{{ number_format(
-                            $yearlyExpense,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
+                    <span class="font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
+                        -{{ number_format($yearlyExpense, 2, ',', '.') }} €
                     </span>
 
                 </div>
 
-
-                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div
+                    class="
+                        pt-3
+                        border-t
+                        border-slate-100
+                        dark:border-slate-800
+                        flex
+                        items-center
+                        justify-between
+                        gap-4
+                    "
+                >
 
                     <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                         Jahressaldo
                     </span>
 
-                    <span class="
-                        font-semibold
-                        {{ ($yearlyIncome - $yearlyExpense) >= 0
-                            ? 'text-slate-900 dark:text-white'
-                            : 'text-red-600' }}
-                    ">
+                    <span
+                        class="
+                            font-semibold
+                            whitespace-nowrap
+                            {{ ($yearlyIncome - $yearlyExpense) >= 0
+                                ? 'text-slate-900 dark:text-white'
+                                : 'text-red-600 dark:text-red-400' }}
+                        "
+                    >
 
                         {{ ($yearlyIncome - $yearlyExpense) >= 0 ? '+' : '' }}
 
@@ -464,22 +581,36 @@
     {{-- EINNAHMEN / AUSGABEN --}}
     {{-- ========================================================= --}}
 
-    <div class="
-        bg-white dark:bg-slate-900
-        rounded-3xl
-        border border-slate-100 dark:border-slate-800
-        shadow-sm
-        mt-5
-        overflow-hidden
-    ">
+    <div
+        class="
+            bg-white
+            dark:bg-slate-900
+            rounded-3xl
+            border
+            border-slate-100
+            dark:border-slate-800
+            shadow-sm
+            mt-5
+            overflow-hidden
+        "
+    >
 
         <div class="p-6 sm:p-8">
 
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div
+                class="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    sm:items-start
+                    sm:justify-between
+                    gap-4
+                "
+            >
 
                 <div>
 
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                         Entwicklung
                     </p>
 
@@ -493,8 +624,16 @@
 
                 </div>
 
-
-                <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <div
+                    class="
+                        flex
+                        items-center
+                        gap-4
+                        text-xs
+                        text-slate-500
+                        dark:text-slate-400
+                    "
+                >
 
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -510,7 +649,6 @@
 
             </div>
 
-
             @php
 
                 $maxChartValue = max(
@@ -525,29 +663,30 @@
 
             @endphp
 
-
             <div class="space-y-7 mt-8">
 
                 @foreach ($chartMonths as $chartMonth)
 
                     <div>
 
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between gap-4 mb-2">
 
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 {{ $chartMonth['label'] }}
                             </span>
 
-                            <span class="
-                                text-xs
-                                font-medium
-                                {{ $chartMonth['balance'] >= 0
-                                    ? 'text-emerald-600'
-                                    : 'text-red-600' }}
-                            ">
+                            <span
+                                class="
+                                    text-xs
+                                    font-medium
+                                    whitespace-nowrap
+                                    {{ $chartMonth['balance'] >= 0
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-red-600 dark:text-red-400' }}
+                                "
+                            >
 
                                 Saldo
-
                                 {{ $chartMonth['balance'] >= 0 ? '+' : '' }}
 
                                 {{ number_format(
@@ -561,16 +700,22 @@
 
                         </div>
 
-
-                        {{-- EINNAHMEN --}}
-
                         <div class="flex items-center gap-3">
 
-                            <span class="hidden sm:block w-20 text-xs text-slate-400">
+                            <span class="hidden sm:block w-20 text-xs text-slate-400 dark:text-slate-500">
                                 Einnahmen
                             </span>
 
-                            <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                                class="
+                                    flex-1
+                                    h-3
+                                    bg-slate-100
+                                    dark:bg-slate-800
+                                    rounded-full
+                                    overflow-hidden
+                                "
+                            >
 
                                 <div
                                     class="h-full bg-emerald-500 rounded-full transition-all"
@@ -579,29 +724,37 @@
 
                             </div>
 
-                            <span class="w-24 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
-
-                                {{ number_format(
-                                    $chartMonth['income'],
-                                    0,
-                                    ',',
-                                    '.'
-                                ) }} €
-
+                            <span
+                                class="
+                                    w-24
+                                    text-right
+                                    text-xs
+                                    font-medium
+                                    text-slate-700
+                                    dark:text-slate-300
+                                "
+                            >
+                                {{ number_format($chartMonth['income'], 0, ',', '.') }} €
                             </span>
 
                         </div>
 
-
-                        {{-- AUSGABEN --}}
-
                         <div class="flex items-center gap-3 mt-2">
 
-                            <span class="hidden sm:block w-20 text-xs text-slate-400">
+                            <span class="hidden sm:block w-20 text-xs text-slate-400 dark:text-slate-500">
                                 Ausgaben
                             </span>
 
-                            <div class="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                                class="
+                                    flex-1
+                                    h-3
+                                    bg-slate-100
+                                    dark:bg-slate-800
+                                    rounded-full
+                                    overflow-hidden
+                                "
+                            >
 
                                 <div
                                     class="h-full bg-red-500 rounded-full transition-all"
@@ -610,15 +763,17 @@
 
                             </div>
 
-                            <span class="w-24 text-right text-xs font-medium text-slate-700 dark:text-slate-300">
-
-                                {{ number_format(
-                                    $chartMonth['expense'],
-                                    0,
-                                    ',',
-                                    '.'
-                                ) }} €
-
+                            <span
+                                class="
+                                    w-24
+                                    text-right
+                                    text-xs
+                                    font-medium
+                                    text-slate-700
+                                    dark:text-slate-300
+                                "
+                            >
+                                {{ number_format($chartMonth['expense'], 0, ',', '.') }} €
                             </span>
 
                         </div>
@@ -745,22 +900,36 @@
     @endphp
 
 
-    <div class="
-        bg-white dark:bg-slate-900
-        rounded-3xl
-        border border-slate-100 dark:border-slate-800
-        shadow-sm
-        mt-5
-        overflow-hidden
-    ">
+    <div
+        class="
+            bg-white
+            dark:bg-slate-900
+            rounded-3xl
+            border
+            border-slate-100
+            dark:border-slate-800
+            shadow-sm
+            mt-5
+            overflow-hidden
+        "
+    >
 
         <div class="p-6 sm:p-8">
 
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div
+                class="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    sm:items-start
+                    sm:justify-between
+                    gap-4
+                "
+            >
 
                 <div>
 
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                         Vermögen
                     </p>
 
@@ -774,28 +943,19 @@
 
                 </div>
 
-
                 <div class="sm:text-right">
 
-                    <p class="text-xs text-slate-400">
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
                         Aktuell
                     </p>
 
                     <p class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
-
-                        {{ number_format(
-                            $totalBalance,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
-
+                        {{ number_format($totalBalance, 2, ',', '.') }} €
                     </p>
 
                 </div>
 
             </div>
-
 
             @if ($wealthMonths->isNotEmpty())
 
@@ -809,17 +969,13 @@
                             preserveAspectRatio="none"
                         >
 
-                            {{-- HILFSLINIEN --}}
-
                             @for ($i = 0; $i <= 4; $i++)
 
                                 @php
-
                                     $lineY =
                                         $paddingTop +
                                         ($i / 4) *
                                         $innerHeight;
-
                                 @endphp
 
                                 <line
@@ -834,17 +990,11 @@
 
                             @endfor
 
-
-                            {{-- FLÄCHE --}}
-
                             <polygon
                                 points="{{ $wealthAreaPoints }}"
                                 fill="#10b981"
                                 opacity="0.08"
                             />
-
-
-                            {{-- LINIE --}}
 
                             <polyline
                                 points="{{ $wealthLinePoints }}"
@@ -854,9 +1004,6 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                             />
-
-
-                            {{-- PUNKTE --}}
 
                             @foreach ($wealthPoints as $point)
 
@@ -871,9 +1018,6 @@
 
                             @endforeach
 
-
-                            {{-- MONATE --}}
-
                             @foreach ($wealthPoints as $point)
 
                                 <text
@@ -882,7 +1026,7 @@
                                     text-anchor="middle"
                                     font-size="13"
                                     fill="currentColor"
-                                    class="text-slate-400"
+                                    class="text-slate-400 dark:text-slate-500"
                                 >
                                     {{ $point['label'] }}
                                 </text>
@@ -895,37 +1039,40 @@
 
                 </div>
 
-
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
 
                     @foreach ($wealthMonths as $wealthMonth)
 
-                        <div class="
-                            rounded-2xl
-                            bg-slate-50 dark:bg-slate-800
-                            px-3 py-3
-                        ">
+                        <div
+                            class="
+                                rounded-2xl
+                                bg-slate-50
+                                dark:bg-slate-800
+                                px-3
+                                py-3
+                            "
+                        >
 
-                            <p class="text-xs text-slate-400">
+                            <p class="text-xs text-slate-400 dark:text-slate-500">
                                 {{ $wealthMonth['full_label'] }}
                             </p>
 
-                            <p class="
-                                text-sm
-                                font-semibold
-                                mt-1
-                                {{ $wealthMonth['balance'] >= 0
-                                    ? 'text-slate-900 dark:text-white'
-                                    : 'text-red-600' }}
-                            ">
-
+                            <p
+                                class="
+                                    text-sm
+                                    font-semibold
+                                    mt-1
+                                    {{ $wealthMonth['balance'] >= 0
+                                        ? 'text-slate-900 dark:text-white'
+                                        : 'text-red-600 dark:text-red-400' }}
+                                "
+                            >
                                 {{ number_format(
                                     $wealthMonth['balance'],
                                     2,
                                     ',',
                                     '.'
                                 ) }} €
-
                             </p>
 
                         </div>
@@ -936,7 +1083,16 @@
 
             @else
 
-                <div class="mt-8 rounded-2xl bg-slate-50 dark:bg-slate-800 p-8 text-center">
+                <div
+                    class="
+                        mt-8
+                        rounded-2xl
+                        bg-slate-50
+                        dark:bg-slate-800
+                        p-8
+                        text-center
+                    "
+                >
 
                     <p class="text-sm text-slate-500 dark:text-slate-400">
                         Noch keine Vermögensdaten vorhanden.
@@ -957,11 +1113,21 @@
 
     <div class="mt-5">
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div
+            class="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-3
+                mb-4
+            "
+        >
 
             <div>
 
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     Planung
                 </p>
 
@@ -975,10 +1141,17 @@
 
             </div>
 
-
             <a
-                href="{{ route('budgets.index') }}"
-                class="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+                href="{{ route('budgets.index', ['month' => $selectedMonth]) }}"
+                class="
+                    text-sm
+                    font-medium
+                    text-slate-500
+                    dark:text-slate-400
+                    hover:text-slate-900
+                    dark:hover:text-white
+                    transition
+                "
             >
                 Alle Budgets →
             </a>
@@ -988,16 +1161,36 @@
 
         @if ($budgets->isEmpty())
 
-            <div class="
-                bg-white dark:bg-slate-900
-                rounded-3xl
-                border border-slate-100 dark:border-slate-800
-                shadow-sm
-                p-10
-                text-center
-            ">
+            {{-- KEINE BUDGETS --}}
 
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-2xl">
+            <div
+                class="
+                    bg-white
+                    dark:bg-slate-900
+                    rounded-3xl
+                    border
+                    border-slate-100
+                    dark:border-slate-800
+                    shadow-sm
+                    p-10
+                    text-center
+                "
+            >
+
+                <div
+                    class="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-2xl
+                    "
+                >
                     🎯
                 </div>
 
@@ -1016,7 +1209,8 @@
                         mt-5
                         rounded-xl
                         bg-emerald-600
-                        px-5 py-3
+                        px-5
+                        py-3
                         text-sm
                         font-medium
                         text-white
@@ -1036,12 +1230,18 @@
                 @foreach ($budgets->take(3) as $budget)
 
                     <a
-                        href="{{ route('budgets.show', $budget) }}"
+                        href="{{ route('budgets.show', [
+                            'budget' => $budget,
+                            'month' => $selectedMonth,
+                        ]) }}"
                         class="
                             block
-                            bg-white dark:bg-slate-900
+                            bg-white
+                            dark:bg-slate-900
                             rounded-3xl
-                            border border-slate-100 dark:border-slate-800
+                            border
+                            border-slate-100
+                            dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
@@ -1052,21 +1252,28 @@
                         "
                     >
 
+                        {{-- HEADER --}}
+
                         <div class="flex items-center gap-3">
 
                             <div
                                 class="
-                                    w-11 h-11
+                                    w-11
+                                    h-11
                                     rounded-2xl
-                                    flex items-center justify-center
+                                    flex
+                                    items-center
+                                    justify-center
                                     text-xl
                                     flex-shrink-0
                                 "
-                                style="background-color: {{ $budget->color ?: '#ecfdf5' }}"
+                                style="
+                                    background-color:
+                                    {{ $budget->color ?: '#ecfdf5' }}
+                                "
                             >
                                 {{ $budget->icon ?: '🎯' }}
                             </div>
-
 
                             <div class="flex-1 min-w-0">
 
@@ -1074,9 +1281,24 @@
                                     {{ $budget->name }}
                                 </p>
 
-                                <p class="text-xs text-slate-400 mt-1">
+                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
 
-                                    Budget:
+                                    @switch($budget->period)
+
+                                        @case('monthly')
+                                            Monatlich
+                                            @break
+
+                                        @case('yearly')
+                                            Jährlich
+                                            @break
+
+                                        @default
+                                            Benutzerdefiniert
+
+                                    @endswitch
+
+                                    ·
 
                                     {{ number_format(
                                         $budget->amount,
@@ -1090,21 +1312,81 @@
                             </div>
 
 
-                            @if ($budget->calculated_exceeded)
+                            {{-- STATUS --}}
 
-                                <span class="rounded-full bg-red-50 dark:bg-red-950/50 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400">
+                            @if (!$budget->calculated_applicable)
+
+                                <span
+                                    class="
+                                        rounded-full
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-slate-500
+                                        dark:text-slate-400
+                                        whitespace-nowrap
+                                    "
+                                >
+                                    Nicht aktiv
+                                </span>
+
+                            @elseif ($budget->calculated_exceeded)
+
+                                <span
+                                    class="
+                                        rounded-full
+                                        bg-red-50
+                                        dark:bg-red-950/50
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-red-600
+                                        dark:text-red-400
+                                        whitespace-nowrap
+                                    "
+                                >
                                     Überschritten
                                 </span>
 
                             @elseif ($budget->calculated_percentage >= 80)
 
-                                <span class="rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                                <span
+                                    class="
+                                        rounded-full
+                                        bg-amber-50
+                                        dark:bg-amber-950/50
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-amber-600
+                                        dark:text-amber-400
+                                        whitespace-nowrap
+                                    "
+                                >
                                     Achtung
                                 </span>
 
                             @else
 
-                                <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                                <span
+                                    class="
+                                        rounded-full
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/50
+                                        px-2.5
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-emerald-600
+                                        dark:text-emerald-400
+                                        whitespace-nowrap
+                                    "
+                                >
                                     OK
                                 </span>
 
@@ -1113,70 +1395,79 @@
                         </div>
 
 
-                        <div class="mt-6">
+                        {{-- NICHT ANWENDBAR --}}
 
-                            <div class="flex items-center justify-between">
+                        @if (!$budget->calculated_applicable)
 
-                                <span class="text-sm text-slate-500 dark:text-slate-400">
-                                    Verbrauch
-                                </span>
-
-                                <span class="text-sm font-semibold text-slate-900 dark:text-white">
-
-                                    {{ number_format(
-                                        $budget->calculated_spent,
-                                        2,
-                                        ',',
-                                        '.'
-                                    ) }} €
-
-                                </span>
-
-                            </div>
-
-
-                            <div class="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-3">
+                            <div class="mt-6">
 
                                 <div
                                     class="
-                                        h-full
-                                        rounded-full
-                                        {{ $budget->calculated_exceeded
-                                            ? 'bg-red-500'
-                                            : (
-                                                $budget->calculated_percentage >= 80
-                                                    ? 'bg-amber-500'
-                                                    : 'bg-emerald-500'
-                                            ) }}
+                                        rounded-2xl
+                                        bg-slate-50
+                                        dark:bg-slate-800
+                                        p-4
                                     "
-                                    style="width: {{ min($budget->calculated_percentage, 100) }}%"
-                                ></div>
+                                >
+
+                                    <div class="flex items-center gap-3">
+
+                                        <div
+                                            class="
+                                                w-9
+                                                h-9
+                                                rounded-xl
+                                                bg-slate-200
+                                                dark:bg-slate-700
+                                                flex
+                                                items-center
+                                                justify-center
+                                            "
+                                        >
+                                            🕐
+                                        </div>
+
+                                        <div>
+
+                                            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                Noch nicht gültig
+                                            </p>
+
+                                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                                Das Budget beginnt am
+                                                {{ $budget->start_date->format('d.m.Y') }}.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
+                        @else
 
-                            <div class="flex items-center justify-between mt-2">
+                            {{-- VERBRAUCH --}}
 
-                                <span class="text-xs text-slate-400">
+                            <div class="mt-6">
 
-                                    {{ number_format(
-                                        $budget->calculated_percentage,
-                                        1,
-                                        ',',
-                                        '.'
-                                    ) }} %
+                                <div class="flex items-center justify-between">
 
-                                </span>
+                                    <span class="text-sm text-slate-500 dark:text-slate-400">
+                                        Verbrauch
+                                    </span>
 
-
-                                @if ($budget->calculated_remaining >= 0)
-
-                                    <span class="text-xs text-emerald-600 dark:text-emerald-400">
-
-                                        Noch
+                                    <span class="
+                                        text-sm
+                                        font-semibold
+                                        {{ $budget->calculated_exceeded
+                                            ? 'text-red-600 dark:text-red-400'
+                                            : 'text-slate-900 dark:text-white' }}
+                                    ">
 
                                         {{ number_format(
-                                            $budget->calculated_remaining,
+                                            $budget->calculated_spent,
                                             2,
                                             ',',
                                             '.'
@@ -1184,25 +1475,115 @@
 
                                     </span>
 
-                                @else
+                                </div>
 
-                                    <span class="text-xs font-medium text-red-600 dark:text-red-400">
+
+                                {{-- PROGRESSBAR --}}
+
+                                <div
+                                    class="
+                                        h-3
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        rounded-full
+                                        overflow-hidden
+                                        mt-3
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            h-full
+                                            rounded-full
+                                            transition-all
+                                            {{ $budget->calculated_exceeded
+                                                ? 'bg-red-500'
+                                                : (
+                                                    $budget->calculated_percentage >= 80
+                                                        ? 'bg-amber-500'
+                                                        : 'bg-emerald-500'
+                                                ) }}
+                                        "
+                                        style="
+                                            width:
+                                            {{ min(
+                                                max(
+                                                    $budget->calculated_percentage,
+                                                    0
+                                                ),
+                                                100
+                                            ) }}%
+                                        "
+                                    ></div>
+
+                                </div>
+
+
+                                {{-- PROZENT / REST --}}
+
+                                <div class="flex items-center justify-between mt-2">
+
+                                    <span class="text-xs text-slate-400 dark:text-slate-500">
 
                                         {{ number_format(
-                                            abs($budget->calculated_remaining),
-                                            2,
+                                            $budget->calculated_percentage,
+                                            1,
                                             ',',
                                             '.'
-                                        ) }} € über Budget
+                                        ) }} %
 
                                     </span>
 
-                                @endif
+
+                                    @if ($budget->calculated_remaining >= 0)
+
+                                        <span class="
+                                            text-xs
+                                            text-emerald-600
+                                            dark:text-emerald-400
+                                        ">
+
+                                            Noch
+
+                                            {{ number_format(
+                                                $budget->calculated_remaining,
+                                                2,
+                                                ',',
+                                                '.'
+                                            ) }} €
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="
+                                            text-xs
+                                            font-medium
+                                            text-red-600
+                                            dark:text-red-400
+                                        ">
+
+                                            {{ number_format(
+                                                abs($budget->calculated_remaining),
+                                                2,
+                                                ',',
+                                                '.'
+                                            ) }} €
+
+                                            über Budget
+
+                                        </span>
+
+                                    @endif
+
+                                </div>
 
                             </div>
 
-                        </div>
+                        @endif
 
+
+                        {{-- KATEGORIEN --}}
 
                         @if ($budget->categories->isNotEmpty())
 
@@ -1210,13 +1591,18 @@
 
                                 @foreach ($budget->categories->take(3) as $category)
 
-                                    <span class="
-                                        rounded-full
-                                        bg-slate-100 dark:bg-slate-800
-                                        px-2.5 py-1
-                                        text-xs
-                                        text-slate-600 dark:text-slate-300
-                                    ">
+                                    <span
+                                        class="
+                                            rounded-full
+                                            bg-slate-100
+                                            dark:bg-slate-800
+                                            px-2.5
+                                            py-1
+                                            text-xs
+                                            text-slate-600
+                                            dark:text-slate-300
+                                        "
+                                    >
 
                                         {{ $category->icon ?: '📁' }}
 
@@ -1225,6 +1611,26 @@
                                     </span>
 
                                 @endforeach
+
+
+                                @if ($budget->categories->count() > 3)
+
+                                    <span
+                                        class="
+                                            rounded-full
+                                            bg-slate-100
+                                            dark:bg-slate-800
+                                            px-2.5
+                                            py-1
+                                            text-xs
+                                            text-slate-500
+                                            dark:text-slate-400
+                                        "
+                                    >
+                                        +{{ $budget->categories->count() - 3 }}
+                                    </span>
+
+                                @endif
 
                             </div>
 
@@ -1247,23 +1653,38 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
 
-
         {{-- KONTEN --}}
 
-        <div class="
-            lg:col-span-2
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            overflow-hidden
-        ">
+        <div
+            class="
+                lg:col-span-2
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                overflow-hidden
+            "
+        >
 
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div
+                class="
+                    p-6
+                    border-b
+                    border-slate-100
+                    dark:border-slate-800
+                    flex
+                    items-center
+                    justify-between
+                    gap-4
+                "
+            >
 
-                <div>
+                <div class="min-w-0">
 
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                         Konten
                     </p>
 
@@ -1279,7 +1700,15 @@
 
                 <a
                     href="{{ route('accounts.index') }}"
-                    class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+                    class="
+                        text-sm
+                        text-slate-500
+                        dark:text-slate-400
+                        hover:text-slate-900
+                        dark:hover:text-white
+                        transition
+                        whitespace-nowrap
+                    "
                 >
                     Alle anzeigen →
                 </a>
@@ -1291,7 +1720,20 @@
 
                 <div class="p-10 text-center">
 
-                    <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
+                    <div
+                        class="
+                            w-14
+                            h-14
+                            mx-auto
+                            rounded-2xl
+                            bg-slate-100
+                            dark:bg-slate-800
+                            flex
+                            items-center
+                            justify-center
+                            text-2xl
+                        "
+                    >
                         🏦
                     </div>
 
@@ -1306,7 +1748,8 @@
                             mt-4
                             rounded-xl
                             bg-emerald-600
-                            px-4 py-2
+                            px-4
+                            py-2
                             text-sm
                             font-medium
                             text-white
@@ -1327,7 +1770,9 @@
                         <a
                             href="{{ route('accounts.edit', $account) }}"
                             class="
-                                flex items-center gap-4
+                                flex
+                                items-center
+                                gap-4
                                 p-5
                                 hover:bg-slate-50
                                 dark:hover:bg-slate-800
@@ -1336,12 +1781,20 @@
                         >
 
                             <div
-                                class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
+                                class="
+                                    w-12
+                                    h-12
+                                    rounded-2xl
+                                    flex
+                                    items-center
+                                    justify-center
+                                    text-xl
+                                    flex-shrink-0
+                                "
                                 style="background-color: {{ $account->color ?: '#f1f5f9' }}"
                             >
                                 {{ $account->icon ?: '🏦' }}
                             </div>
-
 
                             <div class="flex-1 min-w-0">
 
@@ -1352,28 +1805,25 @@
                                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
 
                                     @if ($account->institution)
-
                                         {{ $account->institution }}
-
                                     @else
-
                                         {{ ucfirst($account->type) }}
-
                                     @endif
 
                                 </p>
 
                             </div>
 
+                            <div class="text-right flex-shrink-0">
 
-                            <div class="text-right">
-
-                                <p class="
-                                    font-semibold
-                                    {{ $account->calculated_balance >= 0
-                                        ? 'text-slate-900 dark:text-white'
-                                        : 'text-red-600' }}
-                                ">
+                                <p
+                                    class="
+                                        font-semibold
+                                        {{ $account->calculated_balance >= 0
+                                            ? 'text-slate-900 dark:text-white'
+                                            : 'text-red-600 dark:text-red-400' }}
+                                    "
+                                >
 
                                     {{ number_format(
                                         $account->calculated_balance,
@@ -1386,7 +1836,7 @@
 
                                 </p>
 
-                                <p class="text-xs text-slate-400 mt-1">
+                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
                                     Kontostand
                                 </p>
 
@@ -1407,19 +1857,31 @@
         </div>
 
 
-        {{-- AUSGABEN --}}
+        {{-- AUSGABEN NACH KATEGORIE --}}
 
-        <div class="
-            bg-white dark:bg-slate-900
-            rounded-3xl
-            border border-slate-100 dark:border-slate-800
-            shadow-sm
-            overflow-hidden
-        ">
+        <div
+            class="
+                bg-white
+                dark:bg-slate-900
+                rounded-3xl
+                border
+                border-slate-100
+                dark:border-slate-800
+                shadow-sm
+                overflow-hidden
+            "
+        >
 
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+            <div
+                class="
+                    p-6
+                    border-b
+                    border-slate-100
+                    dark:border-slate-800
+                "
+            >
 
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     Ausgaben
                 </p>
 
@@ -1438,7 +1900,20 @@
 
                 <div class="p-8 text-center">
 
-                    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl">
+                    <div
+                        class="
+                            w-12
+                            h-12
+                            mx-auto
+                            rounded-2xl
+                            bg-slate-100
+                            dark:bg-slate-800
+                            flex
+                            items-center
+                            justify-center
+                            text-xl
+                        "
+                    >
                         📊
                     </div>
 
@@ -1466,14 +1941,13 @@
 
                         @endphp
 
-
                         <div>
 
-                            <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center justify-between gap-3 text-sm">
 
                                 <div class="flex items-center gap-2 min-w-0">
 
-                                    <span>
+                                    <span class="flex-shrink-0">
                                         {{ $item['category']?->icon ?: '📁' }}
                                     </span>
 
@@ -1483,25 +1957,42 @@
 
                                 </div>
 
-
-                                <span class="font-medium text-slate-900 dark:text-white whitespace-nowrap ml-3">
-
+                                <span
+                                    class="
+                                        font-medium
+                                        text-slate-900
+                                        dark:text-white
+                                        whitespace-nowrap
+                                    "
+                                >
                                     {{ number_format(
                                         $item['amount'],
                                         2,
                                         ',',
                                         '.'
                                     ) }} €
-
                                 </span>
 
                             </div>
 
-
-                            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
+                            <div
+                                class="
+                                    h-2
+                                    bg-slate-100
+                                    dark:bg-slate-800
+                                    rounded-full
+                                    mt-2
+                                    overflow-hidden
+                                "
+                            >
 
                                 <div
-                                    class="h-full bg-slate-900 dark:bg-emerald-500 rounded-full"
+                                    class="
+                                        h-full
+                                        bg-slate-900
+                                        dark:bg-emerald-500
+                                        rounded-full
+                                    "
                                     style="width: {{ min($percentage, 100) }}%"
                                 ></div>
 
@@ -1524,20 +2015,36 @@
     {{-- LETZTE BUCHUNGEN --}}
     {{-- ========================================================= --}}
 
-    <div class="
-        bg-white dark:bg-slate-900
-        rounded-3xl
-        border border-slate-100 dark:border-slate-800
-        shadow-sm
-        mt-5
-        overflow-hidden
-    ">
+    <div
+        class="
+            bg-white
+            dark:bg-slate-900
+            rounded-3xl
+            border
+            border-slate-100
+            dark:border-slate-800
+            shadow-sm
+            mt-5
+            overflow-hidden
+        "
+    >
 
-        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div
+            class="
+                p-6
+                border-b
+                border-slate-100
+                dark:border-slate-800
+                flex
+                items-center
+                justify-between
+                gap-4
+            "
+        >
 
-            <div>
+            <div class="min-w-0">
 
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     Aktivitäten
                 </p>
 
@@ -1551,10 +2058,17 @@
 
             </div>
 
-
             <a
                 href="{{ route('transactions.index') }}"
-                class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+                class="
+                    text-sm
+                    text-slate-500
+                    dark:text-slate-400
+                    hover:text-slate-900
+                    dark:hover:text-white
+                    transition
+                    whitespace-nowrap
+                "
             >
                 Alle anzeigen →
             </a>
@@ -1566,7 +2080,20 @@
 
             <div class="p-10 text-center">
 
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
+                <div
+                    class="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-slate-100
+                        dark:bg-slate-800
+                        flex
+                        items-center
+                        justify-center
+                        text-2xl
+                    "
+                >
                     💳
                 </div>
 
@@ -1581,7 +2108,8 @@
                         mt-4
                         rounded-xl
                         bg-emerald-600
-                        px-4 py-2
+                        px-4
+                        py-2
                         text-sm
                         font-medium
                         text-white
@@ -1602,7 +2130,9 @@
                     <a
                         href="{{ route('transactions.edit', $transaction) }}"
                         class="
-                            flex items-center gap-4
+                            flex
+                            items-center
+                            gap-4
                             p-5
                             hover:bg-slate-50
                             dark:hover:bg-slate-800
@@ -1612,20 +2142,20 @@
 
                         <div
                             class="
-                                w-11 h-11
+                                w-11
+                                h-11
                                 rounded-2xl
-                                flex items-center justify-center
+                                flex
+                                items-center
+                                justify-center
                                 flex-shrink-0
                                 {{ $transaction->type === 'income'
                                     ? 'bg-emerald-50 dark:bg-emerald-950/50'
                                     : 'bg-red-50 dark:bg-red-950/50' }}
                             "
                         >
-
                             {{ $transaction->category?->icon ?: '💳' }}
-
                         </div>
-
 
                         <div class="flex-1 min-w-0">
 
@@ -1633,34 +2163,39 @@
                                 {{ $transaction->description }}
                             </p>
 
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
+                            <p
+                                class="
+                                    text-sm
+                                    text-slate-500
+                                    dark:text-slate-400
+                                    mt-1
+                                    truncate
+                                "
+                            >
 
                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
                                 @if ($transaction->category)
-
                                     · {{ $transaction->category->name }}
-
                                 @endif
 
                                 @if ($transaction->account)
-
                                     · {{ $transaction->account->name }}
-
                                 @endif
 
                             </p>
 
                         </div>
 
-
-                        <p class="
-                            font-semibold
-                            whitespace-nowrap
-                            {{ $transaction->type === 'income'
-                                ? 'text-emerald-600'
-                                : 'text-red-600' }}
-                        ">
+                        <p
+                            class="
+                                font-semibold
+                                whitespace-nowrap
+                                {{ $transaction->type === 'income'
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : 'text-red-600 dark:text-red-400' }}
+                            "
+                        >
 
                             {{ $transaction->type === 'income' ? '+' : '-' }}
 
@@ -1672,7 +2207,6 @@
                             ) }} €
 
                         </p>
-
 
                         <span class="hidden sm:block text-slate-300 dark:text-slate-600">
                             →
@@ -1695,25 +2229,19 @@
 
     <div class="mt-5">
 
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4">
 
-            <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                Schnellzugriff
+            </p>
 
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600">
-                    Schnellzugriff
-                </p>
-
-                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
-                    Was möchtest du tun?
-                </h3>
-
-            </div>
+            <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
+                Was möchtest du tun?
+            </h3>
 
         </div>
 
-
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-
 
             @foreach ([
                 [
@@ -1741,9 +2269,12 @@
                 <a
                     href="{{ route($quickAction['route']) }}"
                     class="
-                        bg-white dark:bg-slate-900
+                        bg-white
+                        dark:bg-slate-900
                         rounded-2xl
-                        border border-slate-100 dark:border-slate-800
+                        border
+                        border-slate-100
+                        dark:border-slate-800
                         shadow-sm
                         p-5
                         hover:shadow-md
@@ -1754,7 +2285,19 @@
                     "
                 >
 
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-xl">
+                    <div
+                        class="
+                            w-10
+                            h-10
+                            rounded-xl
+                            bg-emerald-50
+                            dark:bg-emerald-950/50
+                            flex
+                            items-center
+                            justify-center
+                            text-xl
+                        "
+                    >
                         {{ $quickAction['icon'] }}
                     </div>
 
@@ -1762,7 +2305,7 @@
                         {{ $quickAction['title'] }}
                     </p>
 
-                    <p class="text-xs text-slate-400 mt-1">
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
                         Verwalten
                     </p>
 

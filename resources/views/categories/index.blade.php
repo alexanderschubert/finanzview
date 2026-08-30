@@ -18,17 +18,17 @@
 
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
 
-        <div>
+        <div class="min-w-0">
 
-            <p class="text-sm text-slate-500">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
                 Finanzverwaltung
             </p>
 
-            <h2 class="text-3xl font-semibold text-slate-900 mt-1">
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
                 Kategorien
             </h2>
 
-            <p class="text-slate-500 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
                 Organisiere deine Einnahmen und Ausgaben.
             </p>
 
@@ -43,13 +43,17 @@
                 justify-center
                 rounded-xl
                 bg-slate-950
+                dark:bg-white
                 px-5
                 py-3
                 text-sm
                 font-medium
                 text-white
+                dark:text-slate-950
                 hover:bg-slate-800
+                dark:hover:bg-slate-200
                 transition
+                flex-shrink-0
             "
         >
             + Kategorie
@@ -70,11 +74,14 @@
                 mt-6
                 rounded-2xl
                 bg-emerald-50
+                dark:bg-emerald-950/40
                 border
                 border-emerald-100
+                dark:border-emerald-900
                 p-4
                 text-sm
                 text-emerald-700
+                dark:text-emerald-300
             "
         >
             {{ session('success') }}
@@ -90,11 +97,14 @@
                 mt-6
                 rounded-2xl
                 bg-red-50
+                dark:bg-red-950/40
                 border
                 border-red-100
+                dark:border-red-900
                 p-4
                 text-sm
                 text-red-700
+                dark:text-red-300
             "
         >
             {{ session('error') }}
@@ -129,27 +139,30 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 shadow-sm
                 border
                 border-slate-100
+                dark:border-slate-800
                 p-5
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div>
+                <div class="min-w-0">
 
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Ausgaben
                     </p>
 
-                    <p class="text-3xl font-semibold text-red-600 mt-2">
+                    <p class="text-3xl font-semibold text-red-600 dark:text-red-400 mt-2">
                         {{ $expenseCategories->count() }}
                     </p>
 
                 </div>
+
 
                 <div
                     class="
@@ -157,10 +170,12 @@
                         h-11
                         rounded-xl
                         bg-red-50
+                        dark:bg-red-950/40
                         flex
                         items-center
                         justify-center
                         text-xl
+                        flex-shrink-0
                     "
                 >
                     ↘️
@@ -177,27 +192,30 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 shadow-sm
                 border
                 border-slate-100
+                dark:border-slate-800
                 p-5
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div>
+                <div class="min-w-0">
 
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Einnahmen
                     </p>
 
-                    <p class="text-3xl font-semibold text-emerald-600 mt-2">
+                    <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
                         {{ $incomeCategories->count() }}
                     </p>
 
                 </div>
+
 
                 <div
                     class="
@@ -205,10 +223,12 @@
                         h-11
                         rounded-xl
                         bg-emerald-50
+                        dark:bg-emerald-950/40
                         flex
                         items-center
                         justify-center
                         text-xl
+                        flex-shrink-0
                     "
                 >
                     ↗️
@@ -225,27 +245,30 @@
         <div
             class="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 shadow-sm
                 border
                 border-slate-100
+                dark:border-slate-800
                 p-5
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div>
+                <div class="min-w-0">
 
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
                         Aktive Kategorien
                     </p>
 
-                    <p class="text-3xl font-semibold text-slate-900 mt-2">
+                    <p class="text-3xl font-semibold text-slate-900 dark:text-white mt-2">
                         {{ $activeCategories->count() }}
                     </p>
 
                 </div>
+
 
                 <div
                     class="
@@ -253,10 +276,12 @@
                         h-11
                         rounded-xl
                         bg-slate-100
+                        dark:bg-slate-800
                         flex
                         items-center
                         justify-center
                         text-xl
+                        flex-shrink-0
                     "
                 >
                     🗂️
@@ -280,11 +305,11 @@
 
             <div>
 
-                <h2 class="text-lg font-semibold text-slate-900">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                     Ausgaben
                 </h2>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Kategorien für deine Ausgaben
                 </p>
 
@@ -298,15 +323,17 @@
             <div
                 class="
                     bg-white
+                    dark:bg-slate-900
                     rounded-2xl
                     border
                     border-slate-100
+                    dark:border-slate-800
                     p-8
                     text-center
                 "
             >
 
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     Keine Ausgabenkategorien vorhanden.
                 </p>
 
@@ -330,9 +357,11 @@
                     <div
                         class="
                             bg-white
+                            dark:bg-slate-900
                             rounded-2xl
                             border
                             border-slate-100
+                            dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
@@ -348,6 +377,7 @@
                                     h-12
                                     rounded-2xl
                                     bg-red-50
+                                    dark:bg-red-950/40
                                     flex
                                     items-center
                                     justify-center
@@ -366,7 +396,9 @@
                                         text-[11px]
                                         font-medium
                                         text-emerald-700
+                                        dark:text-emerald-300
                                         bg-emerald-50
+                                        dark:bg-emerald-950/40
                                         px-2
                                         py-1
                                         rounded-full
@@ -382,7 +414,9 @@
                                         text-[11px]
                                         font-medium
                                         text-slate-500
+                                        dark:text-slate-400
                                         bg-slate-100
+                                        dark:bg-slate-800
                                         px-2
                                         py-1
                                         rounded-full
@@ -396,20 +430,20 @@
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 mt-4 truncate">
+                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
                             {{ $category->name }}
                         </h3>
 
 
                         @if ($category->description)
 
-                            <p class="text-xs text-slate-400 mt-1 line-clamp-2">
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-2">
                                 {{ $category->description }}
                             </p>
 
                         @else
 
-                            <p class="text-xs text-slate-400 mt-1">
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
                                 Ausgabenkategorie
                             </p>
 
@@ -425,6 +459,7 @@
                                 pt-4
                                 border-t
                                 border-slate-100
+                                dark:border-slate-800
                             "
                         >
 
@@ -434,7 +469,10 @@
                                     text-xs
                                     font-medium
                                     text-slate-500
+                                    dark:text-slate-400
                                     hover:text-slate-900
+                                    dark:hover:text-white
+                                    transition
                                 "
                             >
                                 Bearbeiten
@@ -457,7 +495,10 @@
                                         text-xs
                                         font-medium
                                         text-red-500
+                                        dark:text-red-400
                                         hover:text-red-700
+                                        dark:hover:text-red-300
+                                        transition
                                     "
                                 >
                                     Löschen
@@ -487,11 +528,11 @@
 
         <div class="mb-4">
 
-            <h2 class="text-lg font-semibold text-slate-900">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                 Einnahmen
             </h2>
 
-            <p class="text-sm text-slate-500 mt-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Kategorien für deine Einnahmen
             </p>
 
@@ -503,15 +544,17 @@
             <div
                 class="
                     bg-white
+                    dark:bg-slate-900
                     rounded-2xl
                     border
                     border-slate-100
+                    dark:border-slate-800
                     p-8
                     text-center
                 "
             >
 
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     Keine Einnahmenkategorien vorhanden.
                 </p>
 
@@ -535,9 +578,11 @@
                     <div
                         class="
                             bg-white
+                            dark:bg-slate-900
                             rounded-2xl
                             border
                             border-slate-100
+                            dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
@@ -553,10 +598,12 @@
                                     h-12
                                     rounded-2xl
                                     bg-emerald-50
+                                    dark:bg-emerald-950/40
                                     flex
                                     items-center
                                     justify-center
                                     text-2xl
+                                    flex-shrink-0
                                 "
                             >
                                 {{ $category->icon ?: '📁' }}
@@ -570,7 +617,9 @@
                                         text-[11px]
                                         font-medium
                                         text-emerald-700
+                                        dark:text-emerald-300
                                         bg-emerald-50
+                                        dark:bg-emerald-950/40
                                         px-2
                                         py-1
                                         rounded-full
@@ -586,7 +635,9 @@
                                         text-[11px]
                                         font-medium
                                         text-slate-500
+                                        dark:text-slate-400
                                         bg-slate-100
+                                        dark:bg-slate-800
                                         px-2
                                         py-1
                                         rounded-full
@@ -600,20 +651,20 @@
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 mt-4 truncate">
+                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
                             {{ $category->name }}
                         </h3>
 
 
                         @if ($category->description)
 
-                            <p class="text-xs text-slate-400 mt-1 line-clamp-2">
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-2">
                                 {{ $category->description }}
                             </p>
 
                         @else
 
-                            <p class="text-xs text-slate-400 mt-1">
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
                                 Einnahmenkategorie
                             </p>
 
@@ -629,6 +680,7 @@
                                 pt-4
                                 border-t
                                 border-slate-100
+                                dark:border-slate-800
                             "
                         >
 
@@ -638,7 +690,10 @@
                                     text-xs
                                     font-medium
                                     text-slate-500
+                                    dark:text-slate-400
                                     hover:text-slate-900
+                                    dark:hover:text-white
+                                    transition
                                 "
                             >
                                 Bearbeiten
@@ -661,7 +716,10 @@
                                         text-xs
                                         font-medium
                                         text-red-500
+                                        dark:text-red-400
                                         hover:text-red-700
+                                        dark:hover:text-red-300
+                                        transition
                                     "
                                 >
                                     Löschen
@@ -693,11 +751,11 @@
 
             <div class="mb-4">
 
-                <h2 class="text-lg font-semibold text-slate-900">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
                     Einnahmen & Ausgaben
                 </h2>
 
-                <p class="text-sm text-slate-500 mt-1">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Kategorien, die für beide Buchungsarten verwendet werden können.
                 </p>
 
@@ -720,9 +778,11 @@
                     <div
                         class="
                             bg-white
+                            dark:bg-slate-900
                             rounded-2xl
                             border
                             border-slate-100
+                            dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
@@ -730,7 +790,7 @@
                         "
                     >
 
-                        <div class="flex items-start justify-between">
+                        <div class="flex items-start justify-between gap-3">
 
                             <div
                                 class="
@@ -738,36 +798,77 @@
                                     h-12
                                     rounded-2xl
                                     bg-slate-100
+                                    dark:bg-slate-800
                                     flex
                                     items-center
                                     justify-center
                                     text-2xl
+                                    flex-shrink-0
                                 "
                             >
                                 {{ $category->icon ?: '📁' }}
                             </div>
 
 
-                            <span
-                                class="
-                                    text-[11px]
-                                    font-medium
-                                    text-slate-600
-                                    bg-slate-100
-                                    px-2
-                                    py-1
-                                    rounded-full
-                                "
-                            >
-                                Beide
-                            </span>
+                            @if ($category->is_active)
+
+                                <span
+                                    class="
+                                        text-[11px]
+                                        font-medium
+                                        text-emerald-700
+                                        dark:text-emerald-300
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/40
+                                        px-2
+                                        py-1
+                                        rounded-full
+                                    "
+                                >
+                                    Aktiv
+                                </span>
+
+                            @else
+
+                                <span
+                                    class="
+                                        text-[11px]
+                                        font-medium
+                                        text-slate-500
+                                        dark:text-slate-400
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2
+                                        py-1
+                                        rounded-full
+                                    "
+                                >
+                                    Inaktiv
+                                </span>
+
+                            @endif
 
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 mt-4">
+                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
                             {{ $category->name }}
                         </h3>
+
+
+                        @if ($category->description)
+
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-2">
+                                {{ $category->description }}
+                            </p>
+
+                        @else
+
+                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                Für Einnahmen und Ausgaben
+                            </p>
+
+                        @endif
 
 
                         <div
@@ -779,6 +880,7 @@
                                 pt-4
                                 border-t
                                 border-slate-100
+                                dark:border-slate-800
                             "
                         >
 
@@ -788,7 +890,10 @@
                                     text-xs
                                     font-medium
                                     text-slate-500
+                                    dark:text-slate-400
                                     hover:text-slate-900
+                                    dark:hover:text-white
+                                    transition
                                 "
                             >
                                 Bearbeiten
@@ -811,7 +916,10 @@
                                         text-xs
                                         font-medium
                                         text-red-500
+                                        dark:text-red-400
                                         hover:text-red-700
+                                        dark:hover:text-red-300
+                                        transition
                                     "
                                 >
                                     Löschen

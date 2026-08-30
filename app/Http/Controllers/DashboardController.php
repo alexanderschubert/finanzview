@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\BudgetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(
+        Request $request,
+        BudgetService $budgetService
+    ) {
         $user = $request->user();
 
         /*
@@ -23,17 +26,27 @@ class DashboardController extends Controller
         );
 
         try {
+
             $month = Carbon::createFromFormat(
                 'Y-m',
                 $selectedMonth
             )->startOfMonth();
+
         } catch (\Exception $e) {
+
             $month = now()->startOfMonth();
-            $selectedMonth = $month->format('Y-m');
+
+            $selectedMonth =
+                $month->format('Y-m');
         }
 
-        $startOfMonth = $month->copy()->startOfMonth();
-        $endOfMonth = $month->copy()->endOfMonth();
+
+        $startOfMonth =
+            $month->copy()->startOfMonth();
+
+        $endOfMonth =
+            $month->copy()->endOfMonth();
+
 
         /*
          * =========================================================
@@ -41,8 +54,12 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $startOfYear = $month->copy()->startOfYear();
-        $endOfYear = $month->copy()->endOfYear();
+        $startOfYear =
+            $month->copy()->startOfYear();
+
+        $endOfYear =
+            $month->copy()->endOfYear();
+
 
         /*
          * =========================================================
@@ -54,6 +71,7 @@ class DashboardController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
+
 
         foreach ($accounts as $account) {
 
@@ -71,6 +89,7 @@ class DashboardController extends Controller
                 - (float) $expense;
         }
 
+
         /*
          * =========================================================
          * GESAMTVERMÖGEN
@@ -80,6 +99,7 @@ class DashboardController extends Controller
         $totalBalance = $accounts
             ->where('include_in_total', true)
             ->sum('calculated_balance');
+
 
         /*
          * =========================================================
@@ -95,6 +115,7 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
+
         /*
          * =========================================================
          * MONATLICHE AUSGABEN
@@ -109,6 +130,7 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
+
         /*
          * =========================================================
          * MONATSSALDO
@@ -117,6 +139,7 @@ class DashboardController extends Controller
 
         $monthlyBalance =
             $monthlyIncome - $monthlyExpense;
+
 
         /*
          * =========================================================
@@ -127,6 +150,7 @@ class DashboardController extends Controller
         $savingsRate = $monthlyIncome > 0
             ? ($monthlyBalance / $monthlyIncome) * 100
             : 0;
+
 
         /*
          * =========================================================
@@ -142,6 +166,7 @@ class DashboardController extends Controller
             ])
             ->sum('amount');
 
+
         $yearlyExpense = $user->transactions()
             ->where('type', 'expense')
             ->whereBetween('transaction_date', [
@@ -149,6 +174,7 @@ class DashboardController extends Controller
                 $endOfYear,
             ])
             ->sum('amount');
+
 
         /*
          * =========================================================
@@ -165,6 +191,7 @@ class DashboardController extends Controller
             ->latest('id')
             ->limit(8)
             ->get();
+
 
         /*
          * =========================================================
@@ -184,13 +211,17 @@ class DashboardController extends Controller
             ->map(function ($transactions) {
 
                 return [
-                    'category' => $transactions->first()->category,
-                    'amount' => $transactions->sum('amount'),
+                    'category' =>
+                        $transactions->first()->category,
+
+                    'amount' =>
+                        $transactions->sum('amount'),
                 ];
 
             })
             ->sortByDesc('amount')
             ->values();
+
 
         /*
          * =========================================================
@@ -200,15 +231,18 @@ class DashboardController extends Controller
 
         $chartMonths = collect();
 
+
         for ($i = 5; $i >= 0; $i--) {
 
-            $chartMonth = $month->copy()->subMonths($i);
+            $chartMonth =
+                $month->copy()->subMonths($i);
 
             $chartStart =
                 $chartMonth->copy()->startOfMonth();
 
             $chartEnd =
                 $chartMonth->copy()->endOfMonth();
+
 
             $income = $user->transactions()
                 ->where('type', 'income')
@@ -218,6 +252,7 @@ class DashboardController extends Controller
                 ])
                 ->sum('amount');
 
+
             $expense = $user->transactions()
                 ->where('type', 'expense')
                 ->whereBetween('transaction_date', [
@@ -226,7 +261,9 @@ class DashboardController extends Controller
                 ])
                 ->sum('amount');
 
+
             $chartMonths->push([
+
                 'label' =>
                     $chartMonth->translatedFormat('M'),
 
@@ -241,8 +278,10 @@ class DashboardController extends Controller
 
                 'balance' =>
                     (float) ($income - $expense),
+
             ]);
         }
+
 
         /*
          * =========================================================
@@ -252,19 +291,24 @@ class DashboardController extends Controller
 
         $wealthMonths = collect();
 
+
         $includedAccounts = $accounts
             ->where('include_in_total', true);
 
+
         $openingBalance = $includedAccounts
             ->sum('opening_balance');
+
 
         for ($i = 5; $i >= 0; $i--) {
 
             $wealthMonth =
                 $month->copy()->subMonths($i);
 
+
             $wealthEnd =
                 $wealthMonth->copy()->endOfMonth();
+
 
             $incomeUntil = $user->transactions()
                 ->where('type', 'income')
@@ -275,6 +319,7 @@ class DashboardController extends Controller
                 )
                 ->sum('amount');
 
+
             $expenseUntil = $user->transactions()
                 ->where('type', 'expense')
                 ->where(
@@ -284,12 +329,15 @@ class DashboardController extends Controller
                 )
                 ->sum('amount');
 
+
             $wealthBalance =
                 $openingBalance
                 + $incomeUntil
                 - $expenseUntil;
 
+
             $wealthMonths->push([
+
                 'label' =>
                     $wealthMonth->translatedFormat('M'),
 
@@ -298,8 +346,10 @@ class DashboardController extends Controller
 
                 'balance' =>
                     (float) $wealthBalance,
+
             ]);
         }
+
 
         /*
          * =========================================================
@@ -312,119 +362,103 @@ class DashboardController extends Controller
             $wealthMonths->max('balance')
         );
 
+
         $minWealthValue = min(
             0,
             $wealthMonths->min('balance')
         );
 
+
         /*
-         * =========================================================
-         * BUDGETS
-         * =========================================================
-         */
+ * =========================================================
+ * BUDGETS
+ * =========================================================
+ *
+ * Die Budgetberechnung erfolgt ausschließlich
+ * über den BudgetService.
+ *
+ * Dadurch verwenden:
+ *
+ * - Dashboard
+ * - Budgetübersicht
+ * - Budgetdetails
+ *
+ * exakt dieselbe Berechnungslogik.
+ *
+ * WICHTIG:
+ *
+ * Es werden auch inaktive Budgets geladen.
+ * Dadurch kann das Dashboard zwischen:
+ *
+ * - Inaktiv
+ * - Nicht aktiv / nicht gültig
+ * - OK
+ * - Achtung
+ * - Überschritten
+ *
+ * unterscheiden.
+ */
 
-        $budgets = $user->budgets()
-            ->where('is_active', true)
-            ->with('categories')
-            ->orderBy('name')
-            ->get();
+$budgets = $user->budgets()
+    ->with('categories')
+    ->orderByDesc('is_active')
+    ->orderBy('name')
+    ->get();
 
-        foreach ($budgets as $budget) {
 
-            /*
-             * Zeitraum bestimmen
-             */
+foreach ($budgets as $budget) {
 
-            if ($budget->period === 'monthly') {
+    /*
+     * =====================================================
+     * BUDGET BERECHNEN
+     * =====================================================
+     */
 
-                $budgetStart = $startOfMonth->copy();
-                $budgetEnd = $endOfMonth->copy();
+    $calculation =
+        $budgetService->calculate(
+            $budget,
+            $user,
+            $month
+        );
 
-            } elseif ($budget->period === 'yearly') {
 
-                $budgetStart = $startOfYear->copy();
-                $budgetEnd = $endOfYear->copy();
+    /*
+     * =====================================================
+     * BERECHNETE WERTE AN DAS MODEL HÄNGEN
+     * =====================================================
+     *
+     * Diese Werte werden anschließend
+     * direkt von dashboard.blade.php verwendet.
+     */
 
-            } else {
+    $budget->calculated_spent =
+        (float) $calculation['spent'];
 
-                $budgetStart = Carbon::parse(
-                    $budget->start_date
-                )->startOfDay();
 
-                $budgetEnd = Carbon::parse(
-                    $budget->end_date
-                )->endOfDay();
-            }
+    $budget->calculated_remaining =
+        (float) $calculation['remaining'];
 
-            /*
-             * Kategorien
-             */
 
-            $categoryIds = $budget->categories
-                ->pluck('id');
+    $budget->calculated_percentage =
+        (float) $calculation['percentage'];
 
-            /*
-             * Verbrauch berechnen
-             */
 
-            if ($categoryIds->isEmpty()) {
+    $budget->calculated_exceeded =
+        (bool) $calculation['exceeded'];
 
-                $spent = 0;
 
-            } else {
+    $budget->calculated_start_date =
+        $calculation['start_date'];
 
-                $spent = $user->transactions()
-                    ->where('type', 'expense')
-                    ->whereBetween('transaction_date', [
-                        $budgetStart,
-                        $budgetEnd,
-                    ])
-                    ->whereIn(
-                        'category_id',
-                        $categoryIds
-                    )
-                    ->sum('amount');
-            }
 
-            /*
-             * Budgetwerte
-             */
+    $budget->calculated_end_date =
+        $calculation['end_date'];
 
-            $budgetAmount =
-                (float) $budget->amount;
 
-            $spentAmount =
-                (float) $spent;
+    $budget->calculated_applicable =
+        (bool) $calculation['applicable'];
+}
 
-            $remaining =
-                $budgetAmount - $spentAmount;
-
-            $percentage = $budgetAmount > 0
-                ? ($spentAmount / $budgetAmount) * 100
-                : 0;
-
-            /*
-             * Werte an Model anhängen
-             */
-
-            $budget->calculated_spent =
-                $spentAmount;
-
-            $budget->calculated_remaining =
-                $remaining;
-
-            $budget->calculated_percentage =
-                $percentage;
-
-            $budget->calculated_exceeded =
-                $spentAmount > $budgetAmount;
-
-            $budget->calculated_start_date =
-                $budgetStart;
-
-            $budget->calculated_end_date =
-                $budgetEnd;
-        }
 
         /*
          * =========================================================
@@ -484,6 +518,7 @@ class DashboardController extends Controller
 
             'currentMonth' =>
                 $month->translatedFormat('F Y'),
+
         ]);
     }
 }
