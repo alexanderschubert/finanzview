@@ -1,58 +1,133 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Finanzblick
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Finanzblick ist eine moderne, selbst gehostete Finanzverwaltung zur Verwaltung von Konten, Buchungen, Kategorien, Budgets und wiederkehrenden Ausgaben.
 
-## About Laravel
+Das Projekt wird als Webanwendung betrieben und ist für den privaten bzw. persönlichen Finanzüberblick ausgelegt.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Funktionen
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 💳 Konten
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Verwaltung mehrerer Konten
+- Kontostände und Kontobewegungen
+- Zuordnung von Buchungen zu Konten
+- Übersicht über Einnahmen und Ausgaben
 
-## Learning Laravel
+### 💸 Transaktionen
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Einnahmen und Ausgaben erfassen
+- Buchungsdatum
+- Beschreibung
+- Händler
+- Kategorie
+- Konto
+- Notizen
+- Referenz
+- Wiederkehrende Buchungen
+- Ausstehende Buchungen
+- Bearbeiten und Löschen von Buchungen
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🗂️ Kategorien
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- Eigene Kategorien erstellen
+- Kategorien bearbeiten und löschen
+- Icons für Kategorien
+- Zuordnung von Buchungen zu Kategorien
 
-## Agentic Development
+### 🎯 Budgets
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Finanzblick unterstützt verschiedene Budgetarten:
 
-```bash
-composer require laravel/boost --dev
+- Monatliche Budgets
+- Jährliche Budgets
+- Benutzerdefinierte Budgets
+- Start- und Enddatum
+- Budgetbetrag
+- Frei wählbare Kategorien
+- Individuelle Farben und Icons
+- Anzeige des aktuellen Verbrauchs
+- Verbleibender Betrag
+- Prozentualer Verbrauch
+- Erkennung von Budgetüberschreitungen
+- Zugehörige Buchungen innerhalb des Budgetzeitraums
 
-php artisan boost:install
-```
+Die Berechnung der Budgets erfolgt zentral über den `BudgetService`, damit Dashboard, Budgetübersicht und Budgetdetails dieselbe Berechnungslogik verwenden.
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 📊 Dashboard
 
-## Contributing
+Das Dashboard soll einen schnellen Überblick über die persönliche finanzielle Situation ermöglichen.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Geplante bzw. vorhandene Informationen:
 
-## Code of Conduct
+- Kontostände
+- Einnahmen
+- Ausgaben
+- Budgets
+- Budgetverbrauch
+- aktuelle Buchungen
+- finanzielle Entwicklungen
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🛠️ Technologie
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Finanzblick basiert auf modernen Open-Source-Technologien.
 
-## License
+### Backend
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- PHP
+- Laravel
+- Eloquent ORM
+- Laravel Blade
+
+### Frontend
+
+- Blade Templates
+- Tailwind CSS
+- JavaScript
+
+### Datenbank
+
+Die Anwendung ist für relationale Datenbanken ausgelegt.
+
+Aktuell wird eine SQL-basierte Datenbank verwendet.
+
+### Betrieb
+
+Finanzblick kann containerisiert betrieben werden und eignet sich dadurch besonders für einen eigenen Server, NAS oder Homelab.
+
+---
+
+## 📁 Projektstruktur
+
+Eine vereinfachte Struktur des Projekts:
+
+```text
+finanzblick/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   ├── Models/
+│   └── Services/
+│
+├── database/
+│   ├── migrations/
+│   └── seeders/
+│
+├── resources/
+│   └── views/
+│       ├── budgets/
+│       ├── transactions/
+│       ├── accounts/
+│       └── ...
+│
+├── routes/
+│   └── web.php
+│
+├── storage/
+│
+├── tests/
+│
+├── artisan
+├── composer.json
+└── README.md
