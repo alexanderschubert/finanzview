@@ -32,20 +32,15 @@ class BudgetController extends Controller
         );
 
         try {
-
             $month = Carbon::createFromFormat(
                 'Y-m',
                 $selectedMonth
             )->startOfMonth();
-
         } catch (\Exception $e) {
-
             $month = now()->startOfMonth();
 
-            $selectedMonth =
-                $month->format('Y-m');
+            $selectedMonth = $month->format('Y-m');
         }
-
 
         /*
          * =========================================================
@@ -58,62 +53,44 @@ class BudgetController extends Controller
             ->orderBy('name')
             ->get();
 
-
         /*
          * =========================================================
          * BUDGETWERTE BERECHNEN
          * =========================================================
-         *
-         * Die komplette Berechnung erfolgt über den
-         * BudgetService.
-         *
-         * Dadurch verwenden Dashboard,
-         * Budgetübersicht und Budgetdetails
-         * dieselbe Berechnungslogik.
          */
 
         foreach ($budgets as $budget) {
-
-            $calculation =
-                $budgetService->calculate(
-                    $budget,
-                    $user,
-                    $month
-                );
-
+            $calculation = $budgetService->calculate(
+                $budget,
+                $user,
+                $month
+            );
 
             /*
-             * Berechnete Werte an das Budget-Model anhängen
+             * Berechnete Werte am Budget-Model bereitstellen.
              */
 
             $budget->calculated_spent =
                 $calculation['spent'];
 
-
             $budget->calculated_remaining =
                 $calculation['remaining'];
-
 
             $budget->calculated_percentage =
                 $calculation['percentage'];
 
-
             $budget->calculated_exceeded =
                 $calculation['exceeded'];
-
 
             $budget->calculated_start_date =
                 $calculation['start_date'];
 
-
             $budget->calculated_end_date =
                 $calculation['end_date'];
-
 
             $budget->calculated_applicable =
                 $calculation['applicable'];
         }
-
 
         /*
          * =========================================================
@@ -122,19 +99,11 @@ class BudgetController extends Controller
          */
 
         return view('budgets.index', [
-
-            'budgets' =>
-                $budgets,
-
-            'selectedMonth' =>
-                $selectedMonth,
-
-            'referenceMonth' =>
-                $month,
-
+            'budgets' => $budgets,
+            'selectedMonth' => $selectedMonth,
+            'referenceMonth' => $month,
         ]);
     }
-
 
     /**
      * =========================================================
@@ -154,7 +123,6 @@ class BudgetController extends Controller
         ]);
     }
 
-
     /**
      * =========================================================
      * BUDGET SPEICHERN
@@ -165,42 +133,66 @@ class BudgetController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-            'name' =>
-                ['required', 'string', 'max:255'],
+            'amount' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
-            'amount' =>
-                ['required', 'numeric', 'min:0'],
+            'period' => [
+                'required',
+                'in:monthly,yearly,custom',
+            ],
 
-            'period' =>
-                ['required', 'in:monthly,yearly,custom'],
+            'start_date' => [
+                'required',
+                'date',
+            ],
 
-            'start_date' =>
-                ['required', 'date'],
+            'end_date' => [
+                'nullable',
+                'date',
+                'after_or_equal:start_date',
+            ],
 
-            'end_date' =>
-                ['nullable', 'date', 'after_or_equal:start_date'],
+            'color' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-            'color' =>
-                ['nullable', 'string', 'max:20'],
+            'icon' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-            'icon' =>
-                ['nullable', 'string', 'max:20'],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
 
-            'is_active' =>
-                ['nullable', 'boolean'],
+            'category_ids' => [
+                'nullable',
+                'array',
+            ],
 
-            'category_ids' =>
-                ['nullable', 'array'],
-
-            'category_ids.*' =>
-                ['integer', 'exists:categories,id'],
-
+            'category_ids.*' => [
+                'integer',
+                'exists:categories,id',
+            ],
         ]);
 
-
         /*
-         * Bei Custom muss ein Enddatum vorhanden sein.
+         * =========================================================
+         * CUSTOM BUDGET
+         * =========================================================
          */
 
         if (
@@ -208,7 +200,6 @@ class BudgetController extends Controller
             &&
             empty($validated['end_date'])
         ) {
-
             return back()
                 ->withErrors([
                     'end_date' =>
@@ -217,7 +208,6 @@ class BudgetController extends Controller
                 ->withInput();
         }
 
-
         /*
          * =========================================================
          * BUDGET ERSTELLEN
@@ -225,7 +215,6 @@ class BudgetController extends Controller
          */
 
         $budget = $user->budgets()->create([
-
             'name' =>
                 $validated['name'],
 
@@ -249,9 +238,7 @@ class BudgetController extends Controller
 
             'is_active' =>
                 $request->boolean('is_active', true),
-
         ]);
-
 
         /*
          * =========================================================
@@ -273,11 +260,9 @@ class BudgetController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-
         $budget->categories()->sync(
             $categoryIds
         );
-
 
         return redirect()
             ->route('budgets.index')
@@ -286,7 +271,6 @@ class BudgetController extends Controller
                 'Budget wurde erfolgreich erstellt.'
             );
     }
-
 
     /**
      * =========================================================
@@ -310,7 +294,6 @@ class BudgetController extends Controller
             403
         );
 
-
         /*
          * =========================================================
          * AUSGEWÄHLTEN MONAT
@@ -323,23 +306,24 @@ class BudgetController extends Controller
         );
 
         try {
-
             $month = Carbon::createFromFormat(
                 'Y-m',
                 $selectedMonth
             )->startOfMonth();
-
         } catch (\Exception $e) {
-
             $month = now()->startOfMonth();
 
             $selectedMonth =
                 $month->format('Y-m');
         }
 
+        /*
+         * =========================================================
+         * KATEGORIEN LADEN
+         * =========================================================
+         */
 
         $budget->load('categories');
-
 
         /*
          * =========================================================
@@ -354,6 +338,10 @@ class BudgetController extends Controller
                 $month
             );
 
+        /*
+         * Berechnete Werte zusätzlich
+         * am Budget-Model bereitstellen.
+         */
 
         $budget->calculated_spent =
             $calculation['spent'];
@@ -376,21 +364,23 @@ class BudgetController extends Controller
         $budget->calculated_applicable =
             $calculation['applicable'];
 
+        /*
+         * =========================================================
+         * VIEW
+         * =========================================================
+         *
+         * WICHTIG:
+         * budgets.show verwendet direkt
+         * $calculation.
+         */
 
         return view('budgets.show', [
-
-            'budget' =>
-                $budget,
-
-            'selectedMonth' =>
-                $selectedMonth,
-
-            'referenceMonth' =>
-                $month,
-
+            'budget' => $budget,
+            'selectedMonth' => $selectedMonth,
+            'referenceMonth' => $month,
+            'calculation' => $calculation,
         ]);
     }
-
 
     /**
      * =========================================================
@@ -402,6 +392,11 @@ class BudgetController extends Controller
         Budget $budget
     ) {
         $user = $request->user();
+
+        /*
+         * Sicherheit:
+         * Budget muss dem angemeldeten Benutzer gehören.
+         */
 
         abort_unless(
             $budget->user_id === $user->id,
@@ -415,16 +410,10 @@ class BudgetController extends Controller
         $budget->load('categories');
 
         return view('budgets.edit', [
-
-            'budget' =>
-                $budget,
-
-            'categories' =>
-                $categories,
-
+            'budget' => $budget,
+            'categories' => $categories,
         ]);
     }
-
 
     /**
      * =========================================================
@@ -437,53 +426,84 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+        /*
+         * Sicherheit:
+         * Budget muss dem angemeldeten Benutzer gehören.
+         */
+
         abort_unless(
             $budget->user_id === $user->id,
             403
         );
 
-
         $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-            'name' =>
-                ['required', 'string', 'max:255'],
+            'amount' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
 
-            'amount' =>
-                ['required', 'numeric', 'min:0'],
+            'period' => [
+                'required',
+                'in:monthly,yearly,custom',
+            ],
 
-            'period' =>
-                ['required', 'in:monthly,yearly,custom'],
+            'start_date' => [
+                'required',
+                'date',
+            ],
 
-            'start_date' =>
-                ['required', 'date'],
+            'end_date' => [
+                'nullable',
+                'date',
+                'after_or_equal:start_date',
+            ],
 
-            'end_date' =>
-                ['nullable', 'date', 'after_or_equal:start_date'],
+            'color' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-            'color' =>
-                ['nullable', 'string', 'max:20'],
+            'icon' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
 
-            'icon' =>
-                ['nullable', 'string', 'max:20'],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
 
-            'is_active' =>
-                ['nullable', 'boolean'],
+            'category_ids' => [
+                'nullable',
+                'array',
+            ],
 
-            'category_ids' =>
-                ['nullable', 'array'],
-
-            'category_ids.*' =>
-                ['integer', 'exists:categories,id'],
-
+            'category_ids.*' => [
+                'integer',
+                'exists:categories,id',
+            ],
         ]);
 
+        /*
+         * =========================================================
+         * CUSTOM BUDGET
+         * =========================================================
+         */
 
         if (
             $validated['period'] === 'custom'
             &&
             empty($validated['end_date'])
         ) {
-
             return back()
                 ->withErrors([
                     'end_date' =>
@@ -492,9 +512,13 @@ class BudgetController extends Controller
                 ->withInput();
         }
 
+        /*
+         * =========================================================
+         * BUDGET AKTUALISIEREN
+         * =========================================================
+         */
 
         $budget->update([
-
             'name' =>
                 $validated['name'],
 
@@ -518,16 +542,21 @@ class BudgetController extends Controller
 
             'is_active' =>
                 $request->boolean('is_active', false),
-
         ]);
 
-
         /*
-         * Nur eigene Kategorien übernehmen.
+         * =========================================================
+         * KATEGORIEN AKTUALISIEREN
+         * =========================================================
          */
 
         $categoryIds =
             $validated['category_ids'] ?? [];
+
+        /*
+         * Sicherheit:
+         * Nur Kategorien des aktuellen Benutzers verwenden.
+         */
 
         $categoryIds =
             $user->categories()
@@ -535,11 +564,9 @@ class BudgetController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-
         $budget->categories()->sync(
             $categoryIds
         );
-
 
         return redirect()
             ->route('budgets.index')
@@ -548,7 +575,6 @@ class BudgetController extends Controller
                 'Budget wurde erfolgreich aktualisiert.'
             );
     }
-
 
     /**
      * =========================================================
@@ -561,16 +587,27 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+        /*
+         * Sicherheit:
+         * Budget muss dem angemeldeten Benutzer gehören.
+         */
+
         abort_unless(
             $budget->user_id === $user->id,
             403
         );
 
+        /*
+         * Kategorien-Zuordnungen entfernen.
+         */
 
         $budget->categories()->detach();
 
-        $budget->delete();
+        /*
+         * Budget löschen.
+         */
 
+        $budget->delete();
 
         return redirect()
             ->route('budgets.index')
