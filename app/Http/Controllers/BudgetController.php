@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Budget;
+use App\Models\Transaction;
 use App\Services\BudgetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -39,8 +40,10 @@ class BudgetController extends Controller
         } catch (\Exception $e) {
             $month = now()->startOfMonth();
 
-            $selectedMonth = $month->format('Y-m');
+            $selectedMonth =
+                $month->format('Y-m');
         }
+
 
         /*
          * =========================================================
@@ -53,6 +56,7 @@ class BudgetController extends Controller
             ->orderBy('name')
             ->get();
 
+
         /*
          * =========================================================
          * BUDGETWERTE BERECHNEN
@@ -60,15 +64,14 @@ class BudgetController extends Controller
          */
 
         foreach ($budgets as $budget) {
-            $calculation = $budgetService->calculate(
-                $budget,
-                $user,
-                $month
-            );
 
-            /*
-             * Berechnete Werte am Budget-Model bereitstellen.
-             */
+            $calculation =
+                $budgetService->calculate(
+                    $budget,
+                    $user,
+                    $month
+                );
+
 
             $budget->calculated_spent =
                 $calculation['spent'];
@@ -92,6 +95,7 @@ class BudgetController extends Controller
                 $calculation['applicable'];
         }
 
+
         /*
          * =========================================================
          * VIEW
@@ -99,11 +103,17 @@ class BudgetController extends Controller
          */
 
         return view('budgets.index', [
-            'budgets' => $budgets,
-            'selectedMonth' => $selectedMonth,
-            'referenceMonth' => $month,
+            'budgets' =>
+                $budgets,
+
+            'selectedMonth' =>
+                $selectedMonth,
+
+            'referenceMonth' =>
+                $month,
         ]);
     }
+
 
     /**
      * =========================================================
@@ -114,14 +124,18 @@ class BudgetController extends Controller
     {
         $user = $request->user();
 
+
         $categories = $user->categories()
             ->orderBy('name')
             ->get();
 
+
         return view('budgets.create', [
-            'categories' => $categories,
+            'categories' =>
+                $categories,
         ]);
     }
+
 
     /**
      * =========================================================
@@ -132,7 +146,9 @@ class BudgetController extends Controller
     {
         $user = $request->user();
 
+
         $validated = $request->validate([
+
             'name' => [
                 'required',
                 'string',
@@ -189,6 +205,7 @@ class BudgetController extends Controller
             ],
         ]);
 
+
         /*
          * =========================================================
          * CUSTOM BUDGET
@@ -200,6 +217,7 @@ class BudgetController extends Controller
             &&
             empty($validated['end_date'])
         ) {
+
             return back()
                 ->withErrors([
                     'end_date' =>
@@ -208,37 +226,44 @@ class BudgetController extends Controller
                 ->withInput();
         }
 
+
         /*
          * =========================================================
          * BUDGET ERSTELLEN
          * =========================================================
          */
 
-        $budget = $user->budgets()->create([
-            'name' =>
-                $validated['name'],
+        $budget =
+            $user->budgets()->create([
 
-            'amount' =>
-                $validated['amount'],
+                'name' =>
+                    $validated['name'],
 
-            'period' =>
-                $validated['period'],
+                'amount' =>
+                    $validated['amount'],
 
-            'start_date' =>
-                $validated['start_date'],
+                'period' =>
+                    $validated['period'],
 
-            'end_date' =>
-                $validated['end_date'] ?? null,
+                'start_date' =>
+                    $validated['start_date'],
 
-            'color' =>
-                $validated['color'] ?? null,
+                'end_date' =>
+                    $validated['end_date'] ?? null,
 
-            'icon' =>
-                $validated['icon'] ?? null,
+                'color' =>
+                    $validated['color'] ?? null,
 
-            'is_active' =>
-                $request->boolean('is_active', true),
-        ]);
+                'icon' =>
+                    $validated['icon'] ?? null,
+
+                'is_active' =>
+                    $request->boolean(
+                        'is_active',
+                        true
+                    ),
+            ]);
+
 
         /*
          * =========================================================
@@ -249,20 +274,21 @@ class BudgetController extends Controller
         $categoryIds =
             $validated['category_ids'] ?? [];
 
-        /*
-         * Sicherheit:
-         * Nur Kategorien des aktuellen Benutzers verwenden.
-         */
 
         $categoryIds =
             $user->categories()
-                ->whereIn('id', $categoryIds)
+                ->whereIn(
+                    'id',
+                    $categoryIds
+                )
                 ->pluck('id')
                 ->toArray();
+
 
         $budget->categories()->sync(
             $categoryIds
         );
+
 
         return redirect()
             ->route('budgets.index')
@@ -271,6 +297,7 @@ class BudgetController extends Controller
                 'Budget wurde erfolgreich erstellt.'
             );
     }
+
 
     /**
      * =========================================================
@@ -284,15 +311,18 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+
         /*
-         * Sicherheit:
-         * Budget muss dem angemeldeten Benutzer gehören.
+         * =========================================================
+         * SICHERHEIT
+         * =========================================================
          */
 
         abort_unless(
             $budget->user_id === $user->id,
             403
         );
+
 
         /*
          * =========================================================
@@ -305,25 +335,32 @@ class BudgetController extends Controller
             now()->format('Y-m')
         );
 
+
         try {
+
             $month = Carbon::createFromFormat(
                 'Y-m',
                 $selectedMonth
             )->startOfMonth();
+
         } catch (\Exception $e) {
-            $month = now()->startOfMonth();
+
+            $month =
+                now()->startOfMonth();
 
             $selectedMonth =
                 $month->format('Y-m');
         }
 
+
         /*
          * =========================================================
-         * KATEGORIEN LADEN
+         * BUDGET LADEN
          * =========================================================
          */
 
         $budget->load('categories');
+
 
         /*
          * =========================================================
@@ -338,9 +375,11 @@ class BudgetController extends Controller
                 $month
             );
 
+
         /*
-         * Berechnete Werte zusätzlich
-         * am Budget-Model bereitstellen.
+         * =========================================================
+         * BERECHNETE WERTE AM MODEL
+         * =========================================================
          */
 
         $budget->calculated_spent =
@@ -364,23 +403,123 @@ class BudgetController extends Controller
         $budget->calculated_applicable =
             $calculation['applicable'];
 
+
+        /*
+         * =========================================================
+         * TRANSAKTIONEN
+         * =========================================================
+         *
+         * Die Detailansicht erwartet immer
+         * die Variable $transactions.
+         *
+         * Deshalb wird sie bereits vor der Abfrage
+         * als leere Collection definiert.
+         */
+
+        $transactions =
+            collect();
+
+
+        /*
+         * =========================================================
+         * TRANSAKTIONEN LADEN
+         * =========================================================
+         *
+         * Es werden exakt dieselben Kriterien verwendet
+         * wie bei der Budgetberechnung:
+         *
+         * - aktueller Benutzer
+         * - Ausgaben
+         * - berechneter Budgetzeitraum
+         * - Budgetkategorien
+         */
+
+        if (
+            $calculation['applicable']
+            &&
+            $calculation['start_date']
+            &&
+            $calculation['end_date']
+        ) {
+
+            $categoryIds =
+                $budget->categories
+                    ->pluck('id')
+                    ->toArray();
+
+
+            /*
+             * Ohne Kategorien gibt es keine
+             * zugeordneten Budgetbuchungen.
+             */
+
+            if (!empty($categoryIds)) {
+
+                $transactions =
+                    Transaction::query()
+
+                        ->where(
+                            'user_id',
+                            $user->id
+                        )
+
+                        ->where(
+                            'type',
+                            'expense'
+                        )
+
+                        ->whereBetween(
+                            'transaction_date',
+                            [
+                                $calculation['start_date'],
+                                $calculation['end_date'],
+                            ]
+                        )
+
+                        ->whereIn(
+                            'category_id',
+                            $categoryIds
+                        )
+
+                        ->with([
+                            'category',
+                            'account',
+                        ])
+
+                        ->orderByDesc(
+                            'transaction_date'
+                        )
+
+                        ->get();
+            }
+        }
+
+
         /*
          * =========================================================
          * VIEW
          * =========================================================
-         *
-         * WICHTIG:
-         * budgets.show verwendet direkt
-         * $calculation.
          */
 
         return view('budgets.show', [
-            'budget' => $budget,
-            'selectedMonth' => $selectedMonth,
-            'referenceMonth' => $month,
-            'calculation' => $calculation,
+
+            'budget' =>
+                $budget,
+
+            'selectedMonth' =>
+                $selectedMonth,
+
+            'referenceMonth' =>
+                $month,
+
+            'calculation' =>
+                $calculation,
+
+            'transactions' =>
+                $transactions,
         ]);
     }
+
 
     /**
      * =========================================================
@@ -393,6 +532,7 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+
         /*
          * Sicherheit:
          * Budget muss dem angemeldeten Benutzer gehören.
@@ -403,17 +543,26 @@ class BudgetController extends Controller
             403
         );
 
-        $categories = $user->categories()
-            ->orderBy('name')
-            ->get();
+
+        $categories =
+            $user->categories()
+                ->orderBy('name')
+                ->get();
+
 
         $budget->load('categories');
 
+
         return view('budgets.edit', [
-            'budget' => $budget,
-            'categories' => $categories,
+
+            'budget' =>
+                $budget,
+
+            'categories' =>
+                $categories,
         ]);
     }
+
 
     /**
      * =========================================================
@@ -426,6 +575,7 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+
         /*
          * Sicherheit:
          * Budget muss dem angemeldeten Benutzer gehören.
@@ -436,7 +586,9 @@ class BudgetController extends Controller
             403
         );
 
+
         $validated = $request->validate([
+
             'name' => [
                 'required',
                 'string',
@@ -493,6 +645,7 @@ class BudgetController extends Controller
             ],
         ]);
 
+
         /*
          * =========================================================
          * CUSTOM BUDGET
@@ -504,6 +657,7 @@ class BudgetController extends Controller
             &&
             empty($validated['end_date'])
         ) {
+
             return back()
                 ->withErrors([
                     'end_date' =>
@@ -512,6 +666,7 @@ class BudgetController extends Controller
                 ->withInput();
         }
 
+
         /*
          * =========================================================
          * BUDGET AKTUALISIEREN
@@ -519,6 +674,7 @@ class BudgetController extends Controller
          */
 
         $budget->update([
+
             'name' =>
                 $validated['name'],
 
@@ -541,8 +697,12 @@ class BudgetController extends Controller
                 $validated['icon'] ?? null,
 
             'is_active' =>
-                $request->boolean('is_active', false),
+                $request->boolean(
+                    'is_active',
+                    false
+                ),
         ]);
+
 
         /*
          * =========================================================
@@ -553,20 +713,21 @@ class BudgetController extends Controller
         $categoryIds =
             $validated['category_ids'] ?? [];
 
-        /*
-         * Sicherheit:
-         * Nur Kategorien des aktuellen Benutzers verwenden.
-         */
 
         $categoryIds =
             $user->categories()
-                ->whereIn('id', $categoryIds)
+                ->whereIn(
+                    'id',
+                    $categoryIds
+                )
                 ->pluck('id')
                 ->toArray();
+
 
         $budget->categories()->sync(
             $categoryIds
         );
+
 
         return redirect()
             ->route('budgets.index')
@@ -575,6 +736,7 @@ class BudgetController extends Controller
                 'Budget wurde erfolgreich aktualisiert.'
             );
     }
+
 
     /**
      * =========================================================
@@ -587,6 +749,7 @@ class BudgetController extends Controller
     ) {
         $user = $request->user();
 
+
         /*
          * Sicherheit:
          * Budget muss dem angemeldeten Benutzer gehören.
@@ -597,17 +760,20 @@ class BudgetController extends Controller
             403
         );
 
+
         /*
-         * Kategorien-Zuordnungen entfernen.
+         * Kategorie-Verknüpfungen entfernen.
          */
 
         $budget->categories()->detach();
+
 
         /*
          * Budget löschen.
          */
 
         $budget->delete();
+
 
         return redirect()
             ->route('budgets.index')

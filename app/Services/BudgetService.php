@@ -9,53 +9,27 @@ use Carbon\Carbon;
 class BudgetService
 {
     /**
-     * Berechnet die Budgetwerte für einen bestimmten Bezugsmonat.
+     * =========================================================
+     * BUDGET BERECHNEN
+     * =========================================================
      *
-     * =============================================================
-     * MONTHLY
-     * =============================================================
+     * Berechnet die Budgetwerte für den ausgewählten Bezugsmonat.
      *
-     * Das Budget gilt jeden Monat ab start_date.
+     * MONTHLY:
+     * - Budgetbetrag gilt pro Monat.
+     * - Im Startmonat ab start_date.
+     * - Danach jeweils kompletter Monat.
+     * - Optionales end_date begrenzt das Budget.
      *
-     * Beispiel:
+     * YEARLY:
+     * - Budgetbetrag gilt pro Kalenderjahr.
+     * - Verbrauch wird kumulativ vom Jahresbeginn
+     *   bzw. start_date bis zum ausgewählten Monat berechnet.
      *
-     * Start: 15.08.2026
-     * Betrag: 400 €
-     *
-     * August:
-     * 15.08. – 31.08.
-     *
-     * September:
-     * 01.09. – 30.09.
-     *
-     *
-     * =============================================================
-     * YEARLY
-     * =============================================================
-     *
-     * Das Budget gilt pro Kalenderjahr.
-     *
-     * Beispiel:
-     *
-     * Start: 15.08.2026
-     * Betrag: 4.800 €
-     *
-     * Jahr 2026:
-     * 15.08. – 31.12.
-     *
-     * Jahr 2027:
-     * 01.01. – 31.12.
-     *
-     *
-     * =============================================================
-     * CUSTOM
-     * =============================================================
-     *
-     * Das Budget gilt ausschließlich zwischen start_date
-     * und end_date.
-     *
-     * Der ausgewählte Monat muss den definierten Zeitraum
-     * überschneiden.
+     * CUSTOM:
+     * - Budget gilt ausschließlich zwischen start_date
+     *   und end_date.
+     * - Der ausgewählte Monat wird auf diesen Zeitraum begrenzt.
      */
     public function calculate(
         Budget $budget,
@@ -73,11 +47,9 @@ class BudgetService
             ->copy()
             ->startOfMonth();
 
-
         $referenceMonthStart = $referenceMonth
             ->copy()
             ->startOfMonth();
-
 
         $referenceMonthEnd = $referenceMonth
             ->copy()
@@ -94,22 +66,49 @@ class BudgetService
             ->copy()
             ->startOfDay();
 
+        /*
+         * end_date darf bei monatlichen/jährlichen
+         * Budgets NULL sein.
+         */
 
         $endDate = $budget->end_date
-            ->copy()
-            ->endOfDay();
+            ? $budget->end_date->copy()->endOfDay()
+            : null;
 
 
         /*
          * =========================================================
-         * ALLGEMEINE PRÜFUNG
+         * STARTDATUM PRÜFEN
          * =========================================================
          *
-         * Liegt der ausgewählte Monat vollständig vor
-         * dem Startdatum?
+         * Liegt der ausgewählte Monat vollständig
+         * vor dem Budgetbeginn?
          */
 
         if ($referenceMonthEnd->lt($startDate)) {
+
+            return $this->emptyResult(
+                $budget,
+                $referenceMonth
+            );
+        }
+
+
+        /*
+         * =========================================================
+         * ENDZEITRAUM PRÜFEN
+         * =========================================================
+         *
+         * Wenn ein Enddatum existiert und der ausgewählte
+         * Monat vollständig danach liegt, ist das Budget
+         * nicht mehr gültig.
+         */
+
+        if (
+            $endDate !== null
+            &&
+            $referenceMonthStart->gt($endDate)
+        ) {
 
             return $this->emptyResult(
                 $budget,
@@ -132,50 +131,43 @@ class BudgetService
              * MONATLICH
              * =====================================================
              *
-             * Der Budgetbetrag gilt für jeden Monat.
+             * Nur der ausgewählte Monat wird berücksichtigt.
              */
 
             case 'monthly':
 
-                $budgetStart = $referenceMonthStart->copy();
+                $budgetStart =
+                    $referenceMonthStart->copy();
 
-                $budgetEnd = $referenceMonthEnd->copy();
+                $budgetEnd =
+                    $referenceMonthEnd->copy();
 
 
                 /*
                  * Im ersten Monat erst ab dem tatsächlichen
-                 * Startdatum zählen.
+                 * Budgetbeginn zählen.
                  */
 
                 if ($budgetStart->lt($startDate)) {
 
-                    $budgetStart = $startDate->copy();
+                    $budgetStart =
+                        $startDate->copy();
                 }
 
 
                 /*
-                 * Falls ein Enddatum existiert und dieses
-                 * vor dem ausgewählten Monat liegt, ist das
-                 * Budget nicht mehr gültig.
+                 * Falls ein Enddatum existiert,
+                 * Budget bis maximal zu diesem Datum.
                  */
 
-                if ($referenceMonthStart->gt($endDate)) {
+                if (
+                    $endDate !== null
+                    &&
+                    $budgetEnd->gt($endDate)
+                ) {
 
-                    return $this->emptyResult(
-                        $budget,
-                        $referenceMonth
-                    );
-                }
-
-
-                /*
-                 * Im letzten Monat bis zum tatsächlichen
-                 * Enddatum zählen.
-                 */
-
-                if ($budgetEnd->gt($endDate)) {
-
-                    $budgetEnd = $endDate->copy();
+                    $budgetEnd =
+                        $endDate->copy();
                 }
 
 
@@ -187,19 +179,39 @@ class BudgetService
              * JÄHRLICH
              * =====================================================
              *
-             * Der Budgetbetrag gilt für das gesamte Kalenderjahr.
+             * Der Verbrauch ist kumulativ.
+             *
+             * Beispiel:
+             *
+             * Jahresbudget: 4.800 €
+             *
+             * Start: 15.08.2026
+             *
+             * August:
+             * 15.08. – 31.08.
+             *
+             * September:
+             * 15.08. – 30.09.
+             *
+             * Oktober:
+             * 15.08. – 31.10.
+             *
+             * usw.
+             *
+             * Ab dem Folgejahr:
+             *
+             * 01.01. – ausgewählter Monat.
              */
 
             case 'yearly':
 
-                $budgetStart = $referenceMonth
-                    ->copy()
-                    ->startOfYear();
+                $budgetStart =
+                    $referenceMonth
+                        ->copy()
+                        ->startOfYear();
 
-
-                $budgetEnd = $referenceMonth
-                    ->copy()
-                    ->endOfYear();
+                $budgetEnd =
+                    $referenceMonthEnd->copy();
 
 
                 /*
@@ -209,32 +221,23 @@ class BudgetService
 
                 if ($budgetStart->lt($startDate)) {
 
-                    $budgetStart = $startDate->copy();
+                    $budgetStart =
+                        $startDate->copy();
                 }
 
 
                 /*
-                 * Falls das Enddatum vor dem ausgewählten
-                 * Jahr liegt, ist das Budget nicht mehr gültig.
+                 * Enddatum begrenzen.
                  */
 
-                if ($referenceMonthStart->gt($endDate)) {
+                if (
+                    $endDate !== null
+                    &&
+                    $budgetEnd->gt($endDate)
+                ) {
 
-                    return $this->emptyResult(
-                        $budget,
-                        $referenceMonth
-                    );
-                }
-
-
-                /*
-                 * Falls ein Enddatum innerhalb des Jahres liegt,
-                 * wird der Zeitraum entsprechend begrenzt.
-                 */
-
-                if ($budgetEnd->gt($endDate)) {
-
-                    $budgetEnd = $endDate->copy();
+                    $budgetEnd =
+                        $endDate->copy();
                 }
 
 
@@ -253,8 +256,22 @@ class BudgetService
             case 'custom':
 
                 /*
-                 * Prüfen, ob der ausgewählte Monat überhaupt
-                 * mit dem Custom-Zeitraum überschneidet.
+                 * Custom-Budget benötigt zwingend ein Enddatum.
+                 */
+
+                if ($endDate === null) {
+
+                    return $this->emptyResult(
+                        $budget,
+                        $referenceMonth
+                    );
+                }
+
+
+                /*
+                 * Prüfen, ob der ausgewählte Monat
+                 * überhaupt mit dem Budgetzeitraum
+                 * überschneidet.
                  */
 
                 if (
@@ -271,17 +288,18 @@ class BudgetService
 
 
                 /*
-                 * Tatsächlichen Zeitraum setzen.
+                 * Tatsächlichen Budgetzeitraum setzen.
                  */
 
-                $budgetStart = $startDate->copy();
+                $budgetStart =
+                    $startDate->copy();
 
-                $budgetEnd = $endDate->copy();
+                $budgetEnd =
+                    $endDate->copy();
 
 
                 /*
-                 * Zeitraum auf den ausgewählten Monat
-                 * begrenzen.
+                 * Auf den ausgewählten Monat begrenzen.
                  */
 
                 if ($budgetStart->lt($referenceMonthStart)) {
@@ -320,7 +338,7 @@ class BudgetService
 
         /*
          * =========================================================
-         * SICHERHEITSPRÜFUNG ZEITRAUM
+         * SICHERHEITSPRÜFUNG
          * =========================================================
          */
 
@@ -347,6 +365,9 @@ class BudgetService
          * =========================================================
          * VERBRAUCH
          * =========================================================
+         *
+         * Ein Budget ohne Kategorien hat aktuell
+         * keinen Verbrauch.
          */
 
         if ($categoryIds->isEmpty()) {
@@ -381,7 +402,6 @@ class BudgetService
         $budgetAmount =
             (float) $budget->amount;
 
-
         $spentAmount =
             (float) $spent;
 
@@ -389,7 +409,8 @@ class BudgetService
         /*
          * =========================================================
          * RESTBETRAG
-         * ========================================================= */
+         * =========================================================
+         */
 
         $remaining =
             $budgetAmount -
@@ -399,7 +420,8 @@ class BudgetService
         /*
          * =========================================================
          * PROZENT
-         * ========================================================= */
+         * =========================================================
+         */
 
         $percentage =
             $budgetAmount > 0
@@ -413,7 +435,8 @@ class BudgetService
         /*
          * =========================================================
          * ERGEBNIS
-         * ========================================================= */
+         * =========================================================
+         */
 
         return [
 
@@ -443,8 +466,12 @@ class BudgetService
 
 
     /**
-     * Leeres Ergebnis für einen Zeitraum,
-     * in dem das Budget nicht gültig ist.
+     * =========================================================
+     * LEERES ERGEBNIS
+     * =========================================================
+     *
+     * Wird zurückgegeben, wenn das Budget im ausgewählten
+     * Zeitraum nicht gültig ist.
      */
     private function emptyResult(
         Budget $budget,

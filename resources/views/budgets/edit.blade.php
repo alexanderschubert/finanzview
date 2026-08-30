@@ -30,7 +30,9 @@
     </div>
 
 
+    {{-- ========================================================= --}}
     {{-- FEHLER --}}
+    {{-- ========================================================= --}}
 
     @if ($errors->any())
 
@@ -43,7 +45,11 @@
             <ul class="list-disc list-inside text-sm space-y-1">
 
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+
+                    <li>
+                        {{ $error }}
+                    </li>
+
                 @endforeach
 
             </ul>
@@ -52,6 +58,10 @@
 
     @endif
 
+
+    {{-- ========================================================= --}}
+    {{-- FORMULAR --}}
+    {{-- ========================================================= --}}
 
     <form
         method="POST"
@@ -63,7 +73,9 @@
         @method('PUT')
 
 
+        {{-- ===================================================== --}}
         {{-- NAME --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
@@ -104,7 +116,9 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- BETRAG --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
@@ -154,7 +168,9 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- ZEITRAUM --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
@@ -163,6 +179,8 @@
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+
+                {{-- STARTDATUM --}}
 
                 <div>
 
@@ -177,7 +195,7 @@
                         id="start_date"
                         type="date"
                         name="start_date"
-                        value="{{ old('start_date', $budget->start_date->format('Y-m-d')) }}"
+                        value="{{ old('start_date', optional($budget->start_date)->format('Y-m-d')) }}"
                         required
                         class="
                             mt-2
@@ -196,6 +214,9 @@
                     >
 
                 </div>
+
+
+                {{-- ENDDATUM --}}
 
                 <div>
 
@@ -210,8 +231,7 @@
                         id="end_date"
                         type="date"
                         name="end_date"
-                        value="{{ old('end_date', $budget->end_date->format('Y-m-d')) }}"
-                        required
+                        value="{{ old('end_date', optional($budget->end_date)->format('Y-m-d')) }}"
                         class="
                             mt-2
                             w-full
@@ -228,7 +248,14 @@
                         "
                     >
 
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                        Bei einem benutzerdefinierten Budget erforderlich.
+                    </p>
+
                 </div>
+
+
+                {{-- WIEDERHOLUNG --}}
 
                 <div>
 
@@ -259,15 +286,24 @@
                         "
                     >
 
-                        <option value="monthly" @selected(old('period', $budget->period) === 'monthly')>
+                        <option
+                            value="monthly"
+                            @selected(old('period', $budget->period) === 'monthly')
+                        >
                             Monatlich
                         </option>
 
-                        <option value="yearly" @selected(old('period', $budget->period) === 'yearly')>
+                        <option
+                            value="yearly"
+                            @selected(old('period', $budget->period) === 'yearly')
+                        >
                             Jährlich
                         </option>
 
-                        <option value="custom" @selected(old('period', $budget->period) === 'custom')>
+                        <option
+                            value="custom"
+                            @selected(old('period', $budget->period) === 'custom')
+                        >
                             Benutzerdefiniert
                         </option>
 
@@ -280,28 +316,72 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- KATEGORIEN --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
-            <h3 class="font-semibold text-slate-900 dark:text-white">
-                Kategorien
-            </h3>
+            <div class="flex items-start justify-between gap-4">
 
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Kategorien für dieses Budget auswählen.
-            </p>
+                <div>
+
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Kategorien
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Wähle die Kategorien aus, deren Ausgaben diesem Budget zugeordnet werden.
+                    </p>
+
+                </div>
+
+                <span
+                    class="
+                        hidden
+                        sm:inline-flex
+                        items-center
+                        rounded-full
+                        bg-slate-100
+                        dark:bg-slate-800
+                        px-3
+                        py-1.5
+                        text-xs
+                        font-medium
+                        text-slate-600
+                        dark:text-slate-300
+                    "
+                >
+                    {{ $budget->categories->count() }}
+                    ausgewählt
+                </span>
+
+            </div>
+
 
             @php
+
+                /*
+                 * Bereits gespeicherte Kategorien laden.
+                 *
+                 * Nach einem Validierungsfehler werden stattdessen
+                 * die zuvor ausgewählten category_ids verwendet.
+                 */
+
                 $selectedCategories = old(
-                    'categories',
-                    $budget->categories->pluck('id')->toArray()
+                    'category_ids',
+                    $budget->categories
+                        ->pluck('id')
+                        ->map(fn ($id) => (int) $id)
+                        ->toArray()
                 );
+
             @endphp
+
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
 
-                @foreach ($categories as $category)
+                @forelse ($categories as $category)
 
                     <label
                         class="
@@ -316,18 +396,49 @@
                             cursor-pointer
                             hover:bg-slate-50
                             dark:hover:bg-slate-800
+                            transition
                         "
                     >
 
                         <input
                             type="checkbox"
-                            name="categories[]"
+                            name="category_ids[]"
                             value="{{ $category->id }}"
-                            @checked(in_array($category->id, $selectedCategories))
-                            class="w-4 h-4 rounded border-slate-300 dark:border-slate-500"
+                            @checked(
+                                in_array(
+                                    (int) $category->id,
+                                    array_map(
+                                        'intval',
+                                        (array) $selectedCategories
+                                    ),
+                                    true
+                                )
+                            )
+                            class="
+                                w-4
+                                h-4
+                                rounded
+                                border-slate-300
+                                dark:border-slate-500
+                                text-emerald-600
+                                focus:ring-emerald-500
+                            "
                         >
 
-                        <span class="text-xl">
+                        <span
+                            class="
+                                w-9
+                                h-9
+                                rounded-xl
+                                bg-slate-100
+                                dark:bg-slate-800
+                                flex
+                                items-center
+                                justify-center
+                                text-lg
+                                flex-shrink-0
+                            "
+                        >
                             {{ $category->icon ?: '📁' }}
                         </span>
 
@@ -337,14 +448,41 @@
 
                     </label>
 
-                @endforeach
+                @empty
+
+                    <div
+                        class="
+                            sm:col-span-2
+                            rounded-2xl
+                            bg-amber-50
+                            dark:bg-amber-950/30
+                            border
+                            border-amber-200
+                            dark:border-amber-900
+                            p-5
+                        "
+                    >
+
+                        <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                            Keine Kategorien vorhanden
+                        </p>
+
+                        <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                            Lege zuerst mindestens eine Kategorie an.
+                        </p>
+
+                    </div>
+
+                @endforelse
 
             </div>
 
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- DARSTELLUNG --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
@@ -353,6 +491,8 @@
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+
+                {{-- ICON --}}
 
                 <div>
 
@@ -368,7 +508,7 @@
                         type="text"
                         name="icon"
                         value="{{ old('icon', $budget->icon ?: '🎯') }}"
-                        maxlength="255"
+                        maxlength="20"
                         class="
                             mt-2
                             w-full
@@ -387,6 +527,9 @@
 
                 </div>
 
+
+                {{-- FARBE --}}
+
                 <div>
 
                     <label
@@ -401,7 +544,8 @@
                         type="text"
                         name="color"
                         value="{{ old('color', $budget->color ?: '#f1f5f9') }}"
-                        maxlength="255"
+                        maxlength="20"
+                        placeholder="#f1f5f9"
                         class="
                             mt-2
                             w-full
@@ -425,7 +569,9 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- AKTIV --}}
+        {{-- ===================================================== --}}
 
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
 
@@ -436,7 +582,15 @@
                     name="is_active"
                     value="1"
                     @checked(old('is_active', $budget->is_active))
-                    class="w-4 h-4 rounded border-slate-300 dark:border-slate-500"
+                    class="
+                        w-4
+                        h-4
+                        rounded
+                        border-slate-300
+                        dark:border-slate-500
+                        text-emerald-600
+                        focus:ring-emerald-500
+                    "
                 >
 
                 <div>
@@ -445,8 +599,8 @@
                         Budget aktiv
                     </p>
 
-                    <p class="text-xs text-slate-400 mt-1">
-                        Aktive Budgets werden berücksichtigt.
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        Aktive Budgets werden bei der Berechnung berücksichtigt.
                     </p>
 
                 </div>
@@ -456,7 +610,9 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- BUTTONS --}}
+        {{-- ===================================================== --}}
 
         <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
 
@@ -476,27 +632,28 @@
                     font-medium
                     text-slate-700
                     dark:text-slate-200
-                    hover:bg-slate-800
+                    hover:bg-slate-50
+                    dark:hover:bg-slate-800
+                    transition
                 "
             >
                 Abbrechen
             </a>
+
 
             <button
                 type="submit"
                 class="
                     flex-1
                     rounded-xl
-                    bg-white
-                    dark:bg-slate-950
+                    bg-emerald-600
                     px-5
                     py-3
                     text-sm
                     font-medium
-                    text-slate-900
-                    dark:text-white
-                    hover:bg-slate-100
-                    dark:hover:bg-slate-800
+                    text-white
+                    hover:bg-emerald-700
+                    transition
                 "
             >
                 Änderungen speichern

@@ -384,11 +384,9 @@
             <div class="flex items-center justify-between">
 
                 <p class="text-sm text-slate-500 dark:text-slate-400">
-
                     {{ $calculation['remaining'] >= 0
                         ? 'Verbleibend'
                         : 'Über Budget' }}
-
                 </p>
 
                 <div
