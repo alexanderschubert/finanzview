@@ -7,6 +7,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\RecurringTransactionController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -137,6 +138,17 @@ Route::middleware('auth')->group(function () {
      */
 
     Route::resource('transactions', TransactionController::class);
+
+
+    /*
+     * =========================================================
+     * WIEDERKEHRENDE BUCHUNGEN
+     * ========================================================= */
+
+    Route::resource(
+        'recurring-transactions',
+        RecurringTransactionController::class
+    );
 
 
     /*
