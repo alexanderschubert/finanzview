@@ -6,11 +6,9 @@
 
 @section('page_title', 'Buchungen')
 
-
 @section('content')
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -20,15 +18,31 @@
 
         <div class="min-w-0">
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Finanzverwaltung
-            </p>
+            <div class="flex items-center gap-2">
 
-            <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    Finanzverwaltung
+                </p>
+
+            </div>
+
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-900
+                    dark:text-white
+                    mt-2
+                "
+            >
                 Buchungen
             </h2>
 
-            <p class="text-slate-500 dark:text-slate-400 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
                 Verwalte deine Einnahmen und Ausgaben.
             </p>
 
@@ -42,25 +56,25 @@
                 items-center
                 justify-center
                 rounded-xl
-                bg-slate-950
-                dark:bg-white
+                bg-emerald-600
                 px-5
                 py-3
                 text-sm
                 font-medium
                 text-white
-                dark:text-slate-950
-                hover:bg-slate-800
-                dark:hover:bg-slate-200
+                hover:bg-emerald-700
                 transition
                 flex-shrink-0
             "
         >
-            + Buchung
+            <span class="mr-2 text-emerald-200">
+                +
+            </span>
+
+            Neue Buchung
         </a>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -113,7 +127,6 @@
     @endif
 
 
-
     {{-- ========================================================= --}}
     {{-- FILTER --}}
     {{-- ========================================================= --}}
@@ -123,27 +136,61 @@
             bg-white
             dark:bg-slate-900
             rounded-3xl
-            shadow-sm
             border
             border-slate-100
             dark:border-slate-800
+            shadow-sm
             p-6
             sm:p-8
             mt-8
         "
     >
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div
+            class="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-3
+                mb-6
+            "
+        >
 
             <div>
 
-                <h3 class="font-semibold text-slate-900 dark:text-white">
-                    Filter
-                </h3>
+                <div class="flex items-center gap-2">
 
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Grenze deine Buchungen nach Zeitraum, Art und Konto ein.
-                </p>
+                    <div
+                        class="
+                            w-9
+                            h-9
+                            rounded-xl
+                            bg-emerald-50
+                            dark:bg-emerald-950/50
+                            flex
+                            items-center
+                            justify-center
+                            text-lg
+                        "
+                    >
+                        🔎
+                    </div>
+
+                    <div>
+
+                        <h3 class="font-semibold text-slate-900 dark:text-white">
+                            Buchungen filtern
+                        </h3>
+
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            Grenze die Anzeige nach Zeitraum, Art, Konto oder Kategorie ein.
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -154,10 +201,11 @@
                     inline-flex
                     items-center
                     text-sm
+                    font-medium
                     text-slate-500
                     dark:text-slate-400
-                    hover:text-slate-900
-                    dark:hover:text-white
+                    hover:text-emerald-600
+                    dark:hover:text-emerald-400
                     transition
                 "
             >
@@ -170,9 +218,14 @@
         <form
             method="GET"
             action="{{ route('transactions.index') }}"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+            class="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-5
+                gap-4
+            "
         >
-
 
             {{-- MONAT --}}
 
@@ -220,7 +273,6 @@
                 >
 
             </div>
-
 
 
             {{-- TYP --}}
@@ -287,7 +339,6 @@
                 </select>
 
             </div>
-
 
 
             {{-- KONTO --}}
@@ -358,7 +409,6 @@
             </div>
 
 
-
             {{-- KATEGORIE --}}
 
             <div class="min-w-0">
@@ -427,7 +477,6 @@
             </div>
 
 
-
             {{-- FILTERN --}}
 
             <div class="flex items-end">
@@ -440,16 +489,13 @@
                         items-center
                         justify-center
                         rounded-xl
-                        bg-slate-950
-                        dark:bg-white
+                        bg-emerald-600
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-white
-                        dark:text-slate-950
-                        hover:bg-slate-800
-                        dark:hover:bg-slate-200
+                        hover:bg-emerald-700
                         transition
                     "
                 >
@@ -463,13 +509,11 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
-    {{-- ÜBERSICHT --}}
+    {{-- KENNZAHLEN --}}
     {{-- ========================================================= --}}
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-
 
         {{-- ANZAHL --}}
 
@@ -477,29 +521,47 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
                 shadow-sm
-                p-5
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Buchungen
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-slate-900 dark:text-white mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Buchungen
+                </p>
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-slate-100
+                        dark:bg-slate-800
+                        flex
+                        items-center
+                        justify-center
+                    "
+                >
+                    💳
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-slate-900 dark:text-white mt-5">
                 {{ $transactions->total() }}
             </p>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 Gefundene Buchungen
             </p>
 
         </div>
-
 
 
         {{-- EINNAHMEN --}}
@@ -508,29 +570,49 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
                 shadow-sm
-                p-5
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Einnahmen
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Einnahmen
+                </p>
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-emerald-600
+                        dark:text-emerald-400
+                    "
+                >
+                    ↗
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400 mt-5">
                 +{{ number_format($totalIncome ?? 0, 2, ',', '.') }} €
             </p>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 Gesamtbetrag
             </p>
 
         </div>
-
 
 
         {{-- AUSGABEN --}}
@@ -539,24 +621,45 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
                 shadow-sm
-                p-5
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Ausgaben
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-red-600 dark:text-red-400 mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Ausgaben
+                </p>
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-red-50
+                        dark:bg-red-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-red-600
+                        dark:text-red-400
+                    "
+                >
+                    ↘
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-red-600 dark:text-red-400 mt-5">
                 -{{ number_format($totalExpense ?? 0, 2, ',', '.') }} €
             </p>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 Gesamtbetrag
             </p>
 
@@ -565,9 +668,8 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
-    {{-- BUCHUNGEN --}}
+    {{-- BUCHUNGSLISTE --}}
     {{-- ========================================================= --}}
 
     <div
@@ -584,47 +686,58 @@
         "
     >
 
-
-        {{-- DESKTOP HEADER --}}
+        {{-- HEADER --}}
 
         <div
             class="
-                hidden
-                md:grid
-                md:grid-cols-[1fr_160px_160px_120px]
-                gap-4
-                px-6
-                py-4
+                p-6
                 border-b
                 border-slate-100
                 dark:border-slate-800
-                bg-slate-50
-                dark:bg-slate-800/60
-                text-xs
-                font-medium
-                text-slate-500
-                dark:text-slate-400
+                flex
+                items-center
+                justify-between
+                gap-4
             "
         >
 
-            <div>
-                Buchung
+            <div class="min-w-0">
+
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Aktivitäten
+                </p>
+
+                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
+                    Alle Buchungen
+                </h3>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Deine erfassten Einnahmen und Ausgaben
+                </p>
+
             </div>
 
-            <div>
-                Konto
-            </div>
+            <div
+                class="
+                    hidden
+                    sm:flex
+                    items-center
+                    gap-2
+                    text-xs
+                    text-slate-400
+                    dark:text-slate-500
+                "
+            >
 
-            <div>
-                Datum
-            </div>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                Einnahmen
 
-            <div class="text-right">
-                Betrag
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 ml-3"></span>
+                Ausgaben
+
             </div>
 
         </div>
-
 
 
         @if ($transactions->isEmpty())
@@ -652,16 +765,13 @@
                     💸
                 </div>
 
-
                 <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
                     Keine Buchungen gefunden
                 </h3>
 
-
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
                     Für die aktuellen Filter wurden keine Buchungen gefunden.
                 </p>
-
 
                 <a
                     href="{{ route('transactions.create') }}"
@@ -671,16 +781,13 @@
                         justify-center
                         mt-6
                         rounded-xl
-                        bg-slate-950
-                        dark:bg-white
+                        bg-emerald-600
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-white
-                        dark:text-slate-950
-                        hover:bg-slate-800
-                        dark:hover:bg-slate-200
+                        hover:bg-emerald-700
                         transition
                     "
                 >
@@ -755,9 +862,7 @@
                                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
                                                 @if ($transaction->category)
-
                                                     · {{ $transaction->category->name }}
-
                                                 @endif
 
                                             </p>
@@ -832,7 +937,6 @@
                         </div>
 
 
-
                         {{-- DESKTOP --}}
 
                         <div
@@ -844,7 +948,6 @@
                                 items-center
                             "
                         >
-
 
                             {{-- BUCHUNG --}}
 
@@ -923,7 +1026,6 @@
                             </div>
 
 
-
                             {{-- KONTO --}}
 
                             <div class="text-sm text-slate-600 dark:text-slate-300 truncate">
@@ -935,7 +1037,6 @@
                             </div>
 
 
-
                             {{-- DATUM --}}
 
                             <div class="text-sm text-slate-500 dark:text-slate-400">
@@ -943,7 +1044,6 @@
                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
                             </div>
-
 
 
                             {{-- BETRAG --}}
@@ -1010,6 +1110,46 @@
 
 
         @endif
+
+    </div>
+
+
+    {{-- ========================================================= --}}
+    {{-- HINWEIS --}}
+    {{-- ========================================================= --}}
+
+    <div
+        class="
+            mt-5
+            rounded-2xl
+            bg-slate-50
+            dark:bg-slate-900
+            border
+            border-slate-100
+            dark:border-slate-800
+            p-5
+        "
+    >
+
+        <div class="flex items-start gap-3">
+
+            <span class="text-lg">
+                💡
+            </span>
+
+            <div>
+
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Tipp
+                </p>
+
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Klicke auf eine Buchung, um sie zu bearbeiten oder weitere Details anzuzeigen.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 

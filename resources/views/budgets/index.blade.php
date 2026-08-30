@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Budgets – Finanzblick')
+
 @section('eyebrow', 'Finanzplanung')
+
 @section('page_title', 'Budgets')
 
 @section('content')
@@ -14,13 +16,29 @@
 
     <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
 
-        <div>
+        <div class="min-w-0">
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Finanzplanung
-            </p>
+            <div class="flex items-center gap-2">
 
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    Finanzplanung
+                </p>
+
+            </div>
+
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-900
+                    dark:text-white
+                    mt-2
+                "
+            >
                 Deine Budgets
             </h2>
 
@@ -34,8 +52,6 @@
         {{-- AKTIONEN --}}
 
         <div class="flex flex-col sm:flex-row gap-3">
-
-            {{-- MONAT --}}
 
             <form
                 method="GET"
@@ -53,7 +69,7 @@
                         border-slate-200
                         dark:border-slate-700
                         bg-white
-                        dark:bg-slate-900
+                        dark:bg-slate-800
                         px-4
                         py-3
                         text-sm
@@ -74,7 +90,7 @@
                         border-slate-200
                         dark:border-slate-700
                         bg-white
-                        dark:bg-slate-900
+                        dark:bg-slate-800
                         px-4
                         py-3
                         text-sm
@@ -82,7 +98,7 @@
                         text-slate-700
                         dark:text-slate-200
                         hover:bg-slate-50
-                        dark:hover:bg-slate-800
+                        dark:hover:bg-slate-700
                         transition
                     "
                 >
@@ -91,8 +107,6 @@
 
             </form>
 
-
-            {{-- BUDGET ERSTELLEN --}}
 
             <a
                 href="{{ route('budgets.create') }}"
@@ -105,14 +119,19 @@
                     px-5
                     py-3
                     text-sm
-                    font-semibold
+                    font-medium
                     text-white
                     hover:bg-emerald-700
                     transition
+                    flex-shrink-0
                 "
             >
-                <span class="mr-2 text-emerald-200">+</span>
+                <span class="mr-2 text-emerald-200">
+                    +
+                </span>
+
                 Budget erstellen
+
             </a>
 
         </div>
@@ -121,69 +140,76 @@
 
 
     {{-- ========================================================= --}}
-    {{-- BEZUGSMONAT --}}
+    {{-- MONAT --}}
     {{-- ========================================================= --}}
 
     <div
         class="
-            mt-6
-            rounded-2xl
-            border
-            border-slate-200
-            dark:border-slate-700
+            mt-8
+            rounded-3xl
             bg-white
             dark:bg-slate-900
-            px-5
-            py-4
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-center
-            sm:justify-between
-            gap-3
+            border
+            border-slate-100
+            dark:border-slate-800
+            shadow-sm
+            p-6
         "
     >
 
-        <div>
-
-            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                Budgetübersicht
-            </p>
-
-            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
-
-                Budgetverbrauch für
-
-                <span class="font-semibold text-slate-900 dark:text-white">
-                    {{ $referenceMonth->translatedFormat('F Y') }}
-                </span>
-
-            </p>
-
-        </div>
-
-
-        <span
+        <div
             class="
-                inline-flex
-                items-center
-                rounded-full
-                bg-slate-100
-                dark:bg-slate-800
-                px-3
-                py-1.5
-                text-xs
-                font-medium
-                text-slate-600
-                dark:text-slate-300
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-4
             "
         >
 
-            {{ $budgets->count() }}
+            <div>
 
-            {{ $budgets->count() === 1 ? 'Budget' : 'Budgets' }}
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Budgetübersicht
+                </p>
 
-        </span>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
+                    {{ $referenceMonth->translatedFormat('F Y') }}
+                </h3>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Budgetverbrauch für den ausgewählten Monat.
+                </p>
+
+            </div>
+
+
+            <div
+                class="
+                    inline-flex
+                    items-center
+                    rounded-full
+                    bg-slate-100
+                    dark:bg-slate-800
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-medium
+                    text-slate-600
+                    dark:text-slate-300
+                    self-start
+                    sm:self-auto
+                "
+            >
+
+                {{ $budgets->count() }}
+
+                {{ $budgets->count() === 1 ? 'Budget' : 'Budgets' }}
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -199,18 +225,29 @@
                 mt-5
                 rounded-2xl
                 border
-                border-emerald-200
+                border-emerald-100
                 dark:border-emerald-900
                 bg-emerald-50
                 dark:bg-emerald-950/40
-                px-5
-                py-4
+                p-4
                 text-sm
                 text-emerald-700
-                dark:text-emerald-400
+                dark:text-emerald-300
             "
         >
-            {{ session('success') }}
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-lg">
+                    ✓
+                </span>
+
+                <span>
+                    {{ session('success') }}
+                </span>
+
+            </div>
+
         </div>
 
     @endif
@@ -229,18 +266,19 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-200
-                dark:border-slate-700
+                border-slate-100
+                dark:border-slate-800
                 shadow-sm
                 p-10
+                sm:p-14
                 text-center
             "
         >
 
             <div
                 class="
-                    w-14
-                    h-14
+                    w-16
+                    h-16
                     mx-auto
                     rounded-2xl
                     bg-emerald-50
@@ -248,25 +286,28 @@
                     flex
                     items-center
                     justify-center
-                    text-2xl
+                    text-3xl
                 "
             >
                 🎯
             </div>
 
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-4">
+            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
                 Noch keine Budgets
             </h3>
 
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Erstelle dein erstes Budget, um deine Ausgaben zu planen.
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
+                Erstelle dein erstes Budget, um deine Ausgaben zu planen
+                und deine finanziellen Ziele besser im Blick zu behalten.
             </p>
 
             <a
                 href="{{ route('budgets.create') }}"
                 class="
                     inline-flex
-                    mt-5
+                    items-center
+                    justify-center
+                    mt-6
                     rounded-xl
                     bg-emerald-600
                     px-5
@@ -284,6 +325,7 @@
         </div>
 
     @else
+
 
         {{-- ===================================================== --}}
         {{-- BUDGETKARTEN --}}
@@ -322,8 +364,8 @@
                         dark:bg-slate-900
                         rounded-3xl
                         border
-                        border-slate-200
-                        dark:border-slate-700
+                        border-slate-100
+                        dark:border-slate-800
                         shadow-sm
                         overflow-hidden
                         transition
@@ -334,10 +376,11 @@
                 >
 
                     {{-- ================================================= --}}
-                    {{-- KARTENINHALT --}}
+                    {{-- INHALT --}}
                     {{-- ================================================= --}}
 
                     <div class="p-6">
+
 
                         {{-- HEADER --}}
 
@@ -504,17 +547,24 @@
                         </div>
 
 
-                        {{-- ================================================= --}}
                         {{-- ZEITRAUM --}}
-                        {{-- ================================================= --}}
 
-                        <div class="mt-5">
+                        <div
+                            class="
+                                mt-6
+                                rounded-2xl
+                                bg-slate-50
+                                dark:bg-slate-800
+                                px-4
+                                py-3
+                            "
+                        >
 
                             <p class="text-xs text-slate-400 dark:text-slate-500">
                                 Berechnungszeitraum
                             </p>
 
-                            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">
 
                                 {{ $budget->calculated_start_date->format('d.m.Y') }}
 
@@ -527,9 +577,7 @@
                         </div>
 
 
-                        {{-- ================================================= --}}
                         {{-- BUDGETBETRAG --}}
-                        {{-- ================================================= --}}
 
                         <div class="mt-6">
 
@@ -552,7 +600,7 @@
 
 
                         {{-- ================================================= --}}
-                        {{-- VERBRAUCH --}}
+                        {{-- NICHT GÜLTIG --}}
                         {{-- ================================================= --}}
 
                         @if (!$isApplicable)
@@ -563,31 +611,48 @@
                                     rounded-2xl
                                     bg-slate-50
                                     dark:bg-slate-800
-                                    px-4
-                                    py-4
+                                    p-4
                                 "
                             >
 
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-3">
 
-                                    <span class="text-base">
+                                    <div
+                                        class="
+                                            w-9
+                                            h-9
+                                            rounded-xl
+                                            bg-slate-200
+                                            dark:bg-slate-700
+                                            flex
+                                            items-center
+                                            justify-center
+                                        "
+                                    >
                                         🕐
-                                    </span>
+                                    </div>
 
-                                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                        In diesem Monat nicht gültig
-                                    </p>
+                                    <div>
+
+                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                            Nicht gültig
+                                        </p>
+
+                                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                            Für {{ $referenceMonth->translatedFormat('F Y') }}
+                                            werden keine Ausgaben angerechnet.
+                                        </p>
+
+                                    </div>
 
                                 </div>
-
-                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                                    Für {{ $referenceMonth->translatedFormat('F Y') }}
-                                    werden keine Ausgaben angerechnet.
-                                </p>
 
                             </div>
 
                         @else
+
+
+                            {{-- VERBRAUCH --}}
 
                             <div class="mt-6">
 
@@ -716,14 +781,14 @@
                         <div class="mt-6">
 
                             <p class="text-xs text-slate-400 dark:text-slate-500 mb-2">
-                                Kategorien
+                                Zugeordnete Kategorien
                             </p>
 
                             @if ($budget->categories->isEmpty())
 
-                                <span class="text-sm text-slate-400 dark:text-slate-500">
-                                    Keine Kategorien zugeordnet
-                                </span>
+                                <p class="text-sm text-slate-400 dark:text-slate-500">
+                                    Keine Kategorien zugeordnet.
+                                </p>
 
                             @else
 
@@ -743,7 +808,7 @@
                                                 py-1
                                                 text-xs
                                                 text-slate-600
-                                                dark:text-slate-200
+                                                dark:text-slate-300
                                             "
                                         >
 
@@ -770,11 +835,13 @@
 
                     <div
                         class="
-                            border-t
-                            border-slate-200
-                            dark:border-slate-700
                             px-6
                             py-4
+                            bg-slate-50
+                            dark:bg-slate-800/60
+                            border-t
+                            border-slate-100
+                            dark:border-slate-800
                             flex
                             items-center
                             justify-between

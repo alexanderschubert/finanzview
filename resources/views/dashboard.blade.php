@@ -6,7 +6,7 @@
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -18,9 +18,9 @@
 
             <div class="flex items-center gap-2">
 
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
 
-                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <p class="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">
                     Finanzübersicht
                 </p>
 
@@ -40,11 +40,12 @@
                 Hallo, {{ auth()->user()->name }}
             </h2>
 
-            <p class="text-slate-500 dark:text-slate-400 mt-2">
-                Hier ist deine finanzielle Übersicht für {{ $currentMonth }}.
+            <p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2">
+                Deine finanzielle Übersicht für {{ $currentMonth }}.
             </p>
 
         </div>
+
 
         <div class="flex flex-col sm:flex-row gap-3">
 
@@ -61,17 +62,19 @@
                     name="month"
                     value="{{ $selectedMonth }}"
                     class="
+                        min-w-0
                         rounded-xl
                         border
                         border-slate-200
                         dark:border-slate-700
                         bg-white
-                        dark:bg-slate-800
+                        dark:bg-slate-900
                         px-4
                         py-3
                         text-sm
                         text-slate-700
                         dark:text-slate-200
+                        shadow-sm
                         focus:outline-none
                         focus:ring-2
                         focus:ring-emerald-500/20
@@ -87,7 +90,7 @@
                         border-slate-200
                         dark:border-slate-700
                         bg-white
-                        dark:bg-slate-800
+                        dark:bg-slate-900
                         px-4
                         py-3
                         text-sm
@@ -95,14 +98,16 @@
                         text-slate-700
                         dark:text-slate-200
                         hover:bg-slate-50
-                        dark:hover:bg-slate-700
+                        dark:hover:bg-slate-800
                         transition
+                        shadow-sm
                     "
                 >
                     Anzeigen
                 </button>
 
             </form>
+
 
             {{-- NEUE BUCHUNG --}}
 
@@ -121,10 +126,10 @@
                     text-white
                     hover:bg-emerald-700
                     transition
-                    flex-shrink-0
+                    shadow-sm
                 "
             >
-                <span class="mr-2 text-emerald-200">
+                <span class="mr-2 text-emerald-200 text-lg leading-none">
                     +
                 </span>
 
@@ -140,7 +145,8 @@
     {{-- KENNZAHLEN --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
+
 
         {{-- GESAMTVERMÖGEN --}}
 
@@ -150,19 +156,20 @@
                 overflow-hidden
                 rounded-3xl
                 bg-slate-950
-                dark:bg-slate-800
+                dark:bg-slate-900
                 text-white
                 p-6
+                shadow-sm
             "
         >
 
             <div
                 class="
                     absolute
-                    -right-8
-                    -top-8
-                    w-32
-                    h-32
+                    -right-10
+                    -top-10
+                    w-36
+                    h-36
                     rounded-full
                     bg-emerald-500/10
                 "
@@ -178,13 +185,14 @@
 
                     <div
                         class="
-                            w-9
-                            h-9
-                            rounded-xl
+                            w-10
+                            h-10
+                            rounded-2xl
                             bg-white/10
                             flex
                             items-center
                             justify-center
+                            text-lg
                         "
                     >
                         💰
@@ -220,7 +228,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 p-6
@@ -235,9 +243,9 @@
 
                 <div
                     class="
-                        w-9
-                        h-9
-                        rounded-xl
+                        w-10
+                        h-10
+                        rounded-2xl
                         bg-emerald-50
                         dark:bg-emerald-950/50
                         flex
@@ -278,7 +286,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 p-6
@@ -293,9 +301,9 @@
 
                 <div
                     class="
-                        w-9
-                        h-9
-                        rounded-xl
+                        w-10
+                        h-10
+                        rounded-2xl
                         bg-red-50
                         dark:bg-red-950/50
                         flex
@@ -336,7 +344,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 p-6
@@ -351,9 +359,9 @@
 
                 <div
                     class="
-                        w-9
-                        h-9
-                        rounded-xl
+                        w-10
+                        h-10
+                        rounded-2xl
                         bg-slate-100
                         dark:bg-slate-800
                         flex
@@ -403,6 +411,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
 
+
         {{-- MONATSSALDO --}}
 
         <div
@@ -411,9 +420,10 @@
                 rounded-3xl
                 border
                 p-6
+                shadow-sm
                 {{ $monthlyBalance >= 0
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900'
-                    : 'bg-red-50 dark:bg-red-950/40 border-red-100 dark:border-red-900' }}
+                    ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900'
+                    : 'bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900' }}
             "
         >
 
@@ -424,7 +434,7 @@
                     sm:flex-row
                     sm:items-center
                     sm:justify-between
-                    gap-4
+                    gap-5
                 "
             >
 
@@ -438,6 +448,7 @@
                         class="
                             text-3xl
                             font-semibold
+                            tracking-tight
                             mt-2
                             {{ $monthlyBalance >= 0
                                 ? 'text-emerald-700 dark:text-emerald-400'
@@ -457,6 +468,7 @@
                     </p>
 
                 </div>
+
 
                 <div
                     class="
@@ -493,7 +505,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 p-6
@@ -587,7 +599,7 @@
             dark:bg-slate-900
             rounded-3xl
             border
-            border-slate-100
+            border-slate-200
             dark:border-slate-800
             shadow-sm
             mt-5
@@ -624,6 +636,7 @@
 
                 </div>
 
+
                 <div
                     class="
                         flex
@@ -636,18 +649,25 @@
                 >
 
                     <div class="flex items-center gap-2">
+
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+
                         Einnahmen
+
                     </div>
 
                     <div class="flex items-center gap-2">
+
                         <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+
                         Ausgaben
+
                     </div>
 
                 </div>
 
             </div>
+
 
             @php
 
@@ -662,6 +682,7 @@
                 );
 
             @endphp
+
 
             <div class="space-y-7 mt-8">
 
@@ -699,6 +720,9 @@
                             </span>
 
                         </div>
+
+
+                        {{-- EINNAHMEN --}}
 
                         <div class="flex items-center gap-3">
 
@@ -738,6 +762,9 @@
                             </span>
 
                         </div>
+
+
+                        {{-- AUSGABEN --}}
 
                         <div class="flex items-center gap-3 mt-2">
 
@@ -906,7 +933,7 @@
             dark:bg-slate-900
             rounded-3xl
             border
-            border-slate-100
+            border-slate-200
             dark:border-slate-800
             shadow-sm
             mt-5
@@ -943,6 +970,7 @@
 
                 </div>
 
+
                 <div class="sm:text-right">
 
                     <p class="text-xs text-slate-400 dark:text-slate-500">
@@ -956,6 +984,7 @@
                 </div>
 
             </div>
+
 
             @if ($wealthMonths->isNotEmpty())
 
@@ -972,10 +1001,12 @@
                             @for ($i = 0; $i <= 4; $i++)
 
                                 @php
+
                                     $lineY =
                                         $paddingTop +
                                         ($i / 4) *
                                         $innerHeight;
+
                                 @endphp
 
                                 <line
@@ -990,11 +1021,13 @@
 
                             @endfor
 
+
                             <polygon
                                 points="{{ $wealthAreaPoints }}"
                                 fill="#10b981"
                                 opacity="0.08"
                             />
+
 
                             <polyline
                                 points="{{ $wealthLinePoints }}"
@@ -1004,6 +1037,7 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                             />
+
 
                             @foreach ($wealthPoints as $point)
 
@@ -1017,6 +1051,7 @@
                                 />
 
                             @endforeach
+
 
                             @foreach ($wealthPoints as $point)
 
@@ -1038,6 +1073,7 @@
                     </div>
 
                 </div>
+
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
 
@@ -1141,6 +1177,7 @@
 
             </div>
 
+
             <a
                 href="{{ route('budgets.index', ['month' => $selectedMonth]) }}"
                 class="
@@ -1148,8 +1185,8 @@
                     font-medium
                     text-slate-500
                     dark:text-slate-400
-                    hover:text-slate-900
-                    dark:hover:text-white
+                    hover:text-emerald-600
+                    dark:hover:text-emerald-400
                     transition
                 "
             >
@@ -1161,15 +1198,13 @@
 
         @if ($budgets->isEmpty())
 
-            {{-- KEINE BUDGETS --}}
-
             <div
                 class="
                     bg-white
                     dark:bg-slate-900
                     rounded-3xl
                     border
-                    border-slate-100
+                    border-slate-200
                     dark:border-slate-800
                     shadow-sm
                     p-10
@@ -1240,7 +1275,7 @@
                             dark:bg-slate-900
                             rounded-3xl
                             border
-                            border-slate-100
+                            border-slate-200
                             dark:border-slate-800
                             shadow-sm
                             p-5
@@ -1251,8 +1286,6 @@
                             transition
                         "
                     >
-
-                        {{-- HEADER --}}
 
                         <div class="flex items-center gap-3">
 
@@ -1267,10 +1300,7 @@
                                     text-xl
                                     flex-shrink-0
                                 "
-                                style="
-                                    background-color:
-                                    {{ $budget->color ?: '#ecfdf5' }}
-                                "
+                                style="background-color: {{ $budget->color ?: '#ecfdf5' }}"
                             >
                                 {{ $budget->icon ?: '🎯' }}
                             </div>
@@ -1312,81 +1342,27 @@
                             </div>
 
 
-                            {{-- STATUS --}}
-
                             @if (!$budget->calculated_applicable)
 
-                                <span
-                                    class="
-                                        rounded-full
-                                        bg-slate-100
-                                        dark:bg-slate-800
-                                        px-2.5
-                                        py-1
-                                        text-xs
-                                        font-medium
-                                        text-slate-500
-                                        dark:text-slate-400
-                                        whitespace-nowrap
-                                    "
-                                >
+                                <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
                                     Nicht aktiv
                                 </span>
 
                             @elseif ($budget->calculated_exceeded)
 
-                                <span
-                                    class="
-                                        rounded-full
-                                        bg-red-50
-                                        dark:bg-red-950/50
-                                        px-2.5
-                                        py-1
-                                        text-xs
-                                        font-medium
-                                        text-red-600
-                                        dark:text-red-400
-                                        whitespace-nowrap
-                                    "
-                                >
+                                <span class="rounded-full bg-red-50 dark:bg-red-950/50 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 whitespace-nowrap">
                                     Überschritten
                                 </span>
 
                             @elseif ($budget->calculated_percentage >= 80)
 
-                                <span
-                                    class="
-                                        rounded-full
-                                        bg-amber-50
-                                        dark:bg-amber-950/50
-                                        px-2.5
-                                        py-1
-                                        text-xs
-                                        font-medium
-                                        text-amber-600
-                                        dark:text-amber-400
-                                        whitespace-nowrap
-                                    "
-                                >
+                                <span class="rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 whitespace-nowrap">
                                     Achtung
                                 </span>
 
                             @else
 
-                                <span
-                                    class="
-                                        rounded-full
-                                        bg-emerald-50
-                                        dark:bg-emerald-950/50
-                                        px-2.5
-                                        py-1
-                                        text-xs
-                                        font-medium
-                                        text-emerald-600
-                                        dark:text-emerald-400
-                                        whitespace-nowrap
-                                    "
-                                >
+                                <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                                     OK
                                 </span>
 
@@ -1395,35 +1371,15 @@
                         </div>
 
 
-                        {{-- NICHT ANWENDBAR --}}
-
                         @if (!$budget->calculated_applicable)
 
                             <div class="mt-6">
 
-                                <div
-                                    class="
-                                        rounded-2xl
-                                        bg-slate-50
-                                        dark:bg-slate-800
-                                        p-4
-                                    "
-                                >
+                                <div class="rounded-2xl bg-slate-50 dark:bg-slate-800 p-4">
 
                                     <div class="flex items-center gap-3">
 
-                                        <div
-                                            class="
-                                                w-9
-                                                h-9
-                                                rounded-xl
-                                                bg-slate-200
-                                                dark:bg-slate-700
-                                                flex
-                                                items-center
-                                                justify-center
-                                            "
-                                        >
+                                        <div class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                             🕐
                                         </div>
 
@@ -1448,8 +1404,6 @@
 
                         @else
 
-                            {{-- VERBRAUCH --}}
-
                             <div class="mt-6">
 
                                 <div class="flex items-center justify-between">
@@ -1465,20 +1419,16 @@
                                             ? 'text-red-600 dark:text-red-400'
                                             : 'text-slate-900 dark:text-white' }}
                                     ">
-
                                         {{ number_format(
                                             $budget->calculated_spent,
                                             2,
                                             ',',
                                             '.'
                                         ) }} €
-
                                     </span>
 
                                 </div>
 
-
-                                {{-- PROGRESSBAR --}}
 
                                 <div
                                     class="
@@ -1504,44 +1454,27 @@
                                                         : 'bg-emerald-500'
                                                 ) }}
                                         "
-                                        style="
-                                            width:
-                                            {{ min(
-                                                max(
-                                                    $budget->calculated_percentage,
-                                                    0
-                                                ),
-                                                100
-                                            ) }}%
-                                        "
+                                        style="width: {{ min(max($budget->calculated_percentage, 0), 100) }}%"
                                     ></div>
 
                                 </div>
 
 
-                                {{-- PROZENT / REST --}}
-
                                 <div class="flex items-center justify-between mt-2">
 
                                     <span class="text-xs text-slate-400 dark:text-slate-500">
-
                                         {{ number_format(
                                             $budget->calculated_percentage,
                                             1,
                                             ',',
                                             '.'
                                         ) }} %
-
                                     </span>
 
 
                                     @if ($budget->calculated_remaining >= 0)
 
-                                        <span class="
-                                            text-xs
-                                            text-emerald-600
-                                            dark:text-emerald-400
-                                        ">
+                                        <span class="text-xs text-emerald-600 dark:text-emerald-400">
 
                                             Noch
 
@@ -1556,12 +1489,7 @@
 
                                     @else
 
-                                        <span class="
-                                            text-xs
-                                            font-medium
-                                            text-red-600
-                                            dark:text-red-400
-                                        ">
+                                        <span class="text-xs font-medium text-red-600 dark:text-red-400">
 
                                             {{ number_format(
                                                 abs($budget->calculated_remaining),
@@ -1583,26 +1511,13 @@
                         @endif
 
 
-                        {{-- KATEGORIEN --}}
-
                         @if ($budget->categories->isNotEmpty())
 
                             <div class="flex flex-wrap gap-2 mt-5">
 
                                 @foreach ($budget->categories->take(3) as $category)
 
-                                    <span
-                                        class="
-                                            rounded-full
-                                            bg-slate-100
-                                            dark:bg-slate-800
-                                            px-2.5
-                                            py-1
-                                            text-xs
-                                            text-slate-600
-                                            dark:text-slate-300
-                                        "
-                                    >
+                                    <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
 
                                         {{ $category->icon ?: '📁' }}
 
@@ -1615,18 +1530,7 @@
 
                                 @if ($budget->categories->count() > 3)
 
-                                    <span
-                                        class="
-                                            rounded-full
-                                            bg-slate-100
-                                            dark:bg-slate-800
-                                            px-2.5
-                                            py-1
-                                            text-xs
-                                            text-slate-500
-                                            dark:text-slate-400
-                                        "
-                                    >
+                                    <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs text-slate-500 dark:text-slate-400">
                                         +{{ $budget->categories->count() - 3 }}
                                     </span>
 
@@ -1653,6 +1557,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
 
+
         {{-- KONTEN --}}
 
         <div
@@ -1662,7 +1567,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 overflow-hidden
@@ -1704,8 +1609,8 @@
                         text-sm
                         text-slate-500
                         dark:text-slate-400
-                        hover:text-slate-900
-                        dark:hover:text-white
+                        hover:text-emerald-600
+                        dark:hover:text-emerald-400
                         transition
                         whitespace-nowrap
                     "
@@ -1720,20 +1625,7 @@
 
                 <div class="p-10 text-center">
 
-                    <div
-                        class="
-                            w-14
-                            h-14
-                            mx-auto
-                            rounded-2xl
-                            bg-slate-100
-                            dark:bg-slate-800
-                            flex
-                            items-center
-                            justify-center
-                            text-2xl
-                        "
-                    >
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
                         🏦
                     </div>
 
@@ -1754,6 +1646,7 @@
                             font-medium
                             text-white
                             hover:bg-emerald-700
+                            transition
                         "
                     >
                         Konto erstellen
@@ -1842,7 +1735,7 @@
 
                             </div>
 
-                            <span class="text-slate-300 dark:text-slate-600">
+                            <span class="hidden sm:block text-slate-300 dark:text-slate-600">
                                 →
                             </span>
 
@@ -1865,7 +1758,7 @@
                 dark:bg-slate-900
                 rounded-3xl
                 border
-                border-slate-100
+                border-slate-200
                 dark:border-slate-800
                 shadow-sm
                 overflow-hidden
@@ -1900,20 +1793,7 @@
 
                 <div class="p-8 text-center">
 
-                    <div
-                        class="
-                            w-12
-                            h-12
-                            mx-auto
-                            rounded-2xl
-                            bg-slate-100
-                            dark:bg-slate-800
-                            flex
-                            items-center
-                            justify-center
-                            text-xl
-                        "
-                    >
+                    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl">
                         📊
                     </div>
 
@@ -1957,14 +1837,7 @@
 
                                 </div>
 
-                                <span
-                                    class="
-                                        font-medium
-                                        text-slate-900
-                                        dark:text-white
-                                        whitespace-nowrap
-                                    "
-                                >
+                                <span class="font-medium text-slate-900 dark:text-white whitespace-nowrap">
                                     {{ number_format(
                                         $item['amount'],
                                         2,
@@ -1974,6 +1847,7 @@
                                 </span>
 
                             </div>
+
 
                             <div
                                 class="
@@ -2021,7 +1895,7 @@
             dark:bg-slate-900
             rounded-3xl
             border
-            border-slate-100
+            border-slate-200
             dark:border-slate-800
             shadow-sm
             mt-5
@@ -2064,8 +1938,8 @@
                     text-sm
                     text-slate-500
                     dark:text-slate-400
-                    hover:text-slate-900
-                    dark:hover:text-white
+                    hover:text-emerald-600
+                    dark:hover:text-emerald-400
                     transition
                     whitespace-nowrap
                 "
@@ -2080,20 +1954,7 @@
 
             <div class="p-10 text-center">
 
-                <div
-                    class="
-                        w-14
-                        h-14
-                        mx-auto
-                        rounded-2xl
-                        bg-slate-100
-                        dark:bg-slate-800
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl">
                     💳
                 </div>
 
@@ -2114,6 +1975,7 @@
                         font-medium
                         text-white
                         hover:bg-emerald-700
+                        transition
                     "
                 >
                     Erste Buchung erstellen
@@ -2163,15 +2025,7 @@
                                 {{ $transaction->description }}
                             </p>
 
-                            <p
-                                class="
-                                    text-sm
-                                    text-slate-500
-                                    dark:text-slate-400
-                                    mt-1
-                                    truncate
-                                "
-                            >
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
 
                                 {{ $transaction->transaction_date?->format('d.m.Y') }}
 
@@ -2241,6 +2095,7 @@
 
         </div>
 
+
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
             @foreach ([
@@ -2273,7 +2128,7 @@
                         dark:bg-slate-900
                         rounded-2xl
                         border
-                        border-slate-100
+                        border-slate-200
                         dark:border-slate-800
                         shadow-sm
                         p-5

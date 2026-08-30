@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Kredit hinzufügen – Finanzblick')
+@section('title', 'Kredit bearbeiten – Finanzblick')
 
 @section('eyebrow', 'Finanzplanung')
 
-@section('page_title', 'Kredit hinzufügen')
+@section('page_title', 'Kredit bearbeiten')
 
 @section('content')
 
@@ -24,18 +24,18 @@
             </p>
 
             <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
-                Kredit hinzufügen
+                Kredit bearbeiten
             </h2>
 
             <p class="text-slate-500 dark:text-slate-400 mt-2">
-                Erstelle eine neue Finanzierung und behalte sie im Blick.
+                {{ $loan->name }}
             </p>
 
         </div>
 
 
         <a
-            href="{{ route('loans.index') }}"
+            href="{{ route('loans.show', $loan) }}"
             class="
                 inline-flex
                 items-center
@@ -60,7 +60,7 @@
         >
             ←
             <span class="ml-2">
-                Kredite
+                Kredit
             </span>
         </a>
 
@@ -125,11 +125,13 @@
 
     <form
         method="POST"
-        action="{{ route('loans.store') }}"
+        action="{{ route('loans.update', $loan) }}"
         class="mt-8 space-y-6"
     >
 
         @csrf
+
+        @method('PUT')
 
 
         {{-- ===================================================== --}}
@@ -161,7 +163,7 @@
                 </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Wer bekommt das Geld und wie heißt die Finanzierung?
+                    Bezeichnung, Gläubiger und Art der Finanzierung.
                 </p>
 
             </div>
@@ -176,14 +178,7 @@
 
                     <label
                         for="name"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Bezeichnung
                     </label>
@@ -192,9 +187,8 @@
                         type="text"
                         id="name"
                         name="name"
-                        value="{{ old('name') }}"
+                        value="{{ old('name', $loan->name) }}"
                         required
-                        placeholder="z. B. Autofinanzierung"
                         class="
                             w-full
                             rounded-xl
@@ -223,14 +217,7 @@
 
                     <label
                         for="creditor_name"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Gläubiger
                     </label>
@@ -239,7 +226,7 @@
                         type="text"
                         id="creditor_name"
                         name="creditor_name"
-                        value="{{ old('creditor_name') }}"
+                        value="{{ old('creditor_name', $loan->creditor_name) }}"
                         placeholder="z. B. PayPal, Sparkasse, auxmoney"
                         class="
                             w-full
@@ -269,14 +256,7 @@
 
                     <label
                         for="type"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Kreditart
                     </label>
@@ -304,19 +284,19 @@
                         "
                     >
 
-                        <option value="loan" @selected(old('type', 'loan') === 'loan')>
+                        <option value="loan" @selected(old('type', $loan->type) === 'loan')>
                             Ratenkredit
                         </option>
 
-                        <option value="installment" @selected(old('type') === 'installment')>
+                        <option value="installment" @selected(old('type', $loan->type) === 'installment')>
                             Finanzierung
                         </option>
 
-                        <option value="paypal_installment" @selected(old('type') === 'paypal_installment')>
+                        <option value="paypal_installment" @selected(old('type', $loan->type) === 'paypal_installment')>
                             PayPal Ratenzahlung
                         </option>
 
-                        <option value="other" @selected(old('type') === 'other')>
+                        <option value="other" @selected(old('type', $loan->type) === 'other')>
                             Sonstige
                         </option>
 
@@ -358,7 +338,7 @@
                 </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Passe das Aussehen des Kredits in der Übersicht an.
+                    Passe die Darstellung des Kredits an.
                 </p>
 
             </div>
@@ -373,14 +353,7 @@
 
                     <label
                         for="creditor_icon"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Icon
                     </label>
@@ -402,14 +375,14 @@
                                 text-2xl
                             "
                         >
-                            {{ old('creditor_icon', '💳') }}
+                            {{ old('creditor_icon', $loan->creditor_icon ?: '💳') }}
                         </div>
 
                         <input
                             type="text"
                             id="creditor_icon"
                             name="creditor_icon"
-                            value="{{ old('creditor_icon', '💳') }}"
+                            value="{{ old('creditor_icon', $loan->creditor_icon ?: '💳') }}"
                             maxlength="20"
                             class="
                                 min-w-0
@@ -447,14 +420,7 @@
 
                     <label
                         for="creditor_color"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Farbe
                     </label>
@@ -465,7 +431,7 @@
                             type="color"
                             id="creditor_color"
                             name="creditor_color"
-                            value="{{ old('creditor_color', '#10b981') }}"
+                            value="{{ old('creditor_color', $loan->creditor_color ?: '#10b981') }}"
                             class="
                                 w-14
                                 h-14
@@ -482,7 +448,7 @@
                         <div class="flex-1 flex items-center">
 
                             <span class="text-sm text-slate-500 dark:text-slate-400">
-                                Die Farbe wird für Icon und Fortschrittsbalken verwendet.
+                                Diese Farbe wird für Icon und Fortschrittsbalken verwendet.
                             </span>
 
                         </div>
@@ -540,14 +506,7 @@
 
                     <label
                         for="principal_amount"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Ursprünglicher Kreditbetrag
                     </label>
@@ -558,11 +517,10 @@
                             type="number"
                             id="principal_amount"
                             name="principal_amount"
-                            value="{{ old('principal_amount') }}"
+                            value="{{ old('principal_amount', $loan->principal_amount) }}"
                             required
                             min="0.01"
                             step="0.01"
-                            placeholder="10000,00"
                             class="
                                 w-full
                                 rounded-xl
@@ -598,14 +556,7 @@
 
                     <label
                         for="paid_amount"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Bereits getilgt
                     </label>
@@ -616,10 +567,9 @@
                             type="number"
                             id="paid_amount"
                             name="paid_amount"
-                            value="{{ old('paid_amount', 0) }}"
+                            value="{{ old('paid_amount', $loan->paid_amount) }}"
                             min="0"
                             step="0.01"
-                            placeholder="0,00"
                             class="
                                 w-full
                                 rounded-xl
@@ -655,14 +605,7 @@
 
                     <label
                         for="interest_rate"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Zinssatz
                     </label>
@@ -673,7 +616,7 @@
                             type="number"
                             id="interest_rate"
                             name="interest_rate"
-                            value="{{ old('interest_rate') }}"
+                            value="{{ old('interest_rate', $loan->interest_rate) }}"
                             min="0"
                             step="0.001"
                             placeholder="5,990"
@@ -712,14 +655,7 @@
 
                     <label
                         for="installment_amount"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Monatliche Rate
                     </label>
@@ -730,11 +666,10 @@
                             type="number"
                             id="installment_amount"
                             name="installment_amount"
-                            value="{{ old('installment_amount') }}"
+                            value="{{ old('installment_amount', $loan->installment_amount) }}"
                             required
                             min="0.01"
                             step="0.01"
-                            placeholder="250,00"
                             class="
                                 w-full
                                 rounded-xl
@@ -812,14 +747,7 @@
 
                     <label
                         for="total_installments"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Anzahl der Raten
                     </label>
@@ -828,9 +756,8 @@
                         type="number"
                         id="total_installments"
                         name="total_installments"
-                        value="{{ old('total_installments') }}"
+                        value="{{ old('total_installments', $loan->total_installments) }}"
                         min="1"
-                        placeholder="48"
                         class="
                             w-full
                             rounded-xl
@@ -853,20 +780,13 @@
                 </div>
 
 
-                {{-- BEZAHLTE RATEN --}}
+                {{-- BEREITS BEZAHLTE RATEN --}}
 
                 <div>
 
                     <label
                         for="paid_installments"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Bereits bezahlte Raten
                     </label>
@@ -875,9 +795,8 @@
                         type="number"
                         id="paid_installments"
                         name="paid_installments"
-                        value="{{ old('paid_installments', 0) }}"
+                        value="{{ old('paid_installments', $loan->paid_installments) }}"
                         min="0"
-                        placeholder="0"
                         class="
                             w-full
                             rounded-xl
@@ -906,14 +825,7 @@
 
                     <label
                         for="start_date"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Startdatum
                     </label>
@@ -922,7 +834,7 @@
                         type="date"
                         id="start_date"
                         name="start_date"
-                        value="{{ old('start_date') }}"
+                        value="{{ old('start_date', $loan->start_date?->format('Y-m-d')) }}"
                         class="
                             w-full
                             rounded-xl
@@ -951,14 +863,7 @@
 
                     <label
                         for="end_date"
-                        class="
-                            block
-                            text-sm
-                            font-medium
-                            text-slate-700
-                            dark:text-slate-300
-                            mb-2
-                        "
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                     >
                         Voraussichtliches Enddatum
                     </label>
@@ -967,7 +872,7 @@
                         type="date"
                         id="end_date"
                         name="end_date"
-                        value="{{ old('end_date') }}"
+                        value="{{ old('end_date', $loan->end_date?->format('Y-m-d')) }}"
                         class="
                             w-full
                             rounded-xl
@@ -1033,14 +938,7 @@
 
                 <label
                     for="account_id"
-                    class="
-                        block
-                        text-sm
-                        font-medium
-                        text-slate-700
-                        dark:text-slate-300
-                        mb-2
-                    "
+                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                 >
                     Konto
                 </label>
@@ -1075,9 +973,8 @@
 
                         <option
                             value="{{ $account->id }}"
-                            @selected(old('account_id') == $account->id)
+                            @selected(old('account_id', $loan->account_id) == $account->id)
                         >
-                            {{ $account->icon ?: '🏦' }}
                             {{ $account->name }}
                         </option>
 
@@ -1143,7 +1040,7 @@
                     focus:ring-emerald-500/20
                     focus:border-emerald-500
                 "
-            >{{ old('notes') }}</textarea>
+            >{{ old('notes', $loan->notes) }}</textarea>
 
         </section>
 
@@ -1168,10 +1065,16 @@
             <label class="flex items-start gap-3 cursor-pointer">
 
                 <input
+                    type="hidden"
+                    name="is_active"
+                    value="0"
+                >
+
+                <input
                     type="checkbox"
                     name="is_active"
                     value="1"
-                    @checked(old('is_active', true))
+                    @checked(old('is_active', $loan->is_active))
                     class="
                         mt-0.5
                         w-5
@@ -1216,7 +1119,7 @@
         >
 
             <a
-                href="{{ route('loans.index') }}"
+                href="{{ route('loans.show', $loan) }}"
                 class="
                     inline-flex
                     justify-center
@@ -1259,7 +1162,7 @@
                     transition
                 "
             >
-                Kredit speichern
+                Änderungen speichern
             </button>
 
         </div>

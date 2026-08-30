@@ -9,9 +9,23 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use Illuminate\Support\Facades\Route;
 
+
+/*
+|--------------------------------------------------------------------------
+| Öffentliche Routen
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Authentifizierte Routen
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
 
@@ -92,6 +106,23 @@ Route::middleware('auth')->group(function () {
 
     /*
      * =========================================================
+     * FINANZEN
+     * =========================================================
+     */
+
+    Route::get('/settings/financial', [
+        SettingsController::class,
+        'financial',
+    ])->name('settings.financial');
+
+    Route::put('/settings/financial', [
+        SettingsController::class,
+        'updateFinancial',
+    ])->name('settings.financial.update');
+
+
+    /*
+     * =========================================================
      * KONTEN
      * =========================================================
      */
@@ -134,9 +165,13 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('loans', LoanController::class);
 
+
     /*
-     * Sondertilgung
+     * =========================================================
+     * SONSTIGE KREDITFUNKTIONEN
+     * =========================================================
      */
+
     Route::post('/loans/{loan}/extra-payment', [
         LoanController::class,
         'storeExtraPayment',

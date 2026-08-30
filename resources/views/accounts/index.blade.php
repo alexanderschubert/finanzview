@@ -14,23 +14,42 @@
     {{-- HEADER --}}
     {{-- ========================================================= --}}
 
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+    <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
 
-        <div>
+        <div class="min-w-0">
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Finanzverwaltung
-            </p>
+            <div class="flex items-center gap-2">
 
-            <h2 class="text-3xl font-semibold text-slate-900 dark:text-white mt-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    Finanzverwaltung
+                </p>
+
+            </div>
+
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-900
+                    dark:text-white
+                    mt-2
+                "
+            >
                 Deine Konten
             </h2>
 
-            <p class="text-slate-500 dark:text-slate-400 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
                 Verwalte Bankkonten, Bargeld und weitere Vermögenswerte.
             </p>
 
         </div>
+
+
+        {{-- NEUES KONTO --}}
 
         <a
             href="{{ route('accounts.create') }}"
@@ -39,20 +58,24 @@
                 items-center
                 justify-center
                 rounded-xl
-                bg-slate-950
-                dark:bg-emerald-600
+                bg-emerald-600
                 px-5
                 py-3
                 text-sm
                 font-medium
                 text-white
-                hover:bg-slate-800
-                dark:hover:bg-emerald-500
+                hover:bg-emerald-700
                 transition
+                flex-shrink-0
             "
         >
-            <span class="mr-2 text-emerald-400">+</span>
-            Konto
+
+            <span class="mr-2 text-emerald-200">
+                +
+            </span>
+
+            Neues Konto
+
         </a>
 
     </div>
@@ -79,7 +102,19 @@
                 dark:text-emerald-300
             "
         >
-            {{ session('success') }}
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-lg">
+                    ✓
+                </span>
+
+                <span>
+                    {{ session('success') }}
+                </span>
+
+            </div>
+
         </div>
 
     @endif
@@ -102,19 +137,34 @@
                 dark:text-red-300
             "
         >
-            {{ session('error') }}
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-lg">
+                    !
+                </span>
+
+                <span>
+                    {{ session('error') }}
+                </span>
+
+            </div>
+
         </div>
 
     @endif
 
 
     {{-- ========================================================= --}}
-    {{-- GESAMTÜBERSICHT --}}
+    {{-- KENNZAHLEN --}}
     {{-- ========================================================= --}}
 
     @php
 
-        $activeAccounts = $accounts->where('is_active', true);
+        $activeAccounts = $accounts->where(
+            'is_active',
+            true
+        );
 
         $includedAccounts = $accounts->where(
             'include_in_total',
@@ -128,108 +178,181 @@
     @endphp
 
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
 
 
         {{-- GESAMTVERMÖGEN --}}
 
         <div
             class="
-                bg-white
-                dark:bg-slate-900
-                rounded-2xl
-                border
-                border-slate-100
-                dark:border-slate-800
-                shadow-sm
-                p-5
+                relative
+                overflow-hidden
+                rounded-3xl
+                bg-slate-950
+                dark:bg-slate-800
+                text-white
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Gesamtvermögen
-            </p>
-
-            <p
+            <div
                 class="
-                    text-2xl
-                    font-semibold
-                    mt-2
-                    {{ $totalBalance >= 0
-                        ? 'text-slate-900 dark:text-white'
-                        : 'text-red-600 dark:text-red-400' }}
+                    absolute
+                    -right-8
+                    -top-8
+                    w-32
+                    h-32
+                    rounded-full
+                    bg-emerald-500/10
                 "
-            >
-                {{ number_format(
-                    $totalBalance,
-                    2,
-                    ',',
-                    '.'
-                ) }}
-                €
-            </p>
+            ></div>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                Einbezogene Konten
-            </p>
+            <div class="relative">
+
+                <div class="flex items-center justify-between">
+
+                    <p class="text-sm text-slate-400">
+                        Gesamtvermögen
+                    </p>
+
+                    <div
+                        class="
+                            w-9
+                            h-9
+                            rounded-xl
+                            bg-white/10
+                            flex
+                            items-center
+                            justify-center
+                        "
+                    >
+                        💰
+                    </div>
+
+                </div>
+
+                <p class="text-3xl font-semibold tracking-tight mt-5">
+
+                    {{ number_format(
+                        $totalBalance,
+                        2,
+                        ',',
+                        '.'
+                    ) }} €
+
+                </p>
+
+                <p class="text-xs text-slate-500 mt-2">
+                    Alle einbezogenen Konten
+                </p>
+
+            </div>
 
         </div>
 
 
-        {{-- KONTEN --}}
+        {{-- AKTIVE KONTEN --}}
 
         <div
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
                 shadow-sm
-                p-5
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Aktive Konten
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-slate-900 dark:text-white mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Aktive Konten
+                </p>
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
+                        flex
+                        items-center
+                        justify-center
+                        text-emerald-600
+                        dark:text-emerald-400
+                    "
+                >
+                    🏦
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-slate-900 dark:text-white mt-5">
+
                 {{ $activeAccounts->count() }}
+
             </p>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
+
                 Von {{ $accounts->count() }} Konten insgesamt
+
             </p>
 
         </div>
 
 
-        {{-- EINBEZOGEN --}}
+        {{-- IM GESAMTVERMÖGEN --}}
 
         <div
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
                 shadow-sm
-                p-5
+                p-6
             "
         >
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Im Gesamtvermögen
-            </p>
+            <div class="flex items-center justify-between">
 
-            <p class="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Im Gesamtvermögen
+                </p>
+
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-slate-100
+                        dark:bg-slate-800
+                        flex
+                        items-center
+                        justify-center
+                        text-slate-600
+                        dark:text-slate-300
+                    "
+                >
+                    ✓
+                </div>
+
+            </div>
+
+            <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400 mt-5">
+
                 {{ $includedAccounts->count() }}
+
             </p>
 
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
                 Konten werden berücksichtigt
             </p>
 
@@ -244,9 +367,57 @@
 
     <div class="mt-8">
 
+        <div
+            class="
+                flex
+                flex-col
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+                gap-3
+                mb-4
+            "
+        >
+
+            <div>
+
+                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Vermögen
+                </p>
+
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
+                    Deine Konten
+                </h3>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Aktuelle Kontostände und Einstellungen
+                </p>
+
+            </div>
+
+            @if ($accounts->isNotEmpty())
+
+                <span
+                    class="
+                        text-sm
+                        text-slate-400
+                        dark:text-slate-500
+                    "
+                >
+                    {{ $accounts->count() }}
+                    {{ $accounts->count() === 1 ? 'Konto' : 'Konten' }}
+                </span>
+
+            @endif
+
+        </div>
+
+
         @if ($accounts->isEmpty())
 
+            {{-- ================================================= --}}
             {{-- KEINE KONTEN --}}
+            {{-- ================================================= --}}
 
             <div
                 class="
@@ -269,8 +440,8 @@
                         w-16
                         h-16
                         rounded-2xl
-                        bg-slate-100
-                        dark:bg-slate-800
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
                         flex
                         items-center
                         justify-center
@@ -297,18 +468,17 @@
                         justify-center
                         mt-6
                         rounded-xl
-                        bg-slate-950
-                        dark:bg-emerald-600
+                        bg-emerald-600
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-white
-                        hover:bg-slate-800
-                        dark:hover:bg-emerald-500
+                        hover:bg-emerald-700
+                        transition
                     "
                 >
-                    Erstes Konto erstellen
+                    + Erstes Konto erstellen
                 </a>
 
             </div>
@@ -325,7 +495,7 @@
                     grid-cols-1
                     md:grid-cols-2
                     xl:grid-cols-3
-                    gap-5
+                    gap-4
                 "
             >
 
@@ -333,6 +503,7 @@
 
                     <div
                         class="
+                            group
                             bg-white
                             dark:bg-slate-900
                             rounded-3xl
@@ -342,12 +513,15 @@
                             shadow-sm
                             overflow-hidden
                             hover:shadow-md
+                            hover:-translate-y-0.5
                             dark:hover:border-slate-700
                             transition
                         "
                     >
 
-                        {{-- KOPF --}}
+                        {{-- ================================================= --}}
+                        {{-- KARTENINHALT --}}
+                        {{-- ================================================= --}}
 
                         <div class="p-6">
 
@@ -364,10 +538,11 @@
                                         items-center
                                         justify-center
                                         text-2xl
+                                        flex-shrink-0
                                     "
                                     style="
                                         background-color:
-                                        {{ $account->color ?: '#f1f5f9' }};
+                                        {{ $account->color ?: '#ecfdf5' }};
                                     "
                                 >
                                     {{ $account->icon ?: '🏦' }}
@@ -380,36 +555,50 @@
 
                                     <span
                                         class="
-                                            text-[11px]
-                                            font-medium
-                                            text-emerald-700
-                                            dark:text-emerald-300
+                                            inline-flex
+                                            items-center
+                                            gap-1.5
+                                            rounded-full
                                             bg-emerald-50
                                             dark:bg-emerald-950/50
                                             px-2.5
                                             py-1
-                                            rounded-full
+                                            text-[11px]
+                                            font-medium
+                                            text-emerald-700
+                                            dark:text-emerald-300
                                         "
                                     >
+
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+
                                         Aktiv
+
                                     </span>
 
                                 @else
 
                                     <span
                                         class="
-                                            text-[11px]
-                                            font-medium
-                                            text-slate-500
-                                            dark:text-slate-400
+                                            inline-flex
+                                            items-center
+                                            gap-1.5
+                                            rounded-full
                                             bg-slate-100
                                             dark:bg-slate-800
                                             px-2.5
                                             py-1
-                                            rounded-full
+                                            text-[11px]
+                                            font-medium
+                                            text-slate-500
+                                            dark:text-slate-400
                                         "
                                     >
+
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+
                                         Inaktiv
+
                                     </span>
 
                                 @endif
@@ -433,9 +622,9 @@
                             </h3>
 
 
-                            {{-- INSTITUT --}}
+                            {{-- INSTITUT / TYP --}}
 
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
 
                                 @if ($account->institution)
 
@@ -470,7 +659,7 @@
 
                             {{-- SALDO --}}
 
-                            <div class="mt-6">
+                            <div class="mt-7">
 
                                 <p class="text-xs text-slate-400 dark:text-slate-500">
                                     Aktueller Kontostand
@@ -478,8 +667,9 @@
 
                                 <p
                                     class="
-                                        text-2xl
+                                        text-3xl
                                         font-semibold
+                                        tracking-tight
                                         mt-1
                                         {{ $account->calculated_balance >= 0
                                             ? 'text-slate-900 dark:text-white'
@@ -494,68 +684,120 @@
                                         '.'
                                     ) }}
 
-                                    {{ $account->currency }}
+                                    <span class="text-lg font-medium">
+                                        {{ $account->currency }}
+                                    </span>
 
                                 </p>
 
                             </div>
 
 
-                            {{-- INFO --}}
+                            {{-- STATUS GESAMTVERMÖGEN --}}
 
                             <div
                                 class="
-                                    flex
-                                    items-center
-                                    justify-between
                                     mt-6
-                                    pt-4
-                                    border-t
-                                    border-slate-100
-                                    dark:border-slate-800
+                                    rounded-2xl
+                                    bg-slate-50
+                                    dark:bg-slate-800
+                                    px-4
+                                    py-3
                                 "
                             >
 
-                                <span class="text-xs text-slate-400 dark:text-slate-500">
+                                <div class="flex items-center gap-2">
 
                                     @if ($account->include_in_total)
 
-                                        <span class="text-emerald-600 dark:text-emerald-400">
-                                            ● Im Gesamtvermögen
+                                        <span
+                                            class="
+                                                w-7
+                                                h-7
+                                                rounded-lg
+                                                bg-emerald-100
+                                                dark:bg-emerald-950/70
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-emerald-600
+                                                dark:text-emerald-400
+                                                text-sm
+                                            "
+                                        >
+                                            ✓
                                         </span>
+
+                                        <div>
+
+                                            <p class="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                                Im Gesamtvermögen
+                                            </p>
+
+                                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                                Wird bei der Vermögensberechnung berücksichtigt
+                                            </p>
+
+                                        </div>
 
                                     @else
 
-                                        Nicht eingerechnet
+                                        <span
+                                            class="
+                                                w-7
+                                                h-7
+                                                rounded-lg
+                                                bg-slate-200
+                                                dark:bg-slate-700
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                dark:text-slate-400
+                                                text-sm
+                                            "
+                                        >
+                                            –
+                                        </span>
+
+                                        <div>
+
+                                            <p class="text-xs font-medium text-slate-600 dark:text-slate-300">
+                                                Nicht eingerechnet
+                                            </p>
+
+                                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                                Wird nicht zum Gesamtvermögen gezählt
+                                            </p>
+
+                                        </div>
 
                                     @endif
 
-                                </span>
-
-
-                                <span class="text-xs text-slate-400 dark:text-slate-500">
-                                    {{ $account->currency }}
-                                </span>
+                                </div>
 
                             </div>
 
                         </div>
 
 
+                        {{-- ================================================= --}}
                         {{-- AKTIONEN --}}
+                        {{-- ================================================= --}}
 
                         <div
                             class="
                                 px-6
                                 py-4
-                                bg-slate-50
-                                dark:bg-slate-800/70
+                                bg-slate-50/80
+                                dark:bg-slate-800/60
                                 border-t
                                 border-slate-100
                                 dark:border-slate-800
                                 flex
                                 items-center
                                 justify-between
+                                gap-4
                             "
                         >
 
@@ -565,15 +807,25 @@
                                     $account
                                 ) }}"
                                 class="
+                                    inline-flex
+                                    items-center
+                                    gap-2
                                     text-sm
                                     font-medium
                                     text-slate-600
                                     dark:text-slate-300
-                                    hover:text-slate-900
-                                    dark:hover:text-white
+                                    hover:text-emerald-600
+                                    dark:hover:text-emerald-400
+                                    transition
                                 "
                             >
+
+                                <span>
+                                    ✎
+                                </span>
+
                                 Bearbeiten
+
                             </a>
 
 
@@ -597,15 +849,25 @@
                                 <button
                                     type="submit"
                                     class="
+                                        inline-flex
+                                        items-center
+                                        gap-2
                                         text-sm
                                         font-medium
                                         text-red-500
                                         dark:text-red-400
                                         hover:text-red-700
                                         dark:hover:text-red-300
+                                        transition
                                     "
                                 >
+
+                                    <span>
+                                        🗑
+                                    </span>
+
                                     Löschen
+
                                 </button>
 
                             </form>
@@ -644,9 +906,21 @@
 
             <div class="flex items-start gap-3">
 
-                <span class="text-lg">
+                <div
+                    class="
+                        w-9
+                        h-9
+                        rounded-xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/50
+                        flex
+                        items-center
+                        justify-center
+                        flex-shrink-0
+                    "
+                >
                     💡
-                </span>
+                </div>
 
                 <div>
 
@@ -655,8 +929,8 @@
                     </p>
 
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Du kannst festlegen, welche Konten in dein
-                        Gesamtvermögen einbezogen werden.
+                        Du kannst in den Kontoeinstellungen festlegen,
+                        welche Konten in dein Gesamtvermögen einbezogen werden.
                     </p>
 
                 </div>

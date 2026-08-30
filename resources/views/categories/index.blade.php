@@ -6,11 +6,9 @@
 
 @section('page_title', 'Kategorien')
 
-
 @section('content')
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -20,15 +18,31 @@
 
         <div class="min-w-0">
 
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Finanzverwaltung
-            </p>
+            <div class="flex items-center gap-2">
 
-            <h2 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+
+                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    Finanzverwaltung
+                </p>
+
+            </div>
+
+            <h2
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-semibold
+                    tracking-tight
+                    text-slate-900
+                    dark:text-white
+                    mt-2
+                "
+            >
                 Kategorien
             </h2>
 
-            <p class="text-slate-500 dark:text-slate-400 mt-1">
+            <p class="text-slate-500 dark:text-slate-400 mt-2">
                 Organisiere deine Einnahmen und Ausgaben.
             </p>
 
@@ -42,25 +56,26 @@
                 items-center
                 justify-center
                 rounded-xl
-                bg-slate-950
-                dark:bg-white
+                bg-emerald-600
                 px-5
                 py-3
                 text-sm
                 font-medium
                 text-white
-                dark:text-slate-950
-                hover:bg-slate-800
-                dark:hover:bg-slate-200
+                hover:bg-emerald-700
                 transition
                 flex-shrink-0
             "
         >
-            + Kategorie
+            <span class="mr-2 text-emerald-200">
+                +
+            </span>
+
+            Kategorie erstellen
+
         </a>
 
     </div>
-
 
 
     {{-- ========================================================= --}}
@@ -73,18 +88,30 @@
             class="
                 mt-6
                 rounded-2xl
-                bg-emerald-50
-                dark:bg-emerald-950/40
                 border
                 border-emerald-100
                 dark:border-emerald-900
+                bg-emerald-50
+                dark:bg-emerald-950/40
                 p-4
                 text-sm
                 text-emerald-700
                 dark:text-emerald-300
             "
         >
-            {{ session('success') }}
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-lg">
+                    ✓
+                </span>
+
+                <span>
+                    {{ session('success') }}
+                </span>
+
+            </div>
+
         </div>
 
     @endif
@@ -96,22 +123,33 @@
             class="
                 mt-6
                 rounded-2xl
-                bg-red-50
-                dark:bg-red-950/40
                 border
                 border-red-100
                 dark:border-red-900
+                bg-red-50
+                dark:bg-red-950/40
                 p-4
                 text-sm
                 text-red-700
                 dark:text-red-300
             "
         >
-            {{ session('error') }}
+
+            <div class="flex items-center gap-3">
+
+                <span class="text-lg">
+                    !
+                </span>
+
+                <span>
+                    {{ session('error') }}
+                </span>
+
+            </div>
+
         </div>
 
     @endif
-
 
 
     {{-- ========================================================= --}}
@@ -140,51 +178,52 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
-                shadow-sm
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
-                p-5
+                shadow-sm
+                p-6
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div class="min-w-0">
+                <div>
 
                     <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Ausgaben
+                        Ausgabenkategorien
                     </p>
 
                     <p class="text-3xl font-semibold text-red-600 dark:text-red-400 mt-2">
                         {{ $expenseCategories->count() }}
                     </p>
 
-                </div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        Für deine Ausgaben
+                    </p>
 
+                </div>
 
                 <div
                     class="
                         w-11
                         h-11
-                        rounded-xl
+                        rounded-2xl
                         bg-red-50
                         dark:bg-red-950/40
                         flex
                         items-center
                         justify-center
                         text-xl
-                        flex-shrink-0
                     "
                 >
-                    ↘️
+                    ↘
                 </div>
 
             </div>
 
         </div>
-
 
 
         {{-- EINNAHMEN --}}
@@ -193,51 +232,52 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
-                shadow-sm
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
-                p-5
+                shadow-sm
+                p-6
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div class="min-w-0">
+                <div>
 
                     <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Einnahmen
+                        Einnahmenkategorien
                     </p>
 
                     <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
                         {{ $incomeCategories->count() }}
                     </p>
 
-                </div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        Für deine Einnahmen
+                    </p>
 
+                </div>
 
                 <div
                     class="
                         w-11
                         h-11
-                        rounded-xl
+                        rounded-2xl
                         bg-emerald-50
                         dark:bg-emerald-950/40
                         flex
                         items-center
                         justify-center
                         text-xl
-                        flex-shrink-0
                     "
                 >
-                    ↗️
+                    ↗
                 </div>
 
             </div>
 
         </div>
-
 
 
         {{-- AKTIV --}}
@@ -246,18 +286,18 @@
             class="
                 bg-white
                 dark:bg-slate-900
-                rounded-2xl
-                shadow-sm
+                rounded-3xl
                 border
                 border-slate-100
                 dark:border-slate-800
-                p-5
+                shadow-sm
+                p-6
             "
         >
 
             <div class="flex items-center justify-between">
 
-                <div class="min-w-0">
+                <div>
 
                     <p class="text-sm text-slate-500 dark:text-slate-400">
                         Aktive Kategorien
@@ -267,21 +307,23 @@
                         {{ $activeCategories->count() }}
                     </p>
 
-                </div>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        Aktuell verwendbar
+                    </p>
 
+                </div>
 
                 <div
                     class="
                         w-11
                         h-11
-                        rounded-xl
+                        rounded-2xl
                         bg-slate-100
                         dark:bg-slate-800
                         flex
                         items-center
                         justify-center
                         text-xl
-                        flex-shrink-0
                     "
                 >
                     🗂️
@@ -294,23 +336,26 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- AUSGABEN --}}
     {{-- ========================================================= --}}
 
     <div class="mt-8">
 
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-end justify-between gap-4 mb-4">
 
             <div>
 
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                <p class="text-xs font-medium uppercase tracking-wider text-red-500 dark:text-red-400">
                     Ausgaben
-                </h2>
+                </p>
+
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
+                    Ausgabenkategorien
+                </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Kategorien für deine Ausgaben
+                    Kategorien für deine Ausgaben.
                 </p>
 
             </div>
@@ -324,18 +369,59 @@
                 class="
                     bg-white
                     dark:bg-slate-900
-                    rounded-2xl
+                    rounded-3xl
                     border
                     border-slate-100
                     dark:border-slate-800
-                    p-8
+                    shadow-sm
+                    p-10
                     text-center
                 "
             >
 
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Keine Ausgabenkategorien vorhanden.
+                <div
+                    class="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-red-50
+                        dark:bg-red-950/40
+                        flex
+                        items-center
+                        justify-center
+                        text-2xl
+                    "
+                >
+                    ↘
+                </div>
+
+                <h4 class="font-semibold text-slate-900 dark:text-white mt-4">
+                    Keine Ausgabenkategorien
+                </h4>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Erstelle eine Kategorie für deine Ausgaben.
                 </p>
+
+                <a
+                    href="{{ route('categories.create') }}"
+                    class="
+                        inline-flex
+                        mt-5
+                        rounded-xl
+                        bg-emerald-600
+                        px-5
+                        py-3
+                        text-sm
+                        font-medium
+                        text-white
+                        hover:bg-emerald-700
+                        transition
+                    "
+                >
+                    + Kategorie erstellen
+                </a>
 
             </div>
 
@@ -356,15 +442,17 @@
 
                     <div
                         class="
+                            group
                             bg-white
                             dark:bg-slate-900
-                            rounded-2xl
+                            rounded-3xl
                             border
                             border-slate-100
                             dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
+                            hover:-translate-y-0.5
                             transition
                         "
                     >
@@ -393,15 +481,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/50
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-emerald-700
                                         dark:text-emerald-300
-                                        bg-emerald-50
-                                        dark:bg-emerald-950/40
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Aktiv
@@ -411,15 +499,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-slate-500
                                         dark:text-slate-400
-                                        bg-slate-100
-                                        dark:bg-slate-800
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Inaktiv
@@ -430,9 +518,17 @@
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
+                        <h4
+                            class="
+                                font-semibold
+                                text-slate-900
+                                dark:text-white
+                                mt-5
+                                truncate
+                            "
+                        >
                             {{ $category->name }}
-                        </h3>
+                        </h4>
 
 
                         @if ($category->description)
@@ -454,7 +550,7 @@
                             class="
                                 flex
                                 items-center
-                                gap-3
+                                gap-4
                                 mt-5
                                 pt-4
                                 border-t
@@ -519,7 +615,6 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- EINNAHMEN --}}
     {{-- ========================================================= --}}
@@ -528,12 +623,16 @@
 
         <div class="mb-4">
 
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                 Einnahmen
-            </h2>
+            </p>
+
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
+                Einnahmenkategorien
+            </h3>
 
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Kategorien für deine Einnahmen
+                Kategorien für deine Einnahmen.
             </p>
 
         </div>
@@ -545,18 +644,59 @@
                 class="
                     bg-white
                     dark:bg-slate-900
-                    rounded-2xl
+                    rounded-3xl
                     border
                     border-slate-100
                     dark:border-slate-800
-                    p-8
+                    shadow-sm
+                    p-10
                     text-center
                 "
             >
 
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Keine Einnahmenkategorien vorhanden.
+                <div
+                    class="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-emerald-50
+                        dark:bg-emerald-950/40
+                        flex
+                        items-center
+                        justify-center
+                        text-2xl
+                    "
+                >
+                    ↗
+                </div>
+
+                <h4 class="font-semibold text-slate-900 dark:text-white mt-4">
+                    Keine Einnahmenkategorien
+                </h4>
+
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Erstelle eine Kategorie für deine Einnahmen.
                 </p>
+
+                <a
+                    href="{{ route('categories.create') }}"
+                    class="
+                        inline-flex
+                        mt-5
+                        rounded-xl
+                        bg-emerald-600
+                        px-5
+                        py-3
+                        text-sm
+                        font-medium
+                        text-white
+                        hover:bg-emerald-700
+                        transition
+                    "
+                >
+                    + Kategorie erstellen
+                </a>
 
             </div>
 
@@ -577,15 +717,17 @@
 
                     <div
                         class="
+                            group
                             bg-white
                             dark:bg-slate-900
-                            rounded-2xl
+                            rounded-3xl
                             border
                             border-slate-100
                             dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
+                            hover:-translate-y-0.5
                             transition
                         "
                     >
@@ -614,15 +756,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/50
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-emerald-700
                                         dark:text-emerald-300
-                                        bg-emerald-50
-                                        dark:bg-emerald-950/40
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Aktiv
@@ -632,15 +774,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-slate-500
                                         dark:text-slate-400
-                                        bg-slate-100
-                                        dark:bg-slate-800
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Inaktiv
@@ -651,9 +793,17 @@
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
+                        <h4
+                            class="
+                                font-semibold
+                                text-slate-900
+                                dark:text-white
+                                mt-5
+                                truncate
+                            "
+                        >
                             {{ $category->name }}
-                        </h3>
+                        </h4>
 
 
                         @if ($category->description)
@@ -675,7 +825,7 @@
                             class="
                                 flex
                                 items-center
-                                gap-3
+                                gap-4
                                 mt-5
                                 pt-4
                                 border-t
@@ -740,7 +890,6 @@
     </div>
 
 
-
     {{-- ========================================================= --}}
     {{-- BEIDE --}}
     {{-- ========================================================= --}}
@@ -751,9 +900,13 @@
 
             <div class="mb-4">
 
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Beide
+                </p>
+
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
                     Einnahmen & Ausgaben
-                </h2>
+                </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     Kategorien, die für beide Buchungsarten verwendet werden können.
@@ -777,15 +930,17 @@
 
                     <div
                         class="
+                            group
                             bg-white
                             dark:bg-slate-900
-                            rounded-2xl
+                            rounded-3xl
                             border
                             border-slate-100
                             dark:border-slate-800
                             shadow-sm
                             p-5
                             hover:shadow-md
+                            hover:-translate-y-0.5
                             transition
                         "
                     >
@@ -814,15 +969,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-emerald-50
+                                        dark:bg-emerald-950/50
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-emerald-700
                                         dark:text-emerald-300
-                                        bg-emerald-50
-                                        dark:bg-emerald-950/40
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Aktiv
@@ -832,15 +987,15 @@
 
                                 <span
                                     class="
+                                        rounded-full
+                                        bg-slate-100
+                                        dark:bg-slate-800
+                                        px-2.5
+                                        py-1
                                         text-[11px]
                                         font-medium
                                         text-slate-500
                                         dark:text-slate-400
-                                        bg-slate-100
-                                        dark:bg-slate-800
-                                        px-2
-                                        py-1
-                                        rounded-full
                                     "
                                 >
                                     Inaktiv
@@ -851,9 +1006,17 @@
                         </div>
 
 
-                        <h3 class="font-medium text-slate-900 dark:text-white mt-4 truncate">
+                        <h4
+                            class="
+                                font-semibold
+                                text-slate-900
+                                dark:text-white
+                                mt-5
+                                truncate
+                            "
+                        >
                             {{ $category->name }}
-                        </h3>
+                        </h4>
 
 
                         @if ($category->description)
@@ -875,7 +1038,7 @@
                             class="
                                 flex
                                 items-center
-                                gap-3
+                                gap-4
                                 mt-5
                                 pt-4
                                 border-t
@@ -938,7 +1101,6 @@
         </div>
 
     @endif
-
 
 </div>
 

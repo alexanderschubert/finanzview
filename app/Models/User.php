@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -70,5 +71,37 @@ class User extends Authenticatable
     public function budgets(): HasMany
     {
         return $this->hasMany(Budget::class);
+    }
+
+    /**
+     * Kredite des Benutzers.
+     */
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    /**
+     * Kreditkarten des Benutzers.
+     */
+    public function creditCards(): HasMany
+    {
+        return $this->hasMany(CreditCard::class);
+    }
+
+    /**
+     * Wiederkehrende Buchungen des Benutzers.
+     */
+    public function recurringTransactions(): HasMany
+    {
+        return $this->hasMany(RecurringTransaction::class);
+    }
+
+    /**
+     * Einstellungen des Benutzers.
+     */
+    public function setting(): HasOne
+    {
+        return $this->hasOne(Setting::class);
     }
 }
