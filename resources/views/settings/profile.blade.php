@@ -10,51 +10,76 @@
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+    {{-- ========================================================= --}}
     {{-- HEADER --}}
+    {{-- ========================================================= --}}
 
     <div class="mb-8">
 
         <a
             href="{{ route('settings.index') }}"
-            class="inline-flex items-center text-sm text-slate-500 hover:text-slate-900 transition"
+            class="
+                inline-flex
+                items-center
+                text-sm
+                text-slate-500
+                dark:text-slate-400
+                hover:text-slate-900
+                dark:hover:text-white
+                transition
+            "
         >
-            ← Zurück zu Einstellungen
+            ← Einstellungen
         </a>
 
-        <div class="mt-5">
+        <h2
+            class="
+                text-3xl
+                sm:text-4xl
+                font-semibold
+                tracking-tight
+                text-slate-900
+                dark:text-white
+                mt-5
+            "
+        >
+            Dein Profil
+        </h2>
 
-            <p class="text-sm text-slate-500">
-                Persönliche Daten
-            </p>
-
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mt-1">
-                Dein Profil
-            </h2>
-
-            <p class="text-slate-500 mt-2">
-                Verwalte deinen Namen und deine E-Mail-Adresse.
-            </p>
-
-        </div>
+        <p class="text-slate-500 dark:text-slate-400 mt-2">
+            Verwalte deinen Namen und deine E-Mail-Adresse.
+        </p>
 
     </div>
 
 
-    {{-- ERFOLGSMELDUNG --}}
+    {{-- ========================================================= --}}
+    {{-- ERFOLG --}}
+    {{-- ========================================================= --}}
 
-    @if (session('success'))
+    @if(session('success'))
 
         <div
-            class="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4"
+            class="
+                mb-6
+                rounded-2xl
+                border
+                border-emerald-200
+                dark:border-emerald-900
+                bg-emerald-50
+                dark:bg-emerald-950/30
+                px-5
+                py-4
+            "
         >
 
             <div class="flex items-center gap-3">
 
-                <span class="text-lg">
+                <span class="text-lg text-emerald-600 dark:text-emerald-400">
                     ✓
                 </span>
 
-                <p class="text-sm font-medium text-emerald-700">
+                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     {{ session('success') }}
                 </p>
 
@@ -65,21 +90,33 @@
     @endif
 
 
+    {{-- ========================================================= --}}
     {{-- FEHLER --}}
+    {{-- ========================================================= --}}
 
-    @if ($errors->any())
+    @if($errors->any())
 
         <div
-            class="mb-5 rounded-2xl border border-red-100 bg-red-50 px-5 py-4"
+            class="
+                mb-6
+                rounded-2xl
+                border
+                border-red-200
+                dark:border-red-900
+                bg-red-50
+                dark:bg-red-950/30
+                px-5
+                py-4
+            "
         >
 
-            <p class="text-sm font-semibold text-red-700">
+            <p class="text-sm font-semibold text-red-700 dark:text-red-400">
                 Bitte überprüfe deine Eingaben.
             </p>
 
-            <ul class="mt-2 text-sm text-red-600 space-y-1">
+            <ul class="mt-2 text-sm text-red-600 dark:text-red-400 space-y-1">
 
-                @foreach ($errors->all() as $error)
+                @foreach($errors->all() as $error)
 
                     <li>
                         • {{ $error }}
@@ -94,29 +131,65 @@
     @endif
 
 
+    {{-- ========================================================= --}}
     {{-- PROFIL --}}
+    {{-- ========================================================= --}}
 
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <section
+        class="
+            rounded-3xl
+            bg-white
+            dark:bg-slate-900
+            border
+            border-slate-200
+            dark:border-slate-800
+            overflow-hidden
+        "
+    >
 
-        {{-- HEADER --}}
+        {{-- ===================================================== --}}
+        {{-- KOPFBEREICH --}}
+        {{-- ===================================================== --}}
 
-        <div class="p-6 sm:p-8 border-b border-slate-100">
+        <div
+            class="
+                p-6
+                sm:p-8
+                border-b
+                border-slate-200
+                dark:border-slate-800
+            "
+        >
 
             <div class="flex items-center gap-4">
 
                 <div
-                    class="w-14 h-14 rounded-2xl bg-slate-950 text-white flex items-center justify-center text-xl font-semibold"
+                    class="
+                        w-14
+                        h-14
+                        shrink-0
+                        rounded-2xl
+                        bg-blue-50
+                        dark:bg-blue-500/10
+                        flex
+                        items-center
+                        justify-center
+                        text-xl
+                        font-semibold
+                        text-blue-600
+                        dark:text-blue-400
+                    "
                 >
                     {{ strtoupper(substr($user->name, 0, 1)) }}
                 </div>
 
                 <div>
 
-                    <h3 class="font-semibold text-slate-900">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
                         Persönliche Informationen
                     </h3>
 
-                    <p class="text-sm text-slate-500 mt-1">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Diese Informationen werden für dein Finanzblick-Konto verwendet.
                     </p>
 
@@ -127,7 +200,9 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- FORMULAR --}}
+        {{-- ===================================================== --}}
 
         <form
             method="POST"
@@ -146,7 +221,14 @@
 
                     <label
                         for="name"
-                        class="block text-sm font-medium text-slate-700"
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-slate-700
+                            dark:text-slate-300
+                            mb-2
+                        "
                     >
                         Name
                     </label>
@@ -159,22 +241,24 @@
                         required
                         autocomplete="name"
                         class="
-                            mt-2
-                            block
                             w-full
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white dark:bg-slate-900
+                            dark:border-slate-700
+                            bg-white
+                            dark:bg-slate-800
                             px-4
                             py-3
                             text-sm
                             text-slate-900
+                            dark:text-white
+                            placeholder:text-slate-400
                             outline-none
                             transition
-                            focus:border-slate-400
+                            focus:border-emerald-500
                             focus:ring-2
-                            focus:ring-slate-100
+                            focus:ring-emerald-500/20
                         "
                     >
 
@@ -187,7 +271,14 @@
 
                     <label
                         for="email"
-                        class="block text-sm font-medium text-slate-700"
+                        class="
+                            block
+                            text-sm
+                            font-medium
+                            text-slate-700
+                            dark:text-slate-300
+                            mb-2
+                        "
                     >
                         E-Mail-Adresse
                     </label>
@@ -200,31 +291,46 @@
                         required
                         autocomplete="email"
                         class="
-                            mt-2
-                            block
                             w-full
                             rounded-xl
                             border
                             border-slate-200
-                            bg-white dark:bg-slate-900
+                            dark:border-slate-700
+                            bg-white
+                            dark:bg-slate-800
                             px-4
                             py-3
                             text-sm
                             text-slate-900
+                            dark:text-white
+                            placeholder:text-slate-400
                             outline-none
                             transition
-                            focus:border-slate-400
+                            focus:border-emerald-500
                             focus:ring-2
-                            focus:ring-slate-100
+                            focus:ring-emerald-500/20
                         "
                     >
 
                 </div>
 
 
+                {{-- ================================================= --}}
                 {{-- INFO --}}
+                {{-- ================================================= --}}
 
-                <div class="rounded-2xl bg-slate-50 px-5 py-4">
+                <div
+                    class="
+                        rounded-2xl
+                        bg-slate-50
+                        dark:bg-slate-800/60
+                        border
+                        border-slate-100
+                        dark:border-slate-700
+                        px-5
+                        py-4
+                    "
+                >
 
                     <div class="flex gap-3">
 
@@ -234,11 +340,11 @@
 
                         <div>
 
-                            <p class="text-sm font-medium text-slate-700">
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Hinweis
                             </p>
 
-                            <p class="text-sm text-slate-500 mt-1">
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                 Deine Änderungen werden sofort gespeichert und beim nächsten Seitenaufruf verwendet.
                             </p>
 
@@ -251,7 +357,9 @@
             </div>
 
 
+            {{-- ===================================================== --}}
             {{-- BUTTONS --}}
+            {{-- ===================================================== --}}
 
             <div
                 class="
@@ -259,14 +367,14 @@
                     flex-col-reverse
                     sm:flex-row
                     sm:items-center
-                    sm:justify-between
+                    sm:justify-end
                     gap-3
                     px-6
                     sm:px-8
                     py-5
-                    bg-slate-50
                     border-t
-                    border-slate-100
+                    border-slate-200
+                    dark:border-slate-800
                 "
             >
 
@@ -279,13 +387,17 @@
                         rounded-xl
                         border
                         border-slate-200
-                        bg-white dark:bg-slate-900
+                        dark:border-slate-700
+                        bg-white
+                        dark:bg-slate-800
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-slate-700
-                        hover:bg-slate-50
+                        dark:text-slate-200
+                        hover:bg-slate-100
+                        dark:hover:bg-slate-700
                         transition
                     "
                 >
@@ -301,12 +413,15 @@
                         justify-center
                         rounded-xl
                         bg-slate-950
+                        dark:bg-white
                         px-5
                         py-3
                         text-sm
                         font-medium
                         text-white
+                        dark:text-slate-950
                         hover:bg-slate-800
+                        dark:hover:bg-slate-200
                         transition
                     "
                 >
@@ -317,44 +432,100 @@
 
         </form>
 
-    </div>
+    </section>
 
 
-    {{-- KONTO --}}
+    {{-- ========================================================= --}}
+    {{-- KONTOINFORMATIONEN --}}
+    {{-- ========================================================= --}}
 
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm mt-5 overflow-hidden">
+    <section
+        class="
+            mt-6
+            rounded-3xl
+            bg-white
+            dark:bg-slate-900
+            border
+            border-slate-200
+            dark:border-slate-800
+            overflow-hidden
+        "
+    >
 
         <div class="p-6 sm:p-8">
 
-            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">
-                Konto
-            </p>
+            <div class="mb-6">
 
-            <h3 class="text-lg font-semibold text-slate-900 mt-1">
-                Kontoinformationen
-            </h3>
+                <p
+                    class="
+                        text-xs
+                        font-medium
+                        uppercase
+                        tracking-wider
+                        text-slate-400
+                        dark:text-slate-500
+                    "
+                >
+                    Konto
+                </p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
+                    Kontoinformationen
+                </h3>
 
-                <div class="rounded-2xl bg-slate-50 p-4">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Übersicht über dein Finanzblick-Konto.
+                </p>
 
-                    <p class="text-xs text-slate-400">
+            </div>
+
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {{-- BENUTZER-ID --}}
+
+                <div
+                    class="
+                        rounded-2xl
+                        bg-slate-50
+                        dark:bg-slate-800/60
+                        border
+                        border-slate-100
+                        dark:border-slate-700
+                        p-4
+                    "
+                >
+
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
                         Benutzer-ID
                     </p>
 
-                    <p class="text-sm font-medium text-slate-700 mt-1">
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">
                         #{{ $user->id }}
                     </p>
 
                 </div>
 
-                <div class="rounded-2xl bg-slate-50 p-4">
 
-                    <p class="text-xs text-slate-400">
+                {{-- KONTO ERSTELLT --}}
+
+                <div
+                    class="
+                        rounded-2xl
+                        bg-slate-50
+                        dark:bg-slate-800/60
+                        border
+                        border-slate-100
+                        dark:border-slate-700
+                        p-4
+                    "
+                >
+
+                    <p class="text-xs text-slate-400 dark:text-slate-500">
                         Konto erstellt
                     </p>
 
-                    <p class="text-sm font-medium text-slate-700 mt-1">
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">
                         {{ $user->created_at?->format('d.m.Y') }}
                     </p>
 
@@ -364,7 +535,7 @@
 
         </div>
 
-    </div>
+    </section>
 
 </div>
 
