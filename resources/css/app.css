@@ -8,9 +8,6 @@
 | Der Dark Mode wird von Finanzblick über die Klasse "dark"
 | auf dem <html>-Element gesteuert.
 |
-| Dadurch funktionieren alle dark:* Klassen unabhängig
-| von der Systemeinstellung.
-|
 */
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -35,17 +32,44 @@
     --color-finanz-950: #052e16;
 }
 
+
 /*
 |--------------------------------------------------------------------------
-| Finanzblick – Globale Darkmode Formulare
+| Finanzblick – Globales Dokument-Layout
 |--------------------------------------------------------------------------
+|
+| Verhindert weiße/helle Bereiche am Rand des Dokuments.
+|
 */
 
 @layer base {
 
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+    }
+
+    html {
+        background-color: #f1f5f9;
+    }
+
+    body {
+        background-color: #f1f5f9;
+    }
+
+    .dark,
+    .dark body {
+        background-color: #020617;
+    }
+
+
     /*
-     * Formulare
-     */
+    |--------------------------------------------------------------------------
+    | Formulare
+    |--------------------------------------------------------------------------
+    */
 
     .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
     .dark select,
@@ -68,18 +92,24 @@
         box-shadow: 0 0 0 2px rgb(16 185 129 / 0.15);
     }
 
+
     /*
-     * Select-Optionen
-     */
+    |--------------------------------------------------------------------------
+    | Select-Optionen
+    |--------------------------------------------------------------------------
+    */
 
     .dark select option {
         background-color: #1e293b;
         color: #f8fafc;
     }
 
+
     /*
-     * Checkboxen
-     */
+    |--------------------------------------------------------------------------
+    | Checkboxen
+    |--------------------------------------------------------------------------
+    */
 
     .dark input[type="checkbox"],
     .dark input[type="radio"] {
@@ -87,20 +117,23 @@
         border-color: #475569;
     }
 
+
     /*
-     * Karten mit bg-white
-     *
-     * Dadurch werden bestehende Views automatisch dunkel,
-     * auch wenn dort noch kein dark:bg-* vorhanden ist.
-     */
+    |--------------------------------------------------------------------------
+    | Karten mit bg-white
+    |--------------------------------------------------------------------------
+    */
 
     .dark .bg-white {
         background-color: #0f172a;
     }
 
+
     /*
-     * Helle Borders
-     */
+    |--------------------------------------------------------------------------
+    | Helle Borders
+    |--------------------------------------------------------------------------
+    */
 
     .dark .border-slate-100 {
         border-color: #1e293b;
@@ -110,9 +143,12 @@
         border-color: #334155;
     }
 
+
     /*
-     * Textfarben
-     */
+    |--------------------------------------------------------------------------
+    | Textfarben
+    |--------------------------------------------------------------------------
+    */
 
     .dark .text-slate-900 {
         color: #f8fafc;
@@ -130,9 +166,12 @@
         color: #94a3b8;
     }
 
+
     /*
-     * Helle Hintergründe
-     */
+    |--------------------------------------------------------------------------
+    | Helle Hintergründe
+    |--------------------------------------------------------------------------
+    */
 
     .dark .bg-slate-50 {
         background-color: #0f172a;
@@ -142,9 +181,12 @@
         background-color: #020617;
     }
 
+
     /*
-     * Hover-Zustände
-     */
+    |--------------------------------------------------------------------------
+    | Hover-Zustände
+    |--------------------------------------------------------------------------
+    */
 
     .dark .hover\:bg-slate-50:hover {
         background-color: #1e293b;

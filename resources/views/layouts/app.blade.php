@@ -3,9 +3,7 @@
     $theme = $user->theme ?? 'system';
 
     /*
-     * Avatar:
-     * Falls später ein echtes Profilbild vorhanden ist,
-     * kann dieses hier verwendet werden.
+     * Avatar
      */
     $avatarUrl = $user->profile_photo_url ?? null;
 
@@ -27,6 +25,7 @@
 <html
     lang="de"
     data-theme="{{ $theme }}"
+    class="bg-slate-100 dark:bg-slate-950"
 >
 
 <head>
@@ -77,7 +76,9 @@
 
 <body
     class="
+        m-0
         min-h-screen
+        w-full
         bg-slate-100
         text-slate-900
         dark:bg-slate-950
@@ -88,7 +89,19 @@
 >
 
 
-<div class="min-h-screen flex">
+{{-- =========================================================
+     HAUPTCONTAINER
+========================================================= --}}
+
+<div
+    class="
+        flex
+        min-h-screen
+        w-full
+        bg-slate-100
+        dark:bg-slate-950
+    "
+>
 
 
     {{-- =====================================================
@@ -100,16 +113,15 @@
             hidden
             lg:flex
             w-64
+            min-h-screen
+            flex-shrink-0
             flex-col
             bg-slate-950
             text-white
-            flex-shrink-0
         "
     >
 
-        {{-- =================================================
-             LOGO
-        ================================================== --}}
+        {{-- LOGO --}}
 
         <div class="h-20 px-6 flex items-center">
 
@@ -141,9 +153,7 @@
         </div>
 
 
-        {{-- =================================================
-             NAVIGATION
-        ================================================== --}}
+        {{-- NAVIGATION --}}
 
         <nav class="flex-1 px-4 py-6 space-y-1">
 
@@ -164,13 +174,9 @@
                 "
             >
 
-                <span class="text-lg">
-                    🏠
-                </span>
+                <span class="text-lg">🏠</span>
 
-                <span>
-                    Übersicht
-                </span>
+                <span>Übersicht</span>
 
             </a>
 
@@ -191,13 +197,9 @@
                 "
             >
 
-                <span class="text-lg">
-                    🏦
-                </span>
+                <span class="text-lg">🏦</span>
 
-                <span>
-                    Konten
-                </span>
+                <span>Konten</span>
 
             </a>
 
@@ -218,13 +220,9 @@
                 "
             >
 
-                <span class="text-lg">
-                    💳
-                </span>
+                <span class="text-lg">💳</span>
 
-                <span>
-                    Buchungen
-                </span>
+                <span>Buchungen</span>
 
             </a>
 
@@ -245,20 +243,14 @@
                 "
             >
 
-                <span class="text-lg">
-                    🗂️
-                </span>
+                <span class="text-lg">🗂️</span>
 
-                <span>
-                    Kategorien
-                </span>
+                <span>Kategorien</span>
 
             </a>
 
 
-            {{-- =================================================
-                 PLANUNG
-            ================================================== --}}
+            {{-- PLANUNG --}}
 
             <div class="pt-6 pb-3">
 
@@ -294,13 +286,9 @@
                 "
             >
 
-                <span class="text-lg">
-                    🎯
-                </span>
+                <span class="text-lg">🎯</span>
 
-                <span>
-                    Budgets
-                </span>
+                <span>Budgets</span>
 
             </a>
 
@@ -321,13 +309,9 @@
                 "
             >
 
-                <span class="text-lg">
-                    💳
-                </span>
+                <span class="text-lg">💳</span>
 
-                <span>
-                    Kredite
-                </span>
+                <span>Kredite</span>
 
             </a>
 
@@ -340,19 +324,16 @@
                     flex items-center gap-3
                     px-4 py-3
                     rounded-xl
-                    text-sm font-medium
+                    text-sm
+                    font-medium
                     text-slate-500
                     cursor-not-allowed
                 "
             >
 
-                <span class="text-lg">
-                    📊
-                </span>
+                <span class="text-lg">📊</span>
 
-                <span>
-                    Analysen
-                </span>
+                <span>Analysen</span>
 
                 <span class="ml-auto text-[10px] text-slate-600">
                     BALD
@@ -361,18 +342,13 @@
             </a>
 
 
-            {{-- =================================================
-                 WIEDERKEHREND
-            ================================================== --}}
+            {{-- WIEDERKEHREND --}}
 
             <a
                 href="{{ route('recurring-transactions.index') }}"
                 class="
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
+                    flex items-center gap-3
+                    px-4 py-3
                     rounded-xl
                     text-sm
                     font-medium
@@ -383,16 +359,11 @@
                 "
             >
 
-                <span class="text-lg">
-                    🔄
-                </span>
+                <span class="text-lg">🔄</span>
 
-                <span>
-                    Wiederkehrend
-                </span>
+                <span>Wiederkehrend</span>
 
             </a>
-
 
         </nav>
 
@@ -420,24 +391,16 @@
                 "
             >
 
-                <span class="text-lg">
-                    ⚙️
-                </span>
+                <span class="text-lg">⚙️</span>
 
-                <span>
-                    Einstellungen
-                </span>
+                <span>Einstellungen</span>
 
             </a>
 
 
-            {{-- =================================================
-                 BENUTZER SIDEBAR
-            ================================================== --}}
+            {{-- BENUTZER --}}
 
             <div class="mt-3 flex items-center gap-3 px-4 py-3">
-
-                {{-- AVATAR --}}
 
                 @if ($avatarUrl)
 
@@ -445,8 +408,7 @@
                         src="{{ $avatarUrl }}"
                         alt="{{ $user->name }}"
                         class="
-                            w-9
-                            h-9
+                            w-9 h-9
                             rounded-full
                             object-cover
                             flex-shrink-0
@@ -457,8 +419,7 @@
 
                     <div
                         class="
-                            w-9
-                            h-9
+                            w-9 h-9
                             rounded-full
                             bg-emerald-500
                             text-white
@@ -489,8 +450,6 @@
                 </div>
 
 
-                {{-- LOGOUT --}}
-
                 <form
                     method="POST"
                     action="{{ route('logout') }}"
@@ -502,12 +461,9 @@
                         type="submit"
                         title="Abmelden"
                         class="
-                            w-8
-                            h-8
+                            w-8 h-8
                             rounded-lg
-                            flex
-                            items-center
-                            justify-center
+                            flex items-center justify-center
                             text-slate-500
                             hover:text-white
                             hover:bg-white/5
@@ -530,7 +486,17 @@
          RECHTER BEREICH
     ====================================================== --}}
 
-    <div class="flex-1 min-w-0 flex flex-col">
+    <div
+        class="
+            flex
+            flex-1
+            min-w-0
+            min-h-screen
+            flex-col
+            bg-slate-100
+            dark:bg-slate-950
+        "
+    >
 
 
         {{-- =================================================
@@ -540,6 +506,7 @@
         <header
             class="
                 h-20
+                flex-shrink-0
                 bg-white
                 dark:bg-slate-900
                 border-b
@@ -613,23 +580,18 @@
             </div>
 
 
-            {{-- =================================================
-                 TOPBAR RECHTS
-            ================================================== --}}
+            {{-- TOPBAR RECHTS --}}
 
             <div class="flex items-center gap-2 sm:gap-3">
 
 
-                {{-- =================================================
-                     BENACHRICHTIGUNGEN
-                ================================================== --}}
+                {{-- BENACHRICHTIGUNGEN --}}
 
                 <button
                     type="button"
                     class="
                         relative
-                        w-10
-                        h-10
+                        w-10 h-10
                         rounded-xl
                         border
                         border-slate-200
@@ -650,18 +612,14 @@
                     title="Benachrichtigungen"
                 >
 
-                    <span class="text-lg">
-                        🔔
-                    </span>
+                    <span class="text-lg">🔔</span>
 
                     <span
                         class="
                             hidden
                             absolute
-                            top-1
-                            right-1
-                            w-2
-                            h-2
+                            top-1 right-1
+                            w-2 h-2
                             rounded-full
                             bg-red-500
                             ring-2
@@ -673,9 +631,7 @@
                 </button>
 
 
-                {{-- =================================================
-                     NEUE BUCHUNG
-                ================================================== --}}
+                {{-- NEUE BUCHUNG --}}
 
                 <a
                     href="{{ route('transactions.create') }}"
@@ -699,9 +655,7 @@
                 </a>
 
 
-                {{-- =================================================
-                     PROFIL
-                ================================================== --}}
+                {{-- PROFIL --}}
 
                 <details class="relative">
 
@@ -719,8 +673,7 @@
                                 src="{{ $avatarUrl }}"
                                 alt="{{ $user->name }}"
                                 class="
-                                    w-10
-                                    h-10
+                                    w-10 h-10
                                     rounded-xl
                                     object-cover
                                     border
@@ -733,8 +686,7 @@
 
                             <div
                                 class="
-                                    w-10
-                                    h-10
+                                    w-10 h-10
                                     rounded-xl
                                     bg-emerald-50
                                     dark:bg-emerald-950/50
@@ -761,9 +713,7 @@
                     </summary>
 
 
-                    {{-- =================================================
-                         PROFIL DROPDOWN
-                    ================================================== --}}
+                    {{-- PROFIL DROPDOWN --}}
 
                     <div
                         class="
@@ -802,8 +752,7 @@
                                         src="{{ $avatarUrl }}"
                                         alt="{{ $user->name }}"
                                         class="
-                                            w-11
-                                            h-11
+                                            w-11 h-11
                                             rounded-xl
                                             object-cover
                                         "
@@ -813,8 +762,7 @@
 
                                     <div
                                         class="
-                                            w-11
-                                            h-11
+                                            w-11 h-11
                                             rounded-xl
                                             bg-emerald-100
                                             dark:bg-emerald-950
@@ -868,9 +816,6 @@
 
                         <div class="p-2">
 
-
-                            {{-- EINSTELLUNGEN --}}
-
                             <a
                                 href="{{ route('settings.index') }}"
                                 class="
@@ -889,18 +834,12 @@
                                 "
                             >
 
-                                <span class="text-lg">
-                                    ⚙️
-                                </span>
+                                <span class="text-lg">⚙️</span>
 
-                                <span>
-                                    Einstellungen
-                                </span>
+                                <span>Einstellungen</span>
 
                             </a>
 
-
-                            {{-- ABMELDEN --}}
 
                             <form
                                 method="POST"
@@ -928,13 +867,9 @@
                                     "
                                 >
 
-                                    <span class="text-lg">
-                                        ⏻
-                                    </span>
+                                    <span class="text-lg">⏻</span>
 
-                                    <span>
-                                        Abmelden
-                                    </span>
+                                    <span>Abmelden</span>
 
                                 </button>
 
@@ -958,6 +893,7 @@
         <div
             class="
                 lg:hidden
+                flex-shrink-0
                 bg-white
                 dark:bg-slate-900
                 border-b
@@ -975,11 +911,9 @@
                     href="{{ route('dashboard') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('dashboard')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -993,11 +927,9 @@
                     href="{{ route('accounts.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('accounts.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1011,11 +943,9 @@
                     href="{{ route('transactions.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('transactions.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1029,11 +959,9 @@
                     href="{{ route('categories.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('categories.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1047,11 +975,9 @@
                     href="{{ route('budgets.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('budgets.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1065,11 +991,9 @@
                     href="{{ route('loans.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('loans.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1079,17 +1003,13 @@
                 </a>
 
 
-                {{-- WIEDERKEHREND --}}
-
                 <a
                     href="{{ route('recurring-transactions.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('recurring-transactions.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1103,11 +1023,9 @@
                     href="{{ route('settings.index') }}"
                     class="
                         whitespace-nowrap
-                        px-4
-                        py-2
+                        px-4 py-2
                         rounded-xl
-                        text-sm
-                        font-medium
+                        text-sm font-medium
                         {{ request()->routeIs('settings.*')
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
@@ -1128,6 +1046,8 @@
         <main
             class="
                 flex-1
+                w-full
+                min-w-0
                 bg-slate-100
                 dark:bg-slate-950
                 transition-colors

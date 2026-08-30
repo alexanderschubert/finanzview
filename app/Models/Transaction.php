@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\RecurringTransaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class Transaction extends Model
         'notes',
         'is_pending',
         'is_recurring',
+        'recurring_transaction_id',
     ];
 
     protected function casts(): array
@@ -50,6 +52,13 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function recurringTransaction(): BelongsTo
+    {
+        return $this->belongsTo(
+            RecurringTransaction::class
+        );
     }
 
     public function tags(): BelongsToMany
