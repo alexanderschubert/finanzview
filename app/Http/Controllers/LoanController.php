@@ -334,6 +334,13 @@ class LoanController extends Controller
                 'max:255',
             ],
 
+
+            'provider_id' => [
+                'nullable',
+                'integer',
+                'exists:financial_providers,id',
+            ],
+
             'creditor_icon' => [
                 'nullable',
                 'string',
