@@ -163,12 +163,12 @@
                         </div>
 
 
-                        {{-- INSTITUTION --}}
+                        {{-- ANBIETER --}}
 
                         <div>
 
                             <label
-                                for="institution"
+                                for="provider_id"
                                 class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                             >
                                 Bank / Anbieter
@@ -177,12 +177,9 @@
                                 </span>
                             </label>
 
-                            <input
-                                type="text"
-                                id="institution"
-                                name="institution"
-                                value="{{ old('institution', $account->institution) }}"
-                                placeholder="z. B. ING, DKB, PayPal"
+                            <select
+                                id="provider_id"
+                                name="provider_id"
                                 class="
                                     box-border
                                     w-full
@@ -192,13 +189,27 @@
                                     bg-white dark:bg-slate-800
                                     text-slate-900 dark:text-white
                                     px-4 py-3
-                                    placeholder-slate-400
                                     focus:outline-none
                                     focus:ring-2
                                     focus:ring-emerald-500/20
                                     focus:border-emerald-500
                                 "
                             >
+                                <option value="">Kein Anbieter ausgewählt</option>
+
+                                @foreach ($providers as $provider)
+                                    <option
+                                        value="{{ $provider->id }}"
+                                        @selected(old('provider_id', $account->provider_id) == $provider->id)
+                                    >
+                                        {{ $provider->emoji ?? '🏦' }} {{ $provider->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                Der Anbieter wird zentral verwaltet und kann später mit einem Logo dargestellt werden.
+                            </p>
 
                         </div>
 

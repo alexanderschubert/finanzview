@@ -68,6 +68,7 @@ class DashboardController extends Controller
          */
 
         $accounts = $user->accounts()
+            ->with('provider')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

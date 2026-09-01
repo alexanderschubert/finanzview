@@ -527,26 +527,13 @@
 
                             <div class="flex items-start justify-between gap-4">
 
-                                {{-- ICON --}}
+                                {{-- ANBIETER / ICON --}}
 
-                                <div
-                                    class="
-                                        w-14
-                                        h-14
-                                        rounded-2xl
-                                        flex
-                                        items-center
-                                        justify-center
-                                        text-2xl
-                                        flex-shrink-0
-                                    "
-                                    style="
-                                        background-color:
-                                        {{ $account->color ?: '#ecfdf5' }};
-                                    "
-                                >
-                                    {{ $account->icon ?: '🏦' }}
-                                </div>
+                                <x-financial-provider
+                                    :provider="$account->provider"
+                                    :fallback-icon="$account->icon ?: '🏦'"
+                                    size="md"
+                                />
 
 
                                 {{-- STATUS --}}

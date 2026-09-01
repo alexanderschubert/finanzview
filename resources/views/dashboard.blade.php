@@ -1673,21 +1673,11 @@
                             "
                         >
 
-                            <div
-                                class="
-                                    w-12
-                                    h-12
-                                    rounded-2xl
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-xl
-                                    flex-shrink-0
-                                "
-                                style="background-color: {{ $account->color ?: '#f1f5f9' }}"
-                            >
-                                {{ $account->icon ?: '🏦' }}
-                            </div>
+                            <x-financial-provider
+                                :provider="$account->provider"
+                                :fallback-icon="$account->icon ?: '🏦'"
+                                size="sm"
+                            />
 
                             <div class="flex-1 min-w-0">
 

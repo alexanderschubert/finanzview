@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\FinancialProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,6 +14,7 @@ class AccountController extends Controller
     {
         $accounts = $request->user()
             ->accounts()
+            ->with('provider')
             ->orderBy('is_active', 'desc')
             ->orderBy('name')
             ->get();
@@ -24,7 +26,13 @@ class AccountController extends Controller
 
     public function create(): View
     {
-        return view('accounts.create');
+        $providers = FinancialProvider::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('accounts.create', [
+            'providers' => $providers,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -32,6 +40,7 @@ class AccountController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'institution' => ['nullable', 'string', 'max:255'],
+            'provider_id' => ['nullable', 'integer', 'exists:financial_providers,id'],
             'type' => ['required', 'in:checking,savings,credit_card,paypal,cash,investment,loan,other'],
             'currency' => ['required', 'string', 'size:3', 'in:EUR,USD,CHF,GBP'],
             'opening_balance' => ['required', 'numeric'],
@@ -62,8 +71,13 @@ class AccountController extends Controller
             403
         );
 
+        $providers = FinancialProvider::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         return view('accounts.edit', [
             'account' => $account,
+            'providers' => $providers,
         ]);
     }
 
@@ -79,6 +93,7 @@ class AccountController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'institution' => ['nullable', 'string', 'max:255'],
+            'provider_id' => ['nullable', 'integer', 'exists:financial_providers,id'],
             'type' => ['required', 'in:checking,savings,credit_card,paypal,cash,investment,loan,other'],
             'currency' => ['required', 'string', 'size:3'],
             'opening_balance' => ['required', 'numeric'],
