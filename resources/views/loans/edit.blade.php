@@ -250,6 +250,66 @@
                 </div>
 
 
+                {{-- ANBIETER --}}
+
+                <div>
+
+                    <label
+                        for="provider_id"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                    >
+                        Anbieter
+                        <span class="font-normal text-slate-400">
+                            (optional)
+                        </span>
+                    </label>
+
+                    <select
+                        id="provider_id"
+                        name="provider_id"
+                        class="
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            dark:border-slate-700
+                            bg-white
+                            dark:bg-slate-800
+                            px-4
+                            py-3
+                            text-slate-900
+                            dark:text-white
+                            outline-none
+                            focus:ring-2
+                            focus:ring-emerald-500/20
+                            focus:border-emerald-500
+                        "
+                    >
+
+                        <option value="">
+                            Kein Anbieter ausgewählt
+                        </option>
+
+                        @foreach ($providers as $provider)
+
+                            <option
+                                value="{{ $provider->id }}"
+                                @selected(old('provider_id', $loan->provider_id) == $provider->id)
+                            >
+                                {{ $provider->emoji }} {{ $provider->name }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">
+                        Das hinterlegte Anbieterlogo wird automatisch beim Kredit angezeigt.
+                    </p>
+
+                </div>
+
+
                 {{-- KREDITART --}}
 
                 <div>

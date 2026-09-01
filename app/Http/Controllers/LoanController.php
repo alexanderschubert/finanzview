@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\FinancialProvider;
 use App\Models\Loan;
 use App\Models\LoanPayment;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +19,7 @@ class LoanController extends Controller
     public function index(): View
     {
         $loans = Loan::where('user_id', auth()->id())
-            ->with('account')
+            ->with(['account', 'provider'])
             ->withCount([
                 'payments as paid_payment_count' => function ($query) {
                     $query->where('status', 'paid');
@@ -86,9 +87,13 @@ class LoanController extends Controller
             ->orderBy('name')
             ->get();
 
+        $providers = FinancialProvider::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         return view(
             'loans.create',
-            compact('accounts')
+            compact('accounts', 'providers')
         );
     }
 
@@ -108,6 +113,12 @@ class LoanController extends Controller
                 'nullable',
                 'string',
                 'max:255',
+            ],
+
+            'provider_id' => [
+                'nullable',
+                'integer',
+                'exists:financial_providers,id',
             ],
 
             'creditor_icon' => [
@@ -245,6 +256,7 @@ class LoanController extends Controller
 
         $loan->load([
             'account',
+            'provider',
             'payments.transaction',
         ]);
 
@@ -286,11 +298,16 @@ class LoanController extends Controller
             ->orderBy('name')
             ->get();
 
+        $providers = FinancialProvider::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         return view(
             'loans.edit',
             compact(
                 'loan',
-                'accounts'
+                'accounts',
+                'providers'
             )
         );
     }

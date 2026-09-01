@@ -439,9 +439,6 @@
                         $remaining =
                             (float) ($loan->remaining_amount ?? 0);
 
-                        $icon =
-                            $loan->creditor_icon ?: '💳';
-
                         $creditor =
                             $loan->creditor_name ?: 'Kredit';
 
@@ -479,24 +476,11 @@
 
                                 <div class="flex items-center gap-4 min-w-0">
 
-                                    <div
-                                        class="
-                                            w-12
-                                            h-12
-                                            rounded-2xl
-                                            flex
-                                            items-center
-                                            justify-center
-                                            text-xl
-                                            flex-shrink-0
-                                        "
-                                        style="
-                                            background-color:
-                                            {{ $color }}20;
-                                        "
-                                    >
-                                        {{ $icon }}
-                                    </div>
+                                    <x-financial-provider
+                                        :provider="$loan->provider"
+                                        :fallback-icon="$loan->creditor_icon ?: '💳'"
+                                        size="sm"
+                                    />
 
 
                                     <div class="min-w-0">

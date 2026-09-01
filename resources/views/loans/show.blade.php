@@ -31,24 +31,11 @@
 
             <div class="flex items-center gap-4 mt-3">
 
-                <div
-                    class="
-                        w-14
-                        h-14
-                        rounded-2xl
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                        flex-shrink-0
-                    "
-                    style="
-                        background-color:
-                        {{ $loan->creditor_color ?: '#10b981' }}20;
-                    "
-                >
-                    {{ $loan->creditor_icon ?: '💳' }}
-                </div>
+                <x-financial-provider
+                    :provider="$loan->provider"
+                    :fallback-icon="$loan->creditor_icon ?: '💳'"
+                    size="md"
+                />
 
                 <div class="min-w-0">
 
