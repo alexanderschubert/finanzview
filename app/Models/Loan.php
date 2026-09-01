@@ -17,6 +17,7 @@ class Loan extends Model
         'account_id',
         'name',
         'creditor_name',
+        'provider_id',
         'creditor_icon',
         'creditor_color',
         'principal_amount',
@@ -54,6 +55,11 @@ class Loan extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(FinancialProvider::class, 'provider_id');
     }
 
     public function account(): BelongsTo

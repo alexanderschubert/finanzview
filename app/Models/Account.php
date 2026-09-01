@@ -16,6 +16,7 @@ class Account extends Model
         'user_id',
         'name',
         'institution',
+        'provider_id',
         'type',
         'currency',
         'opening_balance',
@@ -42,6 +43,11 @@ class Account extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(FinancialProvider::class, 'provider_id');
     }
 
     public function transactions(): HasMany

@@ -17,6 +17,7 @@ class CreditCard extends Model
         'account_id',
         'name',
         'issuer',
+        'provider_id',
         'last_four',
         'credit_limit',
         'current_balance',
@@ -38,6 +39,11 @@ class CreditCard extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function provider(): BelongsTo
+    {
+        return $this->belongsTo(FinancialProvider::class, 'provider_id');
     }
 
     public function account(): BelongsTo
