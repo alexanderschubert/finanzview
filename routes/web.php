@@ -8,6 +8,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\RecurringTransactionController;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -29,6 +30,20 @@ Route::get('/', function () {
 */
 
 Route::middleware('auth')->group(function () {
+
+    /*
+     * =========================================================
+     * ADMINISTRATION
+     * =========================================================
+     */
+
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [
+            AdminController::class,
+            'index',
+        ])->name('index');
+    });
+
 
     /*
      * =========================================================
