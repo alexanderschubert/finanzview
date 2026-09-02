@@ -48,6 +48,44 @@ Route::middleware(['auth', 'active'])->group(function () {
             'toggleRegistration',
         ])->name('settings.registration');
 
+
+
+        Route::get('/providers', [
+            AdminController::class,
+            'providers',
+        ])->name('providers.index');
+
+
+        Route::get('/providers/create', [
+            AdminController::class,
+            'createProvider',
+        ])->name('providers.create');
+
+        Route::post('/providers', [
+            AdminController::class,
+            'storeProvider',
+        ])->name('providers.store');
+
+        Route::get('/providers/{provider}/edit', [
+            AdminController::class,
+            'editProvider',
+        ])->name('providers.edit');
+
+        Route::patch('/providers/{provider}', [
+            AdminController::class,
+            'updateProvider',
+        ])->name('providers.update');
+
+        Route::patch('/providers/{provider}/toggle-active', [
+            AdminController::class,
+            'toggleProviderActive',
+        ])->name('providers.toggle-active');
+
+        Route::delete('/providers/{provider}', [
+            AdminController::class,
+            'destroyProvider',
+        ])->name('providers.destroy');
+
         Route::patch('/users/{user}/toggle-active', [
             AdminController::class,
             'toggleActive',

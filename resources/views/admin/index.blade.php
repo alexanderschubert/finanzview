@@ -38,6 +38,62 @@
 
 
     {{-- Statistiken --}}
+
+    {{-- ========================================================= --}}
+    {{-- ANBIETER --}}
+    {{-- ========================================================= --}}
+
+    <div class="mb-6">
+
+        <a
+            href="{{ route('admin.providers.index') }}"
+            class="group flex items-center justify-between gap-4
+                   p-5 rounded-2xl
+                   bg-white dark:bg-slate-900
+                   border border-slate-200 dark:border-slate-800
+                   shadow-sm
+                   hover:border-violet-300 dark:hover:border-violet-700
+                   hover:shadow-md transition"
+        >
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="w-12 h-12 rounded-xl
+                           bg-violet-100 dark:bg-violet-950/40
+                           flex items-center justify-center
+                           text-2xl"
+                >
+                    🏦
+                </div>
+
+                <div>
+
+                    <div class="font-semibold text-slate-900 dark:text-white">
+                        Anbieter
+                    </div>
+
+                    <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Banken, Zahlungsanbieter, Kreditkarten und Kreditgeber verwalten
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                class="text-slate-400 group-hover:text-violet-600
+                       dark:group-hover:text-violet-400
+                       text-xl transition"
+            >
+                →
+            </div>
+
+        </a>
+
+    </div>
+
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 
         <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">

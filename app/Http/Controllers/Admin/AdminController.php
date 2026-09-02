@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationSetting;
 use App\Models\User;
+use App\Models\FinancialProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -262,4 +263,252 @@ class AdminController extends Controller
 
         return back()->with('success', 'Benutzer wurde gelöscht.');
     }
+
+    /*
+     * =========================================================
+     * ANBIETER
+     * =========================================================
+     */
+
+    public function providers(): View
+    {
+        $providers = FinancialProvider::query()
+            ->withCount([
+                'accounts',
+                'creditCards',
+                'loans',
+            ])
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.providers.index', compact('providers'));
+    }
+
+    public function toggleProviderActive(
+        FinancialProvider $provider
+    ): RedirectResponse {
+        $provider->update([
+            'is_active' => ! $provider->is_active,
+        ]);
+
+        return back()->with(
+            'success',
+            $provider->is_active
+                ? 'Anbieter wurde aktiviert.'
+                : 'Anbieter wurde deaktiviert.'
+        );
+    }
+
+    public function destroyProvider(
+        FinancialProvider $provider
+    ): RedirectResponse {
+        $usageCount =
+            $provider->accounts()->count()
+            + $provider->creditCards()->count()
+            + $provider->loans()->count();
+
+        if ($usageCount > 0) {
+            return back()->with(
+                'error',
+                'Der Anbieter kann nicht gelöscht werden, da er noch verwendet wird.'
+            );
+        }
+
+        $provider->delete();
+
+        return back()->with(
+            'success',
+            'Anbieter wurde gelöscht.'
+        );
+    }
+
+
+    /*
+     * =========================================================
+     * ANBIETER ERSTELLEN
+     * =========================================================
+     */
+
+    private function providerLogos(): array
+    {
+        $path = public_path('images/providers');
+
+        if (! is_dir($path)) {
+            return [];
+        }
+
+        return collect(scandir($path))
+            ->filter(function ($file) use ($path) {
+                return is_file($path . DIRECTORY_SEPARATOR . $file)
+                    && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['svg', 'png', 'jpg', 'jpeg', 'webp'], true);
+            })
+            ->mapWithKeys(function ($file) {
+                return [$file => 'images/providers/' . $file];
+            })
+            ->sortKeys()
+            ->all();
+    }
+
+    public function createProvider(): View
+    {
+        return view('admin.providers.create', [
+            'provider' => new FinancialProvider(),
+            'providerLogos' => $this->providerLogos(),
+        ]);
+    }
+
+
+    /*
+     * =========================================================
+     * ANBIETER SPEICHERN
+     * =========================================================
+     */
+
+    public function storeProvider(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                'unique:financial_providers,slug',
+            ],
+            'type' => [
+                'required',
+                'in:bank,payment,card,lender,other',
+            ],
+            'logo' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^images\/providers\/[A-Za-z0-9._-]+\.(svg|png|jpe?g|webp)$/i',
+            ],
+            'emoji' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+            'color' => [
+                'nullable',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
+
+        $slug = $validated['slug'] ?? null;
+
+        if (! $slug) {
+            $slug = \Illuminate\Support\Str::slug($validated['name']);
+        }
+
+        $baseSlug = $slug;
+        $counter = 2;
+
+        while (FinancialProvider::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        FinancialProvider::create([
+            'name' => $validated['name'],
+            'slug' => $slug,
+            'type' => $validated['type'],
+            'logo' => $validated['logo'] ?? null,
+            'emoji' => $validated['emoji'] ?? null,
+            'color' => $validated['color'] ?? null,
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return redirect()
+            ->route('admin.providers.index')
+            ->with('success', 'Anbieter wurde erstellt.');
+    }
+
+
+    /*
+     * =========================================================
+     * ANBIETER BEARBEITEN
+     * =========================================================
+     */
+
+    public function editProvider(
+        FinancialProvider $provider
+    ): View {
+        return view('admin.providers.edit', [
+            'provider' => $provider,
+            'providerLogos' => $this->providerLogos(),
+        ]);
+    }
+
+
+    /*
+     * =========================================================
+     * ANBIETER AKTUALISIEREN
+     * =========================================================
+     */
+
+    public function updateProvider(
+        Request $request,
+        FinancialProvider $provider
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:financial_providers,slug,' . $provider->id,
+            ],
+            'type' => [
+                'required',
+                'in:bank,payment,card,lender,other',
+            ],
+            'logo' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^images\/providers\/[A-Za-z0-9._-]+\.(svg|png|jpe?g|webp)$/i',
+            ],
+            'emoji' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+            'color' => [
+                'nullable',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+            'is_active' => [
+                'nullable',
+                'boolean',
+            ],
+        ]);
+
+        $provider->update([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'type' => $validated['type'],
+            'logo' => $validated['logo'] ?? null,
+            'emoji' => $validated['emoji'] ?? null,
+            'color' => $validated['color'] ?? null,
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return redirect()
+            ->route('admin.providers.index')
+            ->with('success', 'Anbieter wurde aktualisiert.');
+    }
+
 }
