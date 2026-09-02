@@ -1,257 +1,572 @@
-<x-app-layout>
+@extends('layouts.app')
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+@section('title', 'Benutzer bearbeiten – Finanzblick')
 
-        {{-- Header --}}
-        <div class="mb-8">
-            <a
-                href="{{ route('admin.index') }}"
-                class="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition"
+@section('eyebrow', 'Administration')
+
+@section('page_title', 'Benutzer bearbeiten')
+
+@section('content')
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    {{-- HEADER --}}
+
+    <div class="mb-8">
+
+        <a
+            href="{{ route('admin.index') }}"
+            class="
+                inline-flex
+                items-center
+                text-sm
+                text-slate-500
+                dark:text-slate-400
+                hover:text-slate-900
+                dark:hover:text-white
+                transition
+            "
+        >
+            ← Administration
+        </a>
+
+        <div class="flex items-center gap-4 mt-5">
+
+            <div
+                class="
+                    w-14
+                    h-14
+                    shrink-0
+                    rounded-2xl
+                    bg-violet-50
+                    dark:bg-violet-500/10
+                    flex
+                    items-center
+                    justify-center
+                    text-xl
+                    font-semibold
+                    text-violet-600
+                    dark:text-violet-400
+                "
             >
-                ← Zur Benutzerverwaltung
-            </a>
-
-            <div class="mt-5 flex items-center gap-4">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 dark:bg-violet-950/40">
-                    <span class="text-2xl">👤</span>
-                </div>
-
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-                        Benutzer bearbeiten
-                    </h1>
-
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {{ $user->email }}
-                    </p>
-                </div>
+                {{ strtoupper(substr($user->name, 0, 1)) }}
             </div>
-        </div>
 
-        {{-- Meldungen --}}
-        @if (session('error'))
-            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-                {{ session('error') }}
-            </div>
-        @endif
+            <div class="min-w-0">
 
-        @if ($errors->any())
-            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-                <p class="font-semibold mb-2">
-                    Bitte überprüfe deine Eingaben.
+                <h2
+                    class="
+                        text-2xl
+                        sm:text-3xl
+                        font-semibold
+                        text-slate-900
+                        dark:text-white
+                    "
+                >
+                    Benutzer bearbeiten
+                </h2>
+
+                <p class="text-slate-500 dark:text-slate-400 mt-1 truncate">
+                    {{ $user->name }}
                 </p>
 
-                <ul class="list-disc list-inside space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
             </div>
-        @endif
 
-        <form
-            method="POST"
-            action="{{ route('admin.users.update', $user) }}"
-            class="space-y-6"
+        </div>
+
+    </div>
+
+
+    {{-- FEHLER --}}
+
+    @if ($errors->any())
+
+        <div
+            class="
+                mb-6
+                rounded-2xl
+                bg-red-50
+                dark:bg-red-950/40
+                border
+                border-red-100
+                dark:border-red-900
+                p-4
+                text-sm
+                text-red-700
+                dark:text-red-300
+            "
         >
-            @csrf
-            @method('PATCH')
 
-            {{-- Persönliche Daten --}}
-            <div class="rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <p class="font-medium mb-2">
+                Bitte überprüfe deine Eingaben.
+            </p>
+
+            <ul class="list-disc list-inside space-y-1">
+
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+
+            </ul>
+
+        </div>
+
+    @endif
+
+
+    {{-- FORMULAR --}}
+
+    <form
+        method="POST"
+        action="{{ route('admin.users.update', $user) }}"
+    >
+
+        @csrf
+        @method('PATCH')
+
+
+        <div class="space-y-6">
+
+
+            {{-- PERSÖNLICHE DATEN --}}
+
+            <div
+                class="
+                    bg-white
+                    dark:bg-slate-900
+                    rounded-3xl
+                    shadow-sm
+                    border
+                    border-slate-100
+                    dark:border-slate-800
+                    p-6
+                    sm:p-8
+                "
+            >
 
                 <div class="mb-6">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Persönliche Daten
-                    </h2>
 
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Persönliche Daten
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Name und E-Mail-Adresse des Benutzers.
                     </p>
+
                 </div>
 
-                <div class="grid gap-5 sm:grid-cols-2">
 
-                    {{-- Name --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {{-- NAME --}}
+
                     <div>
+
                         <label
                             for="name"
-                            class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            class="
+                                block
+                                text-sm
+                                font-medium
+                                text-slate-700
+                                dark:text-slate-300
+                                mb-2
+                            "
                         >
                             Name
                         </label>
 
                         <input
                             id="name"
-                            name="name"
                             type="text"
+                            name="name"
                             value="{{ old('name', $user->name) }}"
                             required
-                            class="mt-2 block w-full rounded-xl border-0 bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500"
+                            autocomplete="name"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                dark:border-slate-700
+                                bg-white
+                                dark:bg-slate-800
+                                text-slate-900
+                                dark:text-white
+                                px-4
+                                py-3
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-violet-500
+                            "
                         >
+
                     </div>
 
-                    {{-- E-Mail --}}
+
+                    {{-- E-MAIL --}}
+
                     <div>
+
                         <label
                             for="email"
-                            class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            class="
+                                block
+                                text-sm
+                                font-medium
+                                text-slate-700
+                                dark:text-slate-300
+                                mb-2
+                            "
                         >
                             E-Mail-Adresse
                         </label>
 
                         <input
                             id="email"
-                            name="email"
                             type="email"
+                            name="email"
                             value="{{ old('email', $user->email) }}"
                             required
-                            class="mt-2 block w-full rounded-xl border-0 bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500"
+                            autocomplete="email"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                dark:border-slate-700
+                                bg-white
+                                dark:bg-slate-800
+                                text-slate-900
+                                dark:text-white
+                                px-4
+                                py-3
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-violet-500
+                            "
                         >
+
                     </div>
 
                 </div>
+
             </div>
 
-            {{-- Berechtigungen --}}
-            <div class="rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+
+            {{-- BERECHTIGUNGEN --}}
+
+            <div
+                class="
+                    bg-white
+                    dark:bg-slate-900
+                    rounded-3xl
+                    shadow-sm
+                    border
+                    border-slate-100
+                    dark:border-slate-800
+                    p-6
+                    sm:p-8
+                "
+            >
 
                 <div class="mb-6">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Berechtigungen
-                    </h2>
 
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Benutzerstatus und Administratorrechte.
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Berechtigungen
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Lege fest, welche Rechte der Benutzer besitzt.
                     </p>
+
                 </div>
 
-                <div class="space-y-4">
 
-                    {{-- Aktiv --}}
-                    <label class="flex cursor-pointer items-center justify-between gap-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4">
+                <div class="space-y-5">
 
-                        <div>
-                            <p class="font-medium text-slate-900 dark:text-white">
-                                Benutzer aktiv
-                            </p>
+                    {{-- ADMIN --}}
 
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                Deaktivierte Benutzer können sich nicht anmelden.
-                            </p>
-                        </div>
-
-                        <input
-                            type="checkbox"
-                            name="is_active"
-                            value="1"
-                            @checked(old('is_active', $user->is_active))
-                            class="h-5 w-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
-                        >
-
-                    </label>
-
-                    {{-- Admin --}}
-                    <label class="flex cursor-pointer items-center justify-between gap-4 rounded-2xl bg-violet-50 dark:bg-violet-950/20 p-4">
-
-                        <div>
-                            <p class="font-medium text-slate-900 dark:text-white">
-                                Administrator
-                            </p>
-
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                Administratoren haben Zugriff auf die Benutzerverwaltung.
-                            </p>
-                        </div>
+                    <label
+                        class="
+                            flex
+                            items-start
+                            gap-4
+                            cursor-pointer
+                            rounded-2xl
+                            border
+                            border-slate-200
+                            dark:border-slate-700
+                            p-4
+                            hover:bg-slate-50
+                            dark:hover:bg-slate-800/60
+                            transition
+                        "
+                    >
 
                         <input
                             type="checkbox"
                             name="is_admin"
                             value="1"
                             @checked(old('is_admin', $user->is_admin))
-                            class="h-5 w-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                            class="
+                                mt-1
+                                h-5
+                                w-5
+                                rounded
+                                border-slate-300
+                                text-violet-600
+                                focus:ring-violet-500
+                            "
                         >
+
+                        <span>
+
+                            <span class="block font-medium text-slate-900 dark:text-white">
+                                Administrator
+                            </span>
+
+                            <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                Zugriff auf den Administrationsbereich und die Benutzerverwaltung.
+                            </span>
+
+                        </span>
+
+                    </label>
+
+
+                    {{-- AKTIV --}}
+
+                    <label
+                        class="
+                            flex
+                            items-start
+                            gap-4
+                            cursor-pointer
+                            rounded-2xl
+                            border
+                            border-slate-200
+                            dark:border-slate-700
+                            p-4
+                            hover:bg-slate-50
+                            dark:hover:bg-slate-800/60
+                            transition
+                        "
+                    >
+
+                        <input
+                            type="checkbox"
+                            name="is_active"
+                            value="1"
+                            @checked(old('is_active', $user->is_active))
+                            class="
+                                mt-1
+                                h-5
+                                w-5
+                                rounded
+                                border-slate-300
+                                text-violet-600
+                                focus:ring-violet-500
+                            "
+                        >
+
+                        <span>
+
+                            <span class="block font-medium text-slate-900 dark:text-white">
+                                Benutzer aktiv
+                            </span>
+
+                            <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                Deaktivierte Benutzer können sich nicht anmelden.
+                            </span>
+
+                        </span>
 
                     </label>
 
                 </div>
+
             </div>
 
-            {{-- Passwort --}}
-            <div class="rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+
+            {{-- PASSWORT --}}
+
+            <div
+                class="
+                    bg-white
+                    dark:bg-slate-900
+                    rounded-3xl
+                    shadow-sm
+                    border
+                    border-slate-100
+                    dark:border-slate-800
+                    p-6
+                    sm:p-8
+                "
+            >
 
                 <div class="mb-6">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Passwort ändern
-                    </h2>
 
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Nur ausfüllen, wenn ein neues Passwort vergeben werden soll.
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Passwort ändern
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Leer lassen, wenn das aktuelle Passwort beibehalten werden soll.
                     </p>
+
                 </div>
 
-                <div class="grid gap-5 sm:grid-cols-2">
 
-                    {{-- Neues Passwort --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {{-- PASSWORT --}}
+
                     <div>
+
                         <label
                             for="password"
-                            class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            class="
+                                block
+                                text-sm
+                                font-medium
+                                text-slate-700
+                                dark:text-slate-300
+                                mb-2
+                            "
                         >
                             Neues Passwort
                         </label>
 
                         <input
                             id="password"
-                            name="password"
                             type="password"
+                            name="password"
                             autocomplete="new-password"
-                            class="mt-2 block w-full rounded-xl border-0 bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                dark:border-slate-700
+                                bg-white
+                                dark:bg-slate-800
+                                text-slate-900
+                                dark:text-white
+                                px-4
+                                py-3
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-violet-500
+                            "
                         >
+
                     </div>
 
-                    {{-- Passwort bestätigen --}}
+
+                    {{-- PASSWORT BESTÄTIGEN --}}
+
                     <div>
+
                         <label
                             for="password_confirmation"
-                            class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            class="
+                                block
+                                text-sm
+                                font-medium
+                                text-slate-700
+                                dark:text-slate-300
+                                mb-2
+                            "
                         >
                             Passwort bestätigen
                         </label>
 
                         <input
                             id="password_confirmation"
-                            name="password_confirmation"
                             type="password"
+                            name="password_confirmation"
                             autocomplete="new-password"
-                            class="mt-2 block w-full rounded-xl border-0 bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white ring-1 ring-inset ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-200
+                                dark:border-slate-700
+                                bg-white
+                                dark:bg-slate-800
+                                text-slate-900
+                                dark:text-white
+                                px-4
+                                py-3
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-violet-500
+                            "
                         >
+
                     </div>
 
                 </div>
+
             </div>
 
-            {{-- Aktionen --}}
-            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+            {{-- BUTTONS --}}
+
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
 
                 <a
                     href="{{ route('admin.index') }}"
-                    class="inline-flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        rounded-xl
+                        px-5
+                        py-3
+                        text-sm
+                        font-medium
+                        text-slate-700
+                        dark:text-slate-300
+                        border
+                        border-slate-200
+                        dark:border-slate-700
+                        hover:bg-slate-100
+                        dark:hover:bg-slate-800
+                        transition
+                    "
                 >
                     Abbrechen
                 </a>
 
                 <button
                     type="submit"
-                    class="inline-flex items-center justify-center rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
+                    class="
+                        inline-flex
+                        items-center
+                        justify-center
+                        rounded-xl
+                        px-5
+                        py-3
+                        text-sm
+                        font-medium
+                        text-white
+                        bg-violet-600
+                        hover:bg-violet-700
+                        transition
+                    "
                 >
                     Änderungen speichern
                 </button>
 
             </div>
 
-        </form>
+        </div>
 
-    </div>
+    </form>
 
-</x-app-layout>
+</div>
+
+@endsection
