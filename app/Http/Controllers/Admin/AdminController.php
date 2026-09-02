@@ -230,22 +230,23 @@ class AdminController extends Controller
     {
         $currentUser = $request->user();
 
-        // Eigener Account darf nicht gelöscht werden.
+        // Eigenen Account niemals über die Benutzerverwaltung löschen.
         if ($user->id === $currentUser->id) {
             return back()->with('error', 'Du kannst deinen eigenen Account nicht löschen.');
         }
 
-        // Letzten Administrator nicht löschen.
-        if (
-            $user->is_admin &&
-            User::where('is_admin', true)->count() <= 1
-        ) {
+        // Der letzte Administrator darf nicht gelöscht werden.
+        if ($user->is_admin && User::where('is_admin', true)->count() <= 1) {
             return back()->with('error', 'Der letzte Administrator kann nicht gelöscht werden.');
         }
 
         DB::transaction(function () use ($user) {
+            // Buchungen verwenden SoftDeletes und müssen deshalb
+            // über Eloquent gelöscht werden.
+            $user->transactions()->get()->each->delete();
+
+            // Abhängige Datensätze werden vor dem Benutzer gelöscht.
             $user->accounts()->delete();
-            $user->transactions()->delete();
             $user->categories()->delete();
             $user->budgets()->delete();
             $user->loans()->delete();
@@ -253,6 +254,9 @@ class AdminController extends Controller
             $user->recurringTransactions()->delete();
             $user->setting()->delete();
 
+            // Der Benutzer selbst wird anschließend gelöscht.
+            // Die PostgreSQL-FKs übernehmen ggf. verbleibende
+            // abhängige Datensätze per ON DELETE CASCADE.
             $user->delete();
         });
 
