@@ -2,9 +2,15 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#16A34A">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Login – Finanzblick</title>
+    <title>Login – FinanzView</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -93,7 +99,7 @@
                                 <div>
 
                                     <h1 class="text-2xl font-semibold tracking-tight">
-                                        Finanzblick
+                                        FinanzView
                                     </h1>
 
                                     <p class="text-sm text-slate-400">
@@ -120,7 +126,7 @@
                                     tracking-wider
                                 "
                             >
-                                Willkommen bei Finanzblick
+                                Willkommen bei FinanzView
                             </p>
 
                             <h2
@@ -222,7 +228,7 @@
                         {{-- Footer --}}
 
                         <div class="relative text-xs text-slate-500">
-                            Finanzblick · Persönliche Finanzverwaltung
+                            FinanzView · Persönliche Finanzverwaltung
                         </div>
 
                     </div>
@@ -268,7 +274,7 @@
                                         mt-4
                                     "
                                 >
-                                    Finanzblick
+                                    FinanzView
                                 </h1>
 
                                 <p
@@ -647,7 +653,7 @@
                     mt-5
                 "
             >
-                Finanzblick
+                FinanzView
             </p>
 
         </div>

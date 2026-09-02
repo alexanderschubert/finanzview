@@ -2,10 +2,10 @@
 
 /*
 |--------------------------------------------------------------------------
-| Finanzblick – Tailwind Dark Mode
+| FinanzView – Tailwind Dark Mode
 |--------------------------------------------------------------------------
 |
-| Der Dark Mode wird von Finanzblick über die Klasse "dark"
+| Der Dark Mode wird von FinanzView über die Klasse "dark"
 | auf dem <html>-Element gesteuert.
 |
 */
@@ -35,7 +35,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| Finanzblick – Globales Dokument-Layout
+| FinanzView – Globales Dokument-Layout
 |--------------------------------------------------------------------------
 |
 | Verhindert weiße/helle Bereiche am Rand des Dokuments.

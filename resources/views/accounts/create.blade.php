@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Neues Konto – Finanzblick')
+@section('title', 'Neues Konto – FinanzView')
 @section('eyebrow', 'Finanzverwaltung')
 @section('page_title', 'Neues Konto')
 
@@ -265,7 +265,7 @@
                         </h3>
 
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            Der Kontostand, mit dem Finanzblick starten soll.
+                            Der Kontostand, mit dem FinanzView starten soll.
                         </p>
 
                     </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Benutzer bearbeiten – Finanzblick')
+@section('title', 'Benutzer bearbeiten – FinanzView')
 
 @section('eyebrow', 'Administration')
 

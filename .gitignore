@@ -31,3 +31,13 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# FinanzView local files
+# Local database backups
+*.sql
+*.sql.gz
+*.dump
+*.backup
+# Local backup files
+*.bak
+*.backup

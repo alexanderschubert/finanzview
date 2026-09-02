@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Budget erstellen – Finanzblick')
+@section('title', 'Budget erstellen – FinanzView')
 
 @section('eyebrow', 'Finanzplanung')
 

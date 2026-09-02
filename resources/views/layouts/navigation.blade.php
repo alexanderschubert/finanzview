@@ -18,7 +18,7 @@
                 <div>
 
                     <p class="font-semibold text-slate-900 leading-none">
-                        Finanzblick
+                        FinanzView
                     </p>
 
                     <p class="text-xs text-slate-400 mt-1">

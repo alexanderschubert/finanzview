@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Sicherheit – Finanzblick')
+@section('title', 'Sicherheit – FinanzView')
 
 @section('eyebrow', 'Einstellungen')
 
@@ -187,7 +187,7 @@
                     </h3>
 
                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Ändere hier das Passwort für dein Finanzblick-Konto.
+                        Ändere hier das Passwort für dein FinanzView-Konto.
                     </p>
 
                 </div>
@@ -542,7 +542,7 @@
             </h3>
 
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Dein Finanzblick-Konto ist durch dein Passwort geschützt.
+                Dein FinanzView-Konto ist durch dein Passwort geschützt.
             </p>
 
 

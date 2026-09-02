@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Registrieren – Finanzblick</title>
+    <title>Registrieren – FinanzView</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -17,7 +17,7 @@
             <div class="text-5xl mb-4">💰</div>
 
             <h1 class="text-3xl font-semibold text-white">
-                Finanzblick
+                FinanzView
             </h1>
 
             <p class="text-slate-400 mt-2">

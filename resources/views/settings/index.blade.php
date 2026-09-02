@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Einstellungen – Finanzblick')
+@section('title', 'Einstellungen – FinanzView')
 
 @section('eyebrow', 'System')
 
@@ -25,7 +25,7 @@
         </h2>
 
         <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Verwalte dein Profil, deine Finanzen, Sicherheit und das Erscheinungsbild von Finanzblick.
+            Verwalte dein Profil, deine Finanzen, Sicherheit und das Erscheinungsbild von FinanzView.
         </p>
 
     </div>
@@ -203,7 +203,7 @@
             </h3>
 
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Passe Darstellung, Farbschema und Theme von Finanzblick an.
+                Passe Darstellung, Farbschema und Theme von FinanzView an.
             </p>
 
         </a>

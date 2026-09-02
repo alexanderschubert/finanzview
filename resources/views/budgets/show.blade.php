@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $budget->name . ' – Budget – Finanzblick')
+@section('title', $budget->name . ' – Budget – FinanzView')
 @section('eyebrow', 'Budget')
 @section('page_title', $budget->name)
 

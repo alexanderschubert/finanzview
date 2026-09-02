@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Zugriff verweigert – Finanzblick</title>
+    <title>Zugriff verweigert – FinanzView</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -53,7 +53,7 @@
         </div>
 
         <p class="mt-10 text-xs text-slate-400 dark:text-slate-600">
-            Finanzblick
+            FinanzView
         </p>
 
     </div>

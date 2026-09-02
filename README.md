@@ -1,6 +1,6 @@
-# Finanzblick
+# FinanzView
 
-Finanzblick ist eine moderne, selbst gehostete Finanzverwaltung zur Verwaltung von Konten, Buchungen, Kategorien, Budgets und wiederkehrenden Ausgaben.
+FinanzView ist eine moderne, selbst gehostete Finanzverwaltung zur Verwaltung von Konten, Buchungen, Kategorien, Budgets und wiederkehrenden Ausgaben.
 
 Das Projekt wird als Webanwendung betrieben und ist für den privaten bzw. persönlichen Finanzüberblick ausgelegt.
 
@@ -36,7 +36,7 @@ Das Projekt wird als Webanwendung betrieben und ist für den privaten bzw. pers�
 
 ### 🎯 Budgets
 
-Finanzblick unterstützt verschiedene Budgetarten:
+FinanzView unterstützt verschiedene Budgetarten:
 
 - Monatliche Budgets
 - Jährliche Budgets
@@ -71,7 +71,7 @@ Geplante bzw. vorhandene Informationen:
 
 ## 🛠️ Technologie
 
-Finanzblick basiert auf modernen Open-Source-Technologien.
+FinanzView basiert auf modernen Open-Source-Technologien.
 
 ### Backend
 
@@ -94,7 +94,7 @@ Aktuell wird eine SQL-basierte Datenbank verwendet.
 
 ### Betrieb
 
-Finanzblick kann containerisiert betrieben werden und eignet sich dadurch besonders für einen eigenen Server, NAS oder Homelab.
+FinanzView kann containerisiert betrieben werden und eignet sich dadurch besonders für einen eigenen Server, NAS oder Homelab.
 
 ---
 

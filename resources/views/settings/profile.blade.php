@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profil – Finanzblick')
+@section('title', 'Profil – FinanzView')
 
 @section('eyebrow', 'Einstellungen')
 
@@ -190,7 +190,7 @@
                     </h3>
 
                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Diese Informationen werden für dein Finanzblick-Konto verwendet.
+                        Diese Informationen werden für dein FinanzView-Konto verwendet.
                     </p>
 
                 </div>
@@ -474,7 +474,7 @@
                 </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Übersicht über dein Finanzblick-Konto.
+                    Übersicht über dein FinanzView-Konto.
                 </p>
 
             </div>

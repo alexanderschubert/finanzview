@@ -1,6 +1,6 @@
 @extends('layouts.app')
 {{-- Deployment-Test 29.08.2026 --}}
-@section('title', 'Konto bearbeiten – Finanzblick')
+@section('title', 'Konto bearbeiten – FinanzView')
 
 @section('eyebrow', 'Finanzverwaltung')
 

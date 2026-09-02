@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Finanzen – Finanzblick')
+@section('title', 'Finanzen – FinanzView')
 
 @section('eyebrow', 'Einstellungen')
 
@@ -28,7 +28,7 @@
         </h2>
 
         <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Lege fest, wie Finanzblick deine Finanzdaten darstellen und neue Buchungen behandeln soll.
+            Lege fest, wie FinanzView deine Finanzdaten darstellen und neue Buchungen behandeln soll.
         </p>
 
     </div>

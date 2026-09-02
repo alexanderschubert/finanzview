@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kredit bearbeiten – Finanzblick')
+@section('title', 'Kredit bearbeiten – FinanzView')
 
 @section('eyebrow', 'Finanzplanung')
 

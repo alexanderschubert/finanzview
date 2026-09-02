@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Konten – Finanzblick')
+@section('title', 'Konten – FinanzView')
 
 @section('eyebrow', 'Finanzverwaltung')
 
@@ -456,7 +456,7 @@
                 </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
-                    Erstelle dein erstes Konto, damit Finanzblick
+                    Erstelle dein erstes Konto, damit FinanzView
                     deine Vermögensentwicklung berechnen kann.
                 </p>
 

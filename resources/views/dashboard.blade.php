@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard – Finanzblick')
+@section('title', 'Dashboard – FinanzView')
 @section('eyebrow', 'Finanzübersicht')
 @section('page_title', 'Dashboard')
 

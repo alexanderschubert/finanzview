@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Wiederkehrende Buchung – Finanzblick')
+@section('title', 'Wiederkehrende Buchung – FinanzView')
 
 @section('eyebrow', 'Finanzen')
 

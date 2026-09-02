@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Darstellung – Finanzblick')
+@section('title', 'Darstellung – FinanzView')
 
 @section('eyebrow', 'Einstellungen')
 
@@ -30,7 +30,7 @@
         </h2>
 
         <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Wähle aus, wie Finanzblick dargestellt werden soll.
+            Wähle aus, wie FinanzView dargestellt werden soll.
         </p>
 
     </div>
@@ -97,7 +97,7 @@
             </h3>
 
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Lege fest, welches Erscheinungsbild Finanzblick verwenden soll.
+                Lege fest, welches Erscheinungsbild FinanzView verwenden soll.
             </p>
 
         </div>
@@ -151,7 +151,7 @@
                             </p>
 
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Finanzblick verwendet automatisch die Einstellung deines Geräts.
+                                FinanzView verwendet automatisch die Einstellung deines Geräts.
                             </p>
 
                         </div>
@@ -203,7 +203,7 @@
                             </p>
 
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Verwende das helle Erscheinungsbild von Finanzblick.
+                                Verwende das helle Erscheinungsbild von FinanzView.
                             </p>
 
                         </div>
@@ -255,7 +255,7 @@
                             </p>
 
                             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Verwende das dunkle Erscheinungsbild von Finanzblick.
+                                Verwende das dunkle Erscheinungsbild von FinanzView.
                             </p>
 
                         </div>

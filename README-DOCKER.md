@@ -1,4 +1,4 @@
-# Finanzblick V11 – Docker + PostgreSQL
+# FinanzView V11 – Docker + PostgreSQL
 
 ## Start
 docker compose build
