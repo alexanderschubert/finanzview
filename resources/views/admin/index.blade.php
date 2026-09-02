@@ -275,6 +275,15 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-end gap-2">
 
+                                    {{-- Bearbeiten --}}
+                                    <a
+                                        href="{{ route('admin.users.edit', $user) }}"
+                                        class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+                                        title="Benutzer bearbeiten"
+                                    >
+                                        ✏️
+                                    </a>
+
                                     @if ($user->id !== auth()->id())
 
                                         {{-- Aktivieren / Deaktivieren --}}

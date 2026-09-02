@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -60,6 +62,98 @@ class AdminController extends Controller
                 ? 'Die Registrierung wurde aktiviert.'
                 : 'Die Registrierung wurde deaktiviert.'
         );
+    }
+
+    /**
+     * Benutzer bearbeiten.
+     */
+    public function edit(User $user): View
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Benutzer aktualisieren.
+     */
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'is_admin' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $newIsAdmin = $request->boolean('is_admin');
+        $newIsActive = $request->boolean('is_active');
+
+        // Eigenen Account nicht über diese Seite deaktivieren.
+        if ($user->id === $currentUser->id && ! $newIsActive) {
+            return back()
+                ->withInput()
+                ->with('error', 'Du kannst deinen eigenen Account nicht deaktivieren.');
+        }
+
+        // Eigene Administratorrechte nicht über diese Seite entfernen.
+        if ($user->id === $currentUser->id && ! $newIsAdmin) {
+            return back()
+                ->withInput()
+                ->with('error', 'Du kannst deine eigenen Administratorrechte nicht entfernen.');
+        }
+
+        // Letzten Administrator nicht entfernen.
+        if (
+            $user->is_admin &&
+            ! $newIsAdmin &&
+            User::where('is_admin', true)
+                ->whereKeyNot($user->id)
+                ->count() === 0
+        ) {
+            return back()
+                ->withInput()
+                ->with('error', 'Der letzte Administrator kann nicht entfernt werden.');
+        }
+
+        // Letzten aktiven Administrator nicht deaktivieren.
+        if (
+            $user->is_admin &&
+            $user->is_active &&
+            $newIsAdmin &&
+            ! $newIsActive &&
+            User::where('is_admin', true)
+                ->where('is_active', true)
+                ->whereKeyNot($user->id)
+                ->count() === 0
+        ) {
+            return back()
+                ->withInput()
+                ->with('error', 'Der letzte aktive Administrator kann nicht deaktiviert werden.');
+        }
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->is_admin = $newIsAdmin;
+        $user->is_active = $newIsActive;
+
+        if (! empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('admin.index')
+            ->with('success', 'Benutzer wurde erfolgreich aktualisiert.');
     }
 
     /**

@@ -53,6 +53,16 @@ Route::middleware(['auth', 'active'])->group(function () {
             'toggleActive',
         ])->name('users.toggle-active');
 
+        Route::get('/users/{user}/edit', [
+            AdminController::class,
+            'edit',
+        ])->name('users.edit');
+
+        Route::patch('/users/{user}', [
+            AdminController::class,
+            'update',
+        ])->name('users.update');
+
         Route::patch('/users/{user}/toggle-admin', [
             AdminController::class,
             'toggleAdmin',
