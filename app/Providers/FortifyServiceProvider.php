@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +21,33 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Fortify::createUsersUsing(CreateNewUser::class);
-        
+
+        /*
+         * =========================================================
+         * LOGIN
+         * =========================================================
+         *
+         * Deaktivierte Benutzer dürfen sich nicht anmelden.
+         * Bei erfolgreichem Login wird der letzte Login gespeichert.
+         */
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if (! $user || ! $user->is_active) {
+                return null;
+            }
+
+            if (! Hash::check($request->password, $user->password)) {
+                return null;
+            }
+
+            $user->forceFill([
+                'last_login_at' => now(),
+            ])->save();
+
+            return $user;
+        });
+
         Fortify::loginView(function () {
             return view('auth.login');
         });
