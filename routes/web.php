@@ -42,6 +42,21 @@ Route::middleware('auth')->group(function () {
             AdminController::class,
             'index',
         ])->name('index');
+
+        Route::patch('/users/{user}/toggle-active', [
+            AdminController::class,
+            'toggleActive',
+        ])->name('users.toggle-active');
+
+        Route::patch('/users/{user}/toggle-admin', [
+            AdminController::class,
+            'toggleAdmin',
+        ])->name('users.toggle-admin');
+
+        Route::delete('/users/{user}', [
+            AdminController::class,
+            'destroy',
+        ])->name('users.destroy');
     });
 
 

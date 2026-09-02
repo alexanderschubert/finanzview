@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -25,5 +28,108 @@ class AdminController extends Controller
             ->get();
 
         return view('admin.index', compact('stats', 'users'));
+    }
+
+    /**
+     * Benutzer aktivieren/deaktivieren.
+     */
+    public function toggleActive(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        // Eigener Account darf nicht deaktiviert werden.
+        if ($user->id === $currentUser->id) {
+            return back()->with('error', 'Du kannst deinen eigenen Account nicht deaktivieren.');
+        }
+
+        // Letzten Administrator nicht deaktivieren.
+        if (
+            $user->is_admin &&
+            $user->is_active &&
+            User::where('is_admin', true)
+                ->where('is_active', true)
+                ->count() <= 1
+        ) {
+            return back()->with('error', 'Der letzte aktive Administrator kann nicht deaktiviert werden.');
+        }
+
+        $user->update([
+            'is_active' => ! $user->is_active,
+        ]);
+
+        return back()->with(
+            'success',
+            $user->is_active
+                ? 'Benutzer wurde aktiviert.'
+                : 'Benutzer wurde deaktiviert.'
+        );
+    }
+
+    /**
+     * Administratorrechte vergeben/entziehen.
+     */
+    public function toggleAdmin(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        // Eigene Adminrechte nicht über diese Aktion entfernen.
+        if ($user->id === $currentUser->id) {
+            return back()->with('error', 'Du kannst deine eigenen Administratorrechte hier nicht ändern.');
+        }
+
+        // Letzten Administrator nicht entfernen.
+        if (
+            $user->is_admin &&
+            User::where('is_admin', true)->count() <= 1
+        ) {
+            return back()->with('error', 'Der letzte Administrator kann nicht entfernt werden.');
+        }
+
+        $user->update([
+            'is_admin' => ! $user->is_admin,
+        ]);
+
+        return back()->with(
+            'success',
+            $user->is_admin
+                ? 'Administratorrechte wurden vergeben.'
+                : 'Administratorrechte wurden entfernt.'
+        );
+    }
+
+    /**
+     * Benutzer löschen.
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        // Eigener Account darf nicht gelöscht werden.
+        if ($user->id === $currentUser->id) {
+            return back()->with('error', 'Du kannst deinen eigenen Account nicht löschen.');
+        }
+
+        // Letzten Administrator nicht löschen.
+        if (
+            $user->is_admin &&
+            User::where('is_admin', true)->count() <= 1
+        ) {
+            return back()->with('error', 'Der letzte Administrator kann nicht gelöscht werden.');
+        }
+
+        DB::transaction(function () use ($user) {
+            $user->accounts()->delete();
+            $user->transactions()->delete();
+            $user->categories()->delete();
+            $user->budgets()->delete();
+            $user->loans()->delete();
+            $user->creditCards()->delete();
+            $user->recurringTransactions()->delete();
+            $user->setting()->delete();
+
+            $user->delete();
+        });
+
+        return back()->with('success', 'Benutzer wurde gelöscht.');
     }
 }
