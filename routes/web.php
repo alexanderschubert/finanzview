@@ -29,7 +29,7 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
 
     /*
      * =========================================================
