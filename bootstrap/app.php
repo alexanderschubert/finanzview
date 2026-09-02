@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        // Admin-Middleware
+        $middleware->alias([
+            'admin' => AdminMiddleware::class,
+        ]);
+
         // Nginx Proxy Manager / Reverse Proxy vertrauen
         $middleware->trustProxies(
             at: '*'
