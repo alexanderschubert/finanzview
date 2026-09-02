@@ -93,6 +93,32 @@ class DashboardController extends Controller
 
         /*
          * =========================================================
+         * KREDITKARTEN
+         * =========================================================
+         */
+
+        $creditCards = $user->creditCards()
+            ->with('provider')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+
+        /*
+         * =========================================================
+         * KREDITE
+         * =========================================================
+         */
+
+        $loans = $user->loans()
+            ->with('provider')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+
+        /*
+         * =========================================================
          * GESAMTVERMÖGEN
          * =========================================================
          */
@@ -471,6 +497,12 @@ foreach ($budgets as $budget) {
 
             'accounts' =>
                 $accounts,
+
+            'creditCards' =>
+                $creditCards,
+
+            'loans' =>
+                $loans,
 
             'totalBalance' =>
                 $totalBalance,
