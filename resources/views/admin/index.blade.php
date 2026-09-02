@@ -83,6 +83,79 @@
     </div>
 
 
+    {{-- Systemeinstellungen --}}
+    <div class="mb-8">
+        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
+
+            <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                    Systemeinstellungen
+                </h2>
+
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Globale Einstellungen für alle Benutzer verwalten.
+                </p>
+            </div>
+
+            <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">
+                            Registrierung
+                        </span>
+
+                        @if ($registrationEnabled)
+                            <span class="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                Aktiv
+                            </span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-rose-100 dark:bg-rose-950/40 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-300">
+                                Deaktiviert
+                            </span>
+                        @endif
+                    </div>
+
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        @if ($registrationEnabled)
+                            Neue Benutzer können sich aktuell registrieren.
+                        @else
+                            Die Registrierung neuer Benutzer ist aktuell deaktiviert.
+                        @endif
+                    </p>
+                </div>
+
+                <form
+                    method="POST"
+                    action="{{ route('admin.settings.registration') }}"
+                >
+                    @csrf
+                    @method('PATCH')
+
+                    <button
+                        type="submit"
+                        class="
+                            inline-flex items-center justify-center
+                            rounded-xl px-4 py-2.5
+                            text-sm font-medium
+                            transition
+                            focus:outline-none focus:ring-2 focus:ring-offset-2
+                            dark:focus:ring-offset-slate-800
+                            {{ $registrationEnabled
+                                ? 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500'
+                                : 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500'
+                            }}
+                        "
+                    >
+                        {{ $registrationEnabled ? 'Registrierung deaktivieren' : 'Registrierung aktivieren' }}
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
     {{-- Benutzer --}}
     <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
 

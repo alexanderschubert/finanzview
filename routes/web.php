@@ -43,6 +43,11 @@ Route::middleware('auth')->group(function () {
             'index',
         ])->name('index');
 
+        Route::patch('/settings/registration', [
+            AdminController::class,
+            'toggleRegistration',
+        ])->name('settings.registration');
+
         Route::patch('/users/{user}/toggle-active', [
             AdminController::class,
             'toggleActive',

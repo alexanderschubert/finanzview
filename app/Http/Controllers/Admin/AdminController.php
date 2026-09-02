@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApplicationSetting;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +28,38 @@ class AdminController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.index', compact('stats', 'users'));
+        $registrationEnabled = ApplicationSetting::get(
+            'registration_enabled',
+            true
+        );
+
+        return view(
+            'admin.index',
+            compact('stats', 'users', 'registrationEnabled')
+        );
+    }
+
+    /**
+     * Registrierung global aktivieren/deaktivieren.
+     */
+    public function toggleRegistration(): RedirectResponse
+    {
+        $enabled = ApplicationSetting::get(
+            'registration_enabled',
+            true
+        );
+
+        ApplicationSetting::set(
+            'registration_enabled',
+            ! $enabled
+        );
+
+        return back()->with(
+            'success',
+            ! $enabled
+                ? 'Die Registrierung wurde aktiviert.'
+                : 'Die Registrierung wurde deaktiviert.'
+        );
     }
 
     /**

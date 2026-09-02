@@ -602,29 +602,31 @@
 
                             <div class="text-center">
 
-                                <span
-                                    class="
-                                        text-sm
-                                        text-slate-500 dark:text-slate-400
-                                    "
-                                >
-                                    Noch kein Konto?
-                                </span>
+                                @if (\App\Models\ApplicationSetting::get('registration_enabled', true))
+                                    <span
+                                        class="
+                                            text-sm
+                                            text-slate-500 dark:text-slate-400
+                                        "
+                                    >
+                                        Noch kein Konto?
+                                    </span>
 
-                                <a
-                                    href="{{ url('/register') }}"
-                                    class="
-                                        ml-1
-                                        text-sm
-                                        font-medium
-                                        text-emerald-600 dark:text-emerald-400
-                                        hover:text-emerald-700
-                                        dark:hover:text-emerald-300
-                                        transition
-                                    "
-                                >
-                                    Jetzt registrieren
-                                </a>
+                                    <a
+                                        href="{{ url('/register') }}"
+                                        class="
+                                            ml-1
+                                            text-sm
+                                            font-medium
+                                            text-emerald-600 dark:text-emerald-400
+                                            hover:text-emerald-700
+                                            dark:hover:text-emerald-300
+                                            transition
+                                        "
+                                    >
+                                        Jetzt registrieren
+                                    </a>
+                                @endif
 
                             </div>
 
