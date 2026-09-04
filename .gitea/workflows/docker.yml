@@ -1,4 +1,4 @@
-name: Build and Push Finanzblick
+name: Test, Build and Push FinanzView
 
 on:
   push:
@@ -19,8 +19,14 @@ jobs:
       - name: Docker Image bauen
         run: |
           docker build \
-            -t gitea.alxserver.de/alexander/finanzblick:latest \
+            -t finanzblick-test \
             .
+
+      - name: PHPUnit Tests
+        run: |
+          docker run --rm \
+            finanzblick-test \
+            sh -c 'touch .env && php artisan test --display-warnings'
 
       - name: Bei Gitea Container Registry anmelden
         run: |
@@ -28,6 +34,12 @@ jobs:
           docker login gitea.alxserver.de \
             --username "${{ secrets.REGISTRY_USER }}" \
             --password-stdin
+
+      - name: Image für Gitea Registry taggen
+        run: |
+          docker tag \
+            finanzblick-test \
+            gitea.alxserver.de/alexander/finanzblick:latest
 
       - name: Image zu Gitea pushen
         run: |
