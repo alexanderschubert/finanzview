@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\RegistrationEnabled;
@@ -35,6 +36,9 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => route('login')
         );
 
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('recurring:process')->dailyAt('00:05');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

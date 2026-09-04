@@ -28,12 +28,19 @@ class RecurringTransactionService
         DB::transaction(function () use ($recurring, &$created) {
 
             /*
-             * Immer den aktuellen Datensatz innerhalb
-             * der Transaktion verwenden.
+             * Den aktuellen Datensatz innerhalb der Transaktion
+             * laden und für die Dauer der Verarbeitung sperren.
+             *
+             * Dadurch können zwei parallel laufende Scheduler/Worker
+             * dieselbe wiederkehrende Buchung nicht gleichzeitig
+             * verarbeiten.
              */
-            $recurring->refresh();
+            $recurring = RecurringTransaction::query()
+                ->whereKey($recurring->getKey())
+                ->lockForUpdate()
+                ->first();
 
-            if (! $recurring->is_active) {
+            if (! $recurring || ! $recurring->is_active) {
                 return;
             }
 
