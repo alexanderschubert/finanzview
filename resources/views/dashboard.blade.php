@@ -387,13 +387,11 @@
         </div>
 
 
-        @if($dashboardWidgets['savings_rate'])
-
-        @endif
-
     @endif
 
     {{-- SPARQUOTE --}}
+
+    @if($dashboardWidgets['savings_rate'])
 
         <div
             class="
@@ -459,10 +457,9 @@
 
         </div>
 
+    @endif
+
     </div>
-
-
-        @endif
 
     {{-- ========================================================= --}}
     @if(
