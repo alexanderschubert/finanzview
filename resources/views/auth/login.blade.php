@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+
+    {{-- =====================================================
+         THEME FRÜH SETZEN
+         Vor dem Laden der CSS-Dateien ausführen,
+         damit kein sichtbarer Wechsel entsteht.
+    ====================================================== --}}
+
+    <script>
+        (function () {
+
+            const savedTheme = localStorage.getItem('finanzview-theme');
+
+            const prefersDark = window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            ).matches;
+
+            const isDark =
+                savedTheme === 'dark' ||
+                (savedTheme !== 'light' && prefersDark);
+
+            document.documentElement.classList.toggle(
+                'dark',
+                isDark
+            );
+
+        })();
+    </script>
+
     <meta charset="UTF-8">
 
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -16,6 +44,38 @@
 </head>
 
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+
+
+        <!-- Theme Toggle -->
+        <button
+            type="button"
+            id="theme-toggle"
+            aria-label="Darstellung wechseln"
+            title="Darstellung wechseln"
+            class="
+                fixed top-4 right-4 z-50
+                w-10 h-10
+                flex items-center justify-center
+                rounded-xl
+                border border-slate-200 dark:border-slate-700
+                bg-white/90 dark:bg-slate-900/90
+                text-slate-600 dark:text-slate-300
+                shadow-sm
+                backdrop-blur
+                hover:bg-slate-50 dark:hover:bg-slate-800
+                transition
+            "
+        >
+            <span id="theme-icon-sun" class="hidden text-lg">
+                ☀️
+            </span>
+
+            <span id="theme-icon-moon" class="hidden text-lg">
+                🌙
+            </span>
+        </button>
+
+
 
     <div class="min-h-screen flex items-center justify-center p-4 sm:p-6">
 
@@ -703,6 +763,57 @@
 
         });
 
+    </script>
+
+
+
+    <script>
+        (function () {
+
+            const toggle = document.getElementById('theme-toggle');
+            const sun = document.getElementById('theme-icon-sun');
+            const moon = document.getElementById('theme-icon-moon');
+
+            if (!toggle || !sun || !moon) {
+                return;
+            }
+
+            function updateThemeIcon() {
+
+                const isDark =
+                    document.documentElement.classList.contains('dark');
+
+                sun.classList.toggle('hidden', !isDark);
+                moon.classList.toggle('hidden', isDark);
+            }
+
+            function setTheme(isDark) {
+
+                document.documentElement.classList.toggle(
+                    'dark',
+                    isDark
+                );
+
+                localStorage.setItem(
+                    'finanzview-theme',
+                    isDark ? 'dark' : 'light'
+                );
+
+                updateThemeIcon();
+            }
+
+            toggle.addEventListener('click', function () {
+
+                const isDark =
+                    document.documentElement.classList.contains('dark');
+
+                setTheme(!isDark);
+
+            });
+
+            updateThemeIcon();
+
+        })();
     </script>
 
 </body>
