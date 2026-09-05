@@ -529,11 +529,11 @@ class DashboardController extends Controller
                 $budget->calculated_exceeded =
                     $calculation['exceeded'];
 
-                $budget->calculated_start =
-                    $calculation['start'];
+                $budget->calculated_start_date =
+                    $calculation['start_date'];
 
-                $budget->calculated_end =
-                    $calculation['end'];
+                $budget->calculated_end_date =
+                    $calculation['end_date'];
 
                 $budget->calculated_applicable =
                     $calculation['applicable'];
