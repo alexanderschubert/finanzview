@@ -9,6 +9,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\DashboardSettingsController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -123,6 +124,17 @@ Route::middleware(['auth', 'active'])->group(function () {
         DashboardController::class,
         'index',
     ])->name('dashboard');
+
+
+    Route::get('/settings/dashboard', [
+        DashboardSettingsController::class,
+        'edit',
+    ])->name('settings.dashboard');
+
+    Route::put('/settings/dashboard', [
+        DashboardSettingsController::class,
+        'update',
+    ])->name('settings.dashboard.update');
 
 
     /*
