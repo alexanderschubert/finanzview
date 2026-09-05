@@ -118,4 +118,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Setting::class);
     }
+
+    public function dashboardSetting(): HasOne
+    {
+        return $this->hasOne(DashboardSetting::class);
+    }
+
 }
