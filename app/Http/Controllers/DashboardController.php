@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DashboardSetting;
 use App\Services\BudgetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,6 +14,26 @@ class DashboardController extends Controller
         BudgetService $budgetService
     ) {
         $user = $request->user();
+
+        /*
+         * =========================================================
+         * DASHBOARD-EINSTELLUNGEN
+         * =========================================================
+         */
+
+        $dashboardSetting = $user->dashboardSetting;
+
+        if (!$dashboardSetting) {
+            $dashboardSetting = new DashboardSetting([
+                'widgets' => DashboardSetting::defaultWidgets(),
+                'display_mode' => 'standard',
+            ]);
+        }
+
+        $dashboardWidgets = $dashboardSetting->effectiveWidgets();
+
+        $dashboardCompact = $dashboardSetting->isCompact();
+
 
         /*
          * =========================================================
@@ -63,31 +84,91 @@ class DashboardController extends Controller
 
         /*
          * =========================================================
+         * STANDARDWERTE
+         * =========================================================
+         *
+         * Alle Variablen werden initialisiert, damit die View
+         * auch bei deaktivierten Widgets stabil bleibt.
+         */
+
+        $accounts = collect();
+        $creditCards = collect();
+        $loans = collect();
+
+        $totalBalance = 0;
+
+        $monthlyIncome = 0;
+        $monthlyExpense = 0;
+        $monthlyBalance = 0;
+        $savingsRate = 0;
+
+        $yearlyIncome = 0;
+        $yearlyExpense = 0;
+
+        $recentTransactions = collect();
+        $expensesByCategory = collect();
+        $chartMonths = collect();
+        $wealthMonths = collect();
+
+        $maxWealthValue = 1;
+        $minWealthValue = 0;
+
+        $budgets = collect();
+
+
+        /*
+         * =========================================================
          * KONTEN
+         * =========================================================
+         *
+         * Benötigt für:
+         * - Gesamtvermögen
+         * - Konten
+         * - Vermögensentwicklung
+         */
+
+        $needsAccounts =
+            $dashboardWidgets['summary'] ||
+            $dashboardWidgets['accounts'] ||
+            $dashboardWidgets['wealth_chart'];
+
+        if ($needsAccounts) {
+
+            $accounts = $user->accounts()
+                ->with('provider')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+
+            foreach ($accounts as $account) {
+
+                $income = $account->transactions()
+                    ->where('type', 'income')
+                    ->sum('amount');
+
+                $expense = $account->transactions()
+                    ->where('type', 'expense')
+                    ->sum('amount');
+
+                $account->calculated_balance =
+                    (float) $account->opening_balance
+                    + (float) $income
+                    - (float) $expense;
+            }
+        }
+
+
+        /*
+         * =========================================================
+         * GESAMTVERMÖGEN
          * =========================================================
          */
 
-        $accounts = $user->accounts()
-            ->with('provider')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        if ($dashboardWidgets['summary']) {
 
-
-        foreach ($accounts as $account) {
-
-            $income = $account->transactions()
-                ->where('type', 'income')
-                ->sum('amount');
-
-            $expense = $account->transactions()
-                ->where('type', 'expense')
-                ->sum('amount');
-
-            $account->calculated_balance =
-                (float) $account->opening_balance
-                + (float) $income
-                - (float) $expense;
+            $totalBalance = $accounts
+                ->where('include_in_total', true)
+                ->sum('calculated_balance');
         }
 
 
@@ -97,11 +178,14 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $creditCards = $user->creditCards()
-            ->with('provider')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        if ($dashboardWidgets['credit_cards']) {
+
+            $creditCards = $user->creditCards()
+                ->with('provider')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+        }
 
 
         /*
@@ -110,52 +194,59 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $loans = $user->loans()
-            ->with('provider')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        if ($dashboardWidgets['loans']) {
+
+            $loans = $user->loans()
+                ->with('provider')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get();
+        }
 
 
         /*
          * =========================================================
-         * GESAMTVERMÖGEN
+         * MONATLICHE WERTE
          * =========================================================
          */
 
-        $totalBalance = $accounts
-            ->where('include_in_total', true)
-            ->sum('calculated_balance');
+        $needsMonthlyIncome =
+            $dashboardWidgets['income'] ||
+            $dashboardWidgets['savings_rate'] ||
+            $dashboardWidgets['monthly_balance'] ||
+            $dashboardWidgets['yearly'] ||
+            $dashboardWidgets['income_expense_chart'];
+
+        $needsMonthlyExpense =
+            $dashboardWidgets['expenses'] ||
+            $dashboardWidgets['savings_rate'] ||
+            $dashboardWidgets['monthly_balance'] ||
+            $dashboardWidgets['yearly'] ||
+            $dashboardWidgets['income_expense_chart'];
 
 
-        /*
-         * =========================================================
-         * MONATLICHE EINNAHMEN
-         * =========================================================
-         */
+        if ($needsMonthlyIncome) {
 
-        $monthlyIncome = $user->transactions()
-            ->where('type', 'income')
-            ->whereBetween('transaction_date', [
-                $startOfMonth,
-                $endOfMonth,
-            ])
-            ->sum('amount');
+            $monthlyIncome = $user->transactions()
+                ->where('type', 'income')
+                ->whereBetween('transaction_date', [
+                    $startOfMonth,
+                    $endOfMonth,
+                ])
+                ->sum('amount');
+        }
 
 
-        /*
-         * =========================================================
-         * MONATLICHE AUSGABEN
-         * =========================================================
-         */
+        if ($needsMonthlyExpense) {
 
-        $monthlyExpense = $user->transactions()
-            ->where('type', 'expense')
-            ->whereBetween('transaction_date', [
-                $startOfMonth,
-                $endOfMonth,
-            ])
-            ->sum('amount');
+            $monthlyExpense = $user->transactions()
+                ->where('type', 'expense')
+                ->whereBetween('transaction_date', [
+                    $startOfMonth,
+                    $endOfMonth,
+                ])
+                ->sum('amount');
+        }
 
 
         /*
@@ -164,8 +255,11 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $monthlyBalance =
-            $monthlyIncome - $monthlyExpense;
+        if ($dashboardWidgets['monthly_balance']) {
+
+            $monthlyBalance =
+                $monthlyIncome - $monthlyExpense;
+        }
 
 
         /*
@@ -174,9 +268,12 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $savingsRate = $monthlyIncome > 0
-            ? ($monthlyBalance / $monthlyIncome) * 100
-            : 0;
+        if ($dashboardWidgets['savings_rate']) {
+
+            $savingsRate = $monthlyIncome > 0
+                ? ($monthlyBalance / $monthlyIncome) * 100
+                : 0;
+        }
 
 
         /*
@@ -185,22 +282,24 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $yearlyIncome = $user->transactions()
-            ->where('type', 'income')
-            ->whereBetween('transaction_date', [
-                $startOfYear,
-                $endOfYear,
-            ])
-            ->sum('amount');
+        if ($dashboardWidgets['yearly']) {
 
+            $yearlyIncome = $user->transactions()
+                ->where('type', 'income')
+                ->whereBetween('transaction_date', [
+                    $startOfYear,
+                    $endOfYear,
+                ])
+                ->sum('amount');
 
-        $yearlyExpense = $user->transactions()
-            ->where('type', 'expense')
-            ->whereBetween('transaction_date', [
-                $startOfYear,
-                $endOfYear,
-            ])
-            ->sum('amount');
+            $yearlyExpense = $user->transactions()
+                ->where('type', 'expense')
+                ->whereBetween('transaction_date', [
+                    $startOfYear,
+                    $endOfYear,
+                ])
+                ->sum('amount');
+        }
 
 
         /*
@@ -209,15 +308,18 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $recentTransactions = $user->transactions()
-            ->with([
-                'account',
-                'category',
-            ])
-            ->latest('transaction_date')
-            ->latest('id')
-            ->limit(8)
-            ->get();
+        if ($dashboardWidgets['recent_transactions']) {
+
+            $recentTransactions = $user->transactions()
+                ->with([
+                    'account',
+                    'category',
+                ])
+                ->latest('transaction_date')
+                ->latest('id')
+                ->limit(8)
+                ->get();
+        }
 
 
         /*
@@ -226,28 +328,31 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $expensesByCategory = $user->transactions()
-            ->with('category')
-            ->where('type', 'expense')
-            ->whereBetween('transaction_date', [
-                $startOfMonth,
-                $endOfMonth,
-            ])
-            ->get()
-            ->groupBy('category_id')
-            ->map(function ($transactions) {
+        if ($dashboardWidgets['categories']) {
 
-                return [
-                    'category' =>
-                        $transactions->first()->category,
+            $expensesByCategory = $user->transactions()
+                ->with('category')
+                ->where('type', 'expense')
+                ->whereBetween('transaction_date', [
+                    $startOfMonth,
+                    $endOfMonth,
+                ])
+                ->get()
+                ->groupBy('category_id')
+                ->map(function ($transactions) {
 
-                    'amount' =>
-                        $transactions->sum('amount'),
-                ];
+                    return [
+                        'category' =>
+                            $transactions->first()->category,
 
-            })
-            ->sortByDesc('amount')
-            ->values();
+                        'amount' =>
+                            $transactions->sum('amount'),
+                    ];
+
+                })
+                ->sortByDesc('amount')
+                ->values();
+        }
 
 
         /*
@@ -256,57 +361,57 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $chartMonths = collect();
+        if ($dashboardWidgets['income_expense_chart']) {
+
+            for ($i = 5; $i >= 0; $i--) {
+
+                $chartMonth =
+                    $month->copy()->subMonths($i);
+
+                $chartStart =
+                    $chartMonth->copy()->startOfMonth();
+
+                $chartEnd =
+                    $chartMonth->copy()->endOfMonth();
 
 
-        for ($i = 5; $i >= 0; $i--) {
-
-            $chartMonth =
-                $month->copy()->subMonths($i);
-
-            $chartStart =
-                $chartMonth->copy()->startOfMonth();
-
-            $chartEnd =
-                $chartMonth->copy()->endOfMonth();
+                $income = $user->transactions()
+                    ->where('type', 'income')
+                    ->whereBetween('transaction_date', [
+                        $chartStart,
+                        $chartEnd,
+                    ])
+                    ->sum('amount');
 
 
-            $income = $user->transactions()
-                ->where('type', 'income')
-                ->whereBetween('transaction_date', [
-                    $chartStart,
-                    $chartEnd,
-                ])
-                ->sum('amount');
+                $expense = $user->transactions()
+                    ->where('type', 'expense')
+                    ->whereBetween('transaction_date', [
+                        $chartStart,
+                        $chartEnd,
+                    ])
+                    ->sum('amount');
 
 
-            $expense = $user->transactions()
-                ->where('type', 'expense')
-                ->whereBetween('transaction_date', [
-                    $chartStart,
-                    $chartEnd,
-                ])
-                ->sum('amount');
+                $chartMonths->push([
 
+                    'label' =>
+                        $chartMonth->translatedFormat('M'),
 
-            $chartMonths->push([
+                    'full_label' =>
+                        $chartMonth->translatedFormat('F Y'),
 
-                'label' =>
-                    $chartMonth->translatedFormat('M'),
+                    'income' =>
+                        (float) $income,
 
-                'full_label' =>
-                    $chartMonth->translatedFormat('F Y'),
+                    'expense' =>
+                        (float) $expense,
 
-                'income' =>
-                    (float) $income,
+                    'balance' =>
+                        (float) ($income - $expense),
 
-                'expense' =>
-                    (float) $expense,
-
-                'balance' =>
-                    (float) ($income - $expense),
-
-            ]);
+                ]);
+            }
         }
 
 
@@ -316,184 +421,133 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        $wealthMonths = collect();
+        if ($dashboardWidgets['wealth_chart']) {
+
+            $includedAccounts = $accounts
+                ->where('include_in_total', true);
+
+            $openingBalance = $includedAccounts
+                ->sum('opening_balance');
 
 
-        $includedAccounts = $accounts
-            ->where('include_in_total', true);
+            for ($i = 5; $i >= 0; $i--) {
+
+                $wealthMonth =
+                    $month->copy()->subMonths($i);
+
+                $wealthEnd =
+                    $wealthMonth->copy()->endOfMonth();
 
 
-        $openingBalance = $includedAccounts
-            ->sum('opening_balance');
+                $incomeUntil = $user->transactions()
+                    ->where('type', 'income')
+                    ->where(
+                        'transaction_date',
+                        '<=',
+                        $wealthEnd
+                    )
+                    ->sum('amount');
 
 
-        for ($i = 5; $i >= 0; $i--) {
-
-            $wealthMonth =
-                $month->copy()->subMonths($i);
-
-
-            $wealthEnd =
-                $wealthMonth->copy()->endOfMonth();
-
-
-            $incomeUntil = $user->transactions()
-                ->where('type', 'income')
-                ->where(
-                    'transaction_date',
-                    '<=',
-                    $wealthEnd
-                )
-                ->sum('amount');
+                $expenseUntil = $user->transactions()
+                    ->where('type', 'expense')
+                    ->where(
+                        'transaction_date',
+                        '<=',
+                        $wealthEnd
+                    )
+                    ->sum('amount');
 
 
-            $expenseUntil = $user->transactions()
-                ->where('type', 'expense')
-                ->where(
-                    'transaction_date',
-                    '<=',
-                    $wealthEnd
-                )
-                ->sum('amount');
+                $wealthBalance =
+                    $openingBalance
+                    + $incomeUntil
+                    - $expenseUntil;
 
 
-            $wealthBalance =
-                $openingBalance
-                + $incomeUntil
-                - $expenseUntil;
+                $wealthMonths->push([
+
+                    'label' =>
+                        $wealthMonth->translatedFormat('M'),
+
+                    'full_label' =>
+                        $wealthMonth->translatedFormat('F Y'),
+
+                    'balance' =>
+                        (float) $wealthBalance,
+
+                ]);
+            }
 
 
-            $wealthMonths->push([
+            $maxWealthValue = max(
+                1,
+                $wealthMonths->max('balance')
+            );
 
-                'label' =>
-                    $wealthMonth->translatedFormat('M'),
-
-                'full_label' =>
-                    $wealthMonth->translatedFormat('F Y'),
-
-                'balance' =>
-                    (float) $wealthBalance,
-
-            ]);
+            $minWealthValue = min(
+                0,
+                $wealthMonths->min('balance')
+            );
         }
 
 
         /*
          * =========================================================
-         * WERTE FÜR VERMÖGENSDIAGRAMM
+         * BUDGETS
          * =========================================================
          */
 
-        $maxWealthValue = max(
-            1,
-            $wealthMonths->max('balance')
-        );
+        if ($dashboardWidgets['budgets']) {
+
+            $budgets = $user->budgets()
+                ->with('categories')
+                ->orderByDesc('is_active')
+                ->orderBy('name')
+                ->get();
 
 
-        $minWealthValue = min(
-            0,
-            $wealthMonths->min('balance')
-        );
+            foreach ($budgets as $budget) {
+
+                $calculation =
+                    $budgetService->calculate(
+                        $budget,
+                        $user,
+                        $month
+                    );
 
 
-        /*
- * =========================================================
- * BUDGETS
- * =========================================================
- *
- * Die Budgetberechnung erfolgt ausschließlich
- * über den BudgetService.
- *
- * Dadurch verwenden:
- *
- * - Dashboard
- * - Budgetübersicht
- * - Budgetdetails
- *
- * exakt dieselbe Berechnungslogik.
- *
- * WICHTIG:
- *
- * Es werden auch inaktive Budgets geladen.
- * Dadurch kann das Dashboard zwischen:
- *
- * - Inaktiv
- * - Nicht aktiv / nicht gültig
- * - OK
- * - Achtung
- * - Überschritten
- *
- * unterscheiden.
- */
+                $budget->calculated_spent =
+                    $calculation['spent'];
 
-$budgets = $user->budgets()
-    ->with('categories')
-    ->orderByDesc('is_active')
-    ->orderBy('name')
-    ->get();
+                $budget->calculated_remaining =
+                    $calculation['remaining'];
 
+                $budget->calculated_percentage =
+                    $calculation['percentage'];
 
-foreach ($budgets as $budget) {
+                $budget->calculated_exceeded =
+                    $calculation['exceeded'];
 
-    /*
-     * =====================================================
-     * BUDGET BERECHNEN
-     * =====================================================
-     */
+                $budget->calculated_start =
+                    $calculation['start'];
 
-    $calculation =
-        $budgetService->calculate(
-            $budget,
-            $user,
-            $month
-        );
+                $budget->calculated_end =
+                    $calculation['end'];
 
+                $budget->calculated_applicable =
+                    $calculation['applicable'];
+            }
+        }
 
-    /*
-     * =====================================================
-     * BERECHNETE WERTE AN DAS MODEL HÄNGEN
-     * =====================================================
-     *
-     * Diese Werte werden anschließend
-     * direkt von dashboard.blade.php verwendet.
-     */
-
-    $budget->calculated_spent =
-        (float) $calculation['spent'];
-
-
-    $budget->calculated_remaining =
-        (float) $calculation['remaining'];
-
-
-    $budget->calculated_percentage =
-        (float) $calculation['percentage'];
-
-
-    $budget->calculated_exceeded =
-        (bool) $calculation['exceeded'];
-
-
-    $budget->calculated_start_date =
-        $calculation['start_date'];
-
-
-    $budget->calculated_end_date =
-        $calculation['end_date'];
-
-
-    $budget->calculated_applicable =
-        (bool) $calculation['applicable'];
-}
-
-
-        /*
-         * =========================================================
-         * VIEW
-         * =========================================================
-         */
 
         return view('dashboard', [
+
+            'dashboardWidgets' =>
+                $dashboardWidgets,
+
+            'dashboardCompact' =>
+                $dashboardCompact,
 
             'accounts' =>
                 $accounts,

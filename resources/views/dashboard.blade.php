@@ -6,7 +6,19 @@
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+<div
+    class="
+        dashboard-container
+        {{ $dashboardCompact ? 'dashboard-compact' : '' }}
+        max-w-7xl
+        mx-auto
+        px-4
+        sm:px-6
+        lg:px-8
+        py-6
+        sm:py-8
+    "
+>
 
     {{-- ========================================================= --}}
     {{-- HEADER --}}
@@ -145,10 +157,41 @@
     {{-- KENNZAHLEN --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
+    <div
+        class="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            {{ collect([
+                $dashboardWidgets['summary'],
+                $dashboardWidgets['income'],
+                $dashboardWidgets['expenses'],
+            ])->filter()->count() === 1 ? 'xl:grid-cols-1' : '' }}
+            {{ collect([
+                $dashboardWidgets['summary'],
+                $dashboardWidgets['income'],
+                $dashboardWidgets['expenses'],
+            ])->filter()->count() === 2 ? 'xl:grid-cols-2' : '' }}
+            {{ collect([
+                $dashboardWidgets['summary'],
+                $dashboardWidgets['income'],
+                $dashboardWidgets['expenses'],
+            ])->filter()->count() >= 3 ? 'xl:grid-cols-3' : '' }}
+            gap-4
+            mt-8
+        "
+    >
 
 
-        {{-- GESAMTVERMÖGEN --}}
+        @if(
+        $dashboardWidgets['summary']
+        || $dashboardWidgets['income']
+        || $dashboardWidgets['expenses']
+    )
+
+    @if($dashboardWidgets['summary'])
+
+    {{-- GESAMTVERMÖGEN --}}
 
         <div
             class="
@@ -220,7 +263,11 @@
         </div>
 
 
-        {{-- EINNAHMEN --}}
+        @endif
+
+    @if($dashboardWidgets['income'])
+
+    {{-- EINNAHMEN --}}
 
         <div
             class="
@@ -278,7 +325,11 @@
         </div>
 
 
-        {{-- AUSGABEN --}}
+        @endif
+
+    @if($dashboardWidgets['expenses'])
+
+    {{-- AUSGABEN --}}
 
         <div
             class="
@@ -336,7 +387,13 @@
         </div>
 
 
-        {{-- SPARQUOTE --}}
+        @if($dashboardWidgets['savings_rate'])
+
+        @endif
+
+    @endif
+
+    {{-- SPARQUOTE --}}
 
         <div
             class="
@@ -405,18 +462,40 @@
     </div>
 
 
+        @endif
+
     {{-- ========================================================= --}}
+    @if(
+        $dashboardWidgets['monthly_balance']
+        ||
+        $dashboardWidgets['yearly']
+    )
+
     {{-- MONATSSALDO + JAHRESWERTE --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+    <div
+        class="
+            grid
+            grid-cols-1
+            {{ $dashboardWidgets['monthly_balance'] && $dashboardWidgets['yearly']
+                ? 'lg:grid-cols-3'
+                : '' }}
+            gap-4
+            mt-4
+        "
+    >
 
+
+        @if($dashboardWidgets['monthly_balance'])
 
         {{-- MONATSSALDO --}}
 
         <div
             class="
-                lg:col-span-2
+                {{ $dashboardWidgets['monthly_balance'] && $dashboardWidgets['yearly']
+                    ? 'lg:col-span-2'
+                    : '' }}
                 rounded-3xl
                 border
                 p-6
@@ -496,6 +575,10 @@
 
         </div>
 
+
+        @endif
+
+        @if($dashboardWidgets['yearly'])
 
         {{-- JAHRESWERTE --}}
 
@@ -586,10 +669,16 @@
 
         </div>
 
+        @endif
+
     </div>
 
 
     {{-- ========================================================= --}}
+    @if($dashboardWidgets['income_expense_chart'])
+
+    @endif
+
     {{-- EINNAHMEN / AUSGABEN --}}
     {{-- ========================================================= --}}
 
@@ -816,7 +905,11 @@
     </div>
 
 
+    @endif
+
     {{-- ========================================================= --}}
+    @if($dashboardWidgets['wealth_chart'])
+
     {{-- VERMÖGENSENTWICKLUNG --}}
     {{-- ========================================================= --}}
 
@@ -1143,7 +1236,11 @@
     </div>
 
 
+    @endif
+
     {{-- ========================================================= --}}
+    @if($dashboardWidgets['budgets'])
+
     {{-- BUDGETS --}}
     {{-- ========================================================= --}}
 
@@ -1553,18 +1650,35 @@
 
     {{-- ========================================================= --}}
     {{-- ========================================================= --}}
+    @endif
+
     {{-- KREDITKARTEN & KREDITE --}}
     {{-- ========================================================= --}}
 
-    @if($creditCards->isNotEmpty() || $loans->isNotEmpty())
+    @if(
+        ($dashboardWidgets['credit_cards'] && $creditCards->isNotEmpty())
+        ||
+        ($dashboardWidgets['loans'] && $loans->isNotEmpty())
+    )
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-5">
+        <div
+            class="
+                grid
+                grid-cols-1
+                {{ $dashboardWidgets['credit_cards'] && $creditCards->isNotEmpty()
+                    && $dashboardWidgets['loans'] && $loans->isNotEmpty()
+                    ? 'xl:grid-cols-2'
+                    : '' }}
+                gap-4
+                mt-5
+            "
+        >
 
             {{-- ===================================================== --}}
             {{-- KREDITKARTEN --}}
             {{-- ===================================================== --}}
 
-            @if($creditCards->isNotEmpty())
+            @if($dashboardWidgets['credit_cards'] && $creditCards->isNotEmpty())
 
                 <div
                     class="
@@ -1758,7 +1872,7 @@
             {{-- KREDITE --}}
             {{-- ===================================================== --}}
 
-            @if($loans->isNotEmpty())
+            @if($dashboardWidgets['loans'] && $loans->isNotEmpty())
 
                 <div
                     class="
@@ -1948,17 +2062,38 @@
     @endif
 
 
+    @if(
+        ($dashboardWidgets['accounts'] && $accounts->isNotEmpty())
+        ||
+        ($dashboardWidgets['categories'] && $expensesByCategory->isNotEmpty())
+    )
+
     {{-- KONTEN + AUSGABEN --}}
     {{-- ========================================================= --}}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+    <div
+        class="
+            grid
+            grid-cols-1
+            {{ $dashboardWidgets['accounts'] && $accounts->isNotEmpty()
+                && $dashboardWidgets['categories'] && $expensesByCategory->isNotEmpty()
+                ? 'lg:grid-cols-3'
+                : '' }}
+            gap-5
+            mt-5
+        "
+    >
 
+
+        @if($dashboardWidgets['accounts'] && $accounts->isNotEmpty())
 
         {{-- KONTEN --}}
 
         <div
             class="
-                lg:col-span-2
+                {{ $dashboardWidgets['accounts'] && $dashboardWidgets['categories'] && $expensesByCategory->isNotEmpty()
+                    ? 'lg:col-span-2'
+                    : '' }}
                 bg-white
                 dark:bg-slate-900
                 rounded-3xl
@@ -2136,6 +2271,10 @@
         </div>
 
 
+        @endif
+
+        @if($dashboardWidgets['categories'] && $expensesByCategory->isNotEmpty())
+
         {{-- AUSGABEN NACH KATEGORIE --}}
 
         <div
@@ -2272,6 +2411,11 @@
 
 
     {{-- ========================================================= --}}
+        @endif
+    @endif
+
+    @if($dashboardWidgets['recent_transactions'])
+
     {{-- LETZTE BUCHUNGEN --}}
     {{-- ========================================================= --}}
 
@@ -2464,6 +2608,10 @@
 
 
     {{-- ========================================================= --}}
+    @endif
+
+    @if($dashboardWidgets['quick_actions'])
+
     {{-- SCHNELLZUGRIFF --}}
     {{-- ========================================================= --}}
 
@@ -2559,5 +2707,7 @@
     </div>
 
 </div>
+    @endif
+
 
 @endsection

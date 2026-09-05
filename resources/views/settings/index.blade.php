@@ -208,6 +208,37 @@
 
         </a>
 
+            <a
+                href="{{ route('settings.dashboard') }}"
+                class="group flex items-start gap-4 rounded-2xl border border-slate-200
+                       bg-white p-5 transition hover:border-indigo-300 hover:shadow-sm
+                       dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700"
+            >
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
+                            bg-indigo-50 text-xl dark:bg-indigo-950/40">
+                    🧩
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">
+                                Dashboard
+                            </h3>
+                            <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
+                                Wähle Dashboard-Inhalte und den kompakten Darstellungsmodus.
+                            </p>
+                        </div>
+
+                        <span class="text-slate-400 transition group-hover:translate-x-0.5
+                                     dark:text-slate-500">
+                            →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+
 
         {{-- ===================================================== --}}
         {{-- FINANZEN --}}
