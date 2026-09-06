@@ -226,7 +226,14 @@
                 </div>
             </div>
 
-            <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+                          <input
+                  type="hidden"
+                  name="widget_order"
+                  id="dashboard-widget-order"
+                  value="{{ implode(',', $settings->effectiveWidgetOrder()) }}"
+              >
+
+<div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3" id="dashboard-widget-list">
 
                 @foreach($widgets as $key => $widget)
                     @php
@@ -241,7 +248,11 @@
                         $checked = in_array($key, $enabled, true);
                     @endphp
 
-                    <label class="group relative cursor-pointer">
+                    <label
+                          class="dashboard-widget-item group relative cursor-pointer"
+                          data-widget="{{ $key }}"
+                          draggable="true"
+                      >
                         <input
                             type="checkbox"
                             name="widgets[]"
@@ -259,6 +270,28 @@
                                     dark:peer-checked:border-indigo-500
                                     dark:peer-checked:bg-indigo-950/20
                                     dark:hover:border-slate-600">
+
+                              {{-- Drag Handle --}}
+                              <span
+                                  class="dashboard-drag-handle flex h-10 w-7 shrink-0 cursor-grab
+                                         items-center justify-center rounded-lg
+                                         text-slate-400 transition
+                                         hover:bg-slate-100 hover:text-slate-600
+                                         active:cursor-grabbing
+                                         dark:text-slate-500
+                                         dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                                  title="Widget verschieben"
+                                  aria-label="Widget verschieben"
+                              >
+                                  <svg
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                      class="h-5 w-5"
+                                      aria-hidden="true"
+                                  >
+                                      <path d="M6.25 2.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM13.75 2.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 1 1 0-2.5Z"/>
+                                  </svg>
+                              </span>
 
                             <div class="flex h-10 w-10 shrink-0 items-center justify-center
                                         rounded-lg bg-slate-100 text-lg
@@ -327,6 +360,111 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
+    /*
+     * =====================================================
+     * Dashboard Widget Drag & Drop
+     * =====================================================
+     */
+
+    const widgetList = document.getElementById('dashboard-widget-list');
+    const widgetOrder = document.getElementById('dashboard-widget-order');
+
+    let draggedWidget = null;
+
+    const widgetItems = () => Array.from(
+        widgetList?.querySelectorAll('.dashboard-widget-item') ?? []
+    );
+
+    const updateWidgetOrder = () => {
+        if (!widgetOrder) {
+            return;
+        }
+
+        widgetOrder.value = widgetItems()
+            .map((item) => item.dataset.widget)
+            .filter(Boolean)
+            .join(',');
+    };
+
+    if (widgetList) {
+
+        widgetItems().forEach((item) => {
+
+            item.addEventListener('dragstart', (event) => {
+
+                draggedWidget = item;
+
+                item.classList.add(
+                    'opacity-50',
+                    'ring-2',
+                    'ring-indigo-500',
+                    'dark:ring-indigo-400'
+                );
+
+                event.dataTransfer.effectAllowed = 'move';
+
+                event.dataTransfer.setData(
+                    'text/plain',
+                    item.dataset.widget || ''
+                );
+            });
+
+            item.addEventListener('dragend', () => {
+
+                item.classList.remove(
+                    'opacity-50',
+                    'ring-2',
+                    'ring-indigo-500',
+                    'dark:ring-indigo-400'
+                );
+
+                draggedWidget = null;
+
+                updateWidgetOrder();
+            });
+
+            item.addEventListener('dragover', (event) => {
+
+                event.preventDefault();
+
+                if (!draggedWidget || draggedWidget === item) {
+                    return;
+                }
+
+                const rect = item.getBoundingClientRect();
+
+                const before =
+                    event.clientY < rect.top + rect.height / 2;
+
+                if (before) {
+
+                    item.parentNode.insertBefore(
+                        draggedWidget,
+                        item
+                    );
+
+                } else {
+
+                    item.parentNode.insertBefore(
+                        draggedWidget,
+                        item.nextSibling
+                    );
+                }
+
+                updateWidgetOrder();
+            });
+        });
+
+        updateWidgetOrder();
+    }
+
+    /*
+     * =====================================================
+     * Bestehende Checkbox-Logik
+     * =====================================================
+     */
+
     const checkboxes = () => Array.from(
         document.querySelectorAll('.widget-checkbox')
     );

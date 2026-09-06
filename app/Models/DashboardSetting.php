@@ -10,6 +10,7 @@ class DashboardSetting extends Model
     protected $fillable = [
         'user_id',
         'widgets',
+        'widget_order',
         'display_mode',
     ];
 
@@ -17,6 +18,7 @@ class DashboardSetting extends Model
     {
         return [
             'widgets' => 'array',
+            'widget_order' => 'array',
         ];
     }
 
@@ -144,6 +146,33 @@ class DashboardSetting extends Model
      * ergänzt. Dadurch bleiben neue Widgets später automatisch
      * sichtbar, ohne bestehende Benutzer zu migrieren.
      */
+    public static function defaultWidgetOrder(): array
+    {
+        return array_keys(static::availableWidgets());
+    }
+
+    public function effectiveWidgetOrder(): array
+    {
+        $available = array_keys(static::availableWidgets());
+        $saved = is_array($this->widget_order)
+            ? $this->widget_order
+            : [];
+
+        // Nur bekannte Widgets übernehmen.
+        $order = array_values(
+            array_intersect($saved, $available)
+        );
+
+        // Neue Widgets automatisch hinten anhängen.
+        foreach ($available as $widget) {
+            if (!in_array($widget, $order, true)) {
+                $order[] = $widget;
+            }
+        }
+
+        return $order;
+    }
+
     public function effectiveWidgets(): array
     {
         return array_merge(

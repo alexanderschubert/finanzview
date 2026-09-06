@@ -31,6 +31,7 @@ class DashboardController extends Controller
         }
 
         $dashboardWidgets = $dashboardSetting->effectiveWidgets();
+        $dashboardWidgetOrder = $dashboardSetting->effectiveWidgetOrder();
 
         $dashboardCompact = $dashboardSetting->isCompact();
 
@@ -545,6 +546,9 @@ class DashboardController extends Controller
 
             'dashboardWidgets' =>
                 $dashboardWidgets,
+
+            'dashboardWidgetOrder' =>
+                $dashboardWidgetOrder,
 
             'dashboardCompact' =>
                 $dashboardCompact,
