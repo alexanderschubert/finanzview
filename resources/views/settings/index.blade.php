@@ -352,17 +352,71 @@
             </div>
 
             <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Daten & Export
-            </h3>
+                {{-- ===================================================== --}}
+                {{-- DATEN & EXPORT --}}
+                {{-- ===================================================== --}}
 
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Deine Finanzdaten exportieren, importieren und verwalten.
-            </p>
+                <a
+                    href="{{ route('settings.data-export') }}"
+                    class="
+                        block
+                        bg-white
+                        dark:bg-slate-900
+                        rounded-3xl
+                        border
+                        border-slate-200
+                        dark:border-slate-800
+                        p-6
+                        shadow-sm
+                        hover:border-slate-300
+                        dark:hover:border-slate-700
+                        hover:shadow-md
+                        transition
+                    "
+                >
 
-        </div>
+                    <div class="flex items-center justify-between gap-4">
 
+                        <div class="flex items-center gap-4">
 
-        {{-- ===================================================== --}}
+                            <div
+                                class="
+                                    w-12
+                                    h-12
+                                    rounded-2xl
+                                    bg-emerald-100
+                                    dark:bg-emerald-950/40
+                                    flex
+                                    items-center
+                                    justify-center
+                                    text-xl
+                                "
+                            >
+                                📁
+                            </div>
+
+                            <div>
+
+                                <h3 class="font-semibold text-slate-900 dark:text-white">
+                                    Daten & Export
+                                </h3>
+
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                    Deine Finanzdaten exportieren, importieren und verwalten.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <span class="text-xl text-slate-400 dark:text-slate-500">
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
         {{-- BENACHRICHTIGUNGEN --}}
         {{-- ===================================================== --}}
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\DashboardSettingsController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Settings\DataExportController;
 
 
 /*
@@ -126,7 +127,23 @@ Route::middleware(['auth', 'active'])->group(function () {
     ])->name('dashboard');
 
 
-    Route::get('/settings/dashboard', [
+      Route::get('/settings/data-export', [
+          DataExportController::class,
+          'index',
+      ])->name('settings.data-export');
+
+      Route::post('/settings/data-export/transactions', [
+          DataExportController::class,
+          'transactionsCsv',
+      ])->name('settings.data-export.transactions');
+
+      Route::post('/settings/data-export/json', [
+          DataExportController::class,
+          'json',
+      ])->name('settings.data-export.json');
+
+
+Route::get('/settings/dashboard', [
         DashboardSettingsController::class,
         'edit',
     ])->name('settings.dashboard');
