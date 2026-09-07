@@ -48,7 +48,7 @@ class DataExportController extends Controller
             ->with([
                 'account',
                 'category',
-                'tags',
+                'recurringTransaction',
             ])
             ->orderBy('transaction_date')
             ->orderBy('id');
@@ -97,7 +97,6 @@ class DataExportController extends Controller
                 'Status',
                 'Wiederkehrend',
                 'Wiederkehrende Buchung',
-                'Tags',
             ], ';');
 
             $query->chunk(500, function ($transactions) use ($handle) {
@@ -118,9 +117,6 @@ class DataExportController extends Controller
                         $transaction->is_pending ? 'Ausstehend' : 'Gebucht',
                         $transaction->is_recurring ? 'Ja' : 'Nein',
                         $transaction->recurringTransaction?->description,
-                        $transaction->tags
-                            ->pluck('name')
-                            ->implode(', '),
                     ], ';');
                 }
             });
@@ -176,7 +172,7 @@ class DataExportController extends Controller
             ]));
 
         $transactions = $user->transactions()
-            ->with(['tags', 'recurringTransaction'])
+            ->with('recurringTransaction')
             ->get()
             ->map(function ($item) {
                 return array_merge(
@@ -195,16 +191,6 @@ class DataExportController extends Controller
                         'is_recurring',
                         'recurring_transaction_id',
                     ]),
-                    [
-                        'tags' => $item->tags
-                            ->map(fn ($tag) => $tag->only([
-                                'id',
-                                'name',
-                                'color',
-                            ]))
-                            ->values()
-                            ->all(),
-                    ]
                 );
             });
 
