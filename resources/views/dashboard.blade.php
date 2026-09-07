@@ -158,13 +158,57 @@
     {{-- DYNAMISCHE DASHBOARD-WIDGETS --}}
     {{-- ========================================================= --}}
 
-    <div class="space-y-5 mt-8">
+    @php
+        /*
+         * Großzügiges 12-Spalten-Dashboard.
+         *
+         * Die Widget-Reihenfolge bleibt vollständig dynamisch.
+         * Die Breite eines Widgets wird zentral hier definiert.
+         *
+         * Mobile: 1 Spalte
+         * Tablet:  6 Spalten
+         * Desktop: 12 Spalten
+         */
+        $dashboardWidgetWidths = [
+            // Kennzahlen
+            'summary' => 'lg:col-span-3',
+            'income' => 'lg:col-span-3',
+            'expenses' => 'lg:col-span-3',
+            'savings_rate' => 'lg:col-span-3',
+
+            // Große Auswertungen
+            'monthly_balance' => 'lg:col-span-8',
+            'yearly' => 'lg:col-span-4',
+
+            'income_expense_chart' => 'lg:col-span-12',
+            'wealth_chart' => 'lg:col-span-12',
+
+            // Planung
+            'budgets' => 'lg:col-span-12',
+
+            // Karten / Kredite
+            'credit_cards' => 'lg:col-span-6',
+            'loans' => 'lg:col-span-6',
+
+            // Übersichten
+            'accounts' => 'lg:col-span-6',
+            'categories' => 'lg:col-span-6',
+            'recent_transactions' => 'lg:col-span-12',
+
+            // Schnellzugriff
+            'quick_actions' => 'lg:col-span-12',
+        ];
+    @endphp
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 mt-8 items-start">
 
         @foreach($dashboardWidgetOrder as $widget)
 
             @if($dashboardWidgets[$widget] ?? false)
 
-                @include('dashboard.widgets.' . $widget)
+                <div class="{{ $dashboardWidgetWidths[$widget] ?? 'lg:col-span-12' }}">
+                    @include('dashboard.widgets.' . $widget)
+                </div>
 
             @endif
 
