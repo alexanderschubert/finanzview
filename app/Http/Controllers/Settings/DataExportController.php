@@ -1194,13 +1194,25 @@ class DataExportController extends Controller
                 continue;
             }
 
-            $accountId =
-                $accountMap[$item['account_id'] ?? 0] ?? null;
+            /*
+             * account_id darf bei Krediten NULL sein.
+             * Wenn eine konkrete Account-ID vorhanden ist,
+             * muss sie aber zwingend im Backup vorhanden sein
+             * und auf ein lokales Konto gemappt werden können.
+             */
+            $accountId = null;
 
-            if (!$accountId) {
-                throw new \RuntimeException(
-                    'Ein Kredit verweist auf ein unbekanntes Konto.'
-                );
+            if ($isFilled($item['account_id'] ?? null)) {
+                $backupAccountId = $item['account_id'];
+
+                $accountId =
+                    $accountMap[$backupAccountId] ?? null;
+
+                if (!$accountId) {
+                    throw new \RuntimeException(
+                        'Ein Kredit verweist auf ein unbekanntes Konto.'
+                    );
+                }
             }
 
             $existing = DB::table('loans')

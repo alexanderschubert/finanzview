@@ -357,6 +357,71 @@ class DataExportSecurityTest extends TestCase
         ]);
     }
 
+    public function test_restore_allows_loan_without_account(): void
+    {
+        $user = $this->createUser();
+
+        $payload = $this->validBackup();
+
+        $payload['loans'] = [
+            [
+                'id' => 600,
+                'account_id' => null,
+                'name' => 'Test Kredit ohne Konto',
+                'creditor_name' => 'Test Kreditgeber',
+                'provider_id' => null,
+                'creditor_icon' => null,
+                'creditor_color' => null,
+                'principal_amount' => '10000.00',
+                'paid_amount' => '1000.00',
+                'interest_rate' => '4.500',
+                'installment_amount' => '250.00',
+                'total_installments' => 40,
+                'paid_installments' => 4,
+                'start_date' => '2026-01-01',
+                'end_date' => '2029-04-01',
+                'type' => 'loan',
+                'is_active' => true,
+                'notes' => 'Test',
+                'payments' => [],
+            ],
+        ];
+
+        $token = $this->storeBackup($payload);
+
+        $response = $this
+            ->withSession([
+                'finanzview_import_token' => $token,
+            ])
+            ->actingAs($user)
+            ->post(
+                route('settings.data-export.import.restore'),
+                [
+                    'token' => $token,
+                    'confirm' => '1',
+                ]
+            );
+
+        $response
+            ->assertRedirect(
+                route('settings.data-export')
+            );
+
+        $this->assertDatabaseHas('loans', [
+            'user_id' => $user->id,
+            'name' => 'Test Kredit ohne Konto',
+            'account_id' => null,
+            'principal_amount' => '10000.00',
+        ]);
+
+        $this->assertSame(
+            1,
+            DB::table('loans')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+    }
+
     public function test_restore_does_not_duplicate_existing_data(): void
     {
         $user = $this->createUser();
@@ -490,6 +555,62 @@ class DataExportSecurityTest extends TestCase
             'budget_id' => $budgetId,
             'category_id' => $categoryId,
         ]);
+    }
+
+    public function test_restore_rejects_loan_referencing_unknown_account(): void
+    {
+        $user = $this->createUser();
+
+        $payload = $this->validBackup();
+
+        $payload['loans'] = [
+            [
+                'id' => 600,
+                'account_id' => 999999,
+                'name' => 'Test Kredit mit unbekanntem Konto',
+                'creditor_name' => 'Test Kreditgeber',
+                'provider_id' => null,
+                'creditor_icon' => null,
+                'creditor_color' => null,
+                'principal_amount' => '10000.00',
+                'paid_amount' => '1000.00',
+                'interest_rate' => '4.500',
+                'installment_amount' => '250.00',
+                'total_installments' => 40,
+                'paid_installments' => 4,
+                'start_date' => '2026-01-01',
+                'end_date' => '2029-04-01',
+                'type' => 'loan',
+                'is_active' => true,
+                'notes' => null,
+                'payments' => [],
+            ],
+        ];
+
+        $token = $this->storeBackup($payload);
+
+        $response = $this
+            ->withSession([
+                'finanzview_import_token' => $token,
+            ])
+            ->actingAs($user)
+            ->post(
+                route('settings.data-export.import.restore'),
+                [
+                    'token' => $token,
+                    'confirm' => '1',
+                ]
+            );
+
+        $response->assertSessionHasErrors('backup');
+
+        /*
+         * Der Restore muss wegen der ungültigen Account-ID
+         * vollständig zurückgerollt werden.
+         */
+        $this->assertDatabaseCount('accounts', 0);
+        $this->assertDatabaseCount('loans', 0);
+        $this->assertDatabaseCount('transactions', 0);
     }
 
     public function test_restore_rolls_back_completely_when_later_data_is_invalid(): void
