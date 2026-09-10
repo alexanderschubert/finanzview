@@ -17,7 +17,7 @@
         </div>
 
         <a
-            href="#"
+            href="{{ route('credit-cards.create') }}"
             class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
         >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -288,7 +288,7 @@
                         @endif
 
                         <a
-                            href="#"
+                            href="{{ route('credit-cards.show', $creditCard) }}"
                             class="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                         >
                             Details

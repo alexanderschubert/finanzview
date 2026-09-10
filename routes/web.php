@@ -122,6 +122,11 @@ Route::middleware(['auth', 'active'])->group(function () {
      * =========================================================
      */
 
+Route::get('/credit-cards', [
+    CreditCardController::class,
+    'index',
+])->name('credit-cards.index');
+
 Route::get('/credit-cards/create', [
     CreditCardController::class,
     'create',
@@ -132,7 +137,25 @@ Route::post('/credit-cards', [
     'store',
 ])->name('credit-cards.store');
 
-Route::get('/credit-cards', [CreditCardController::class, 'index'])->name('credit-cards.index');
+Route::get('/credit-cards/{creditCard}', [
+    CreditCardController::class,
+    'show',
+])->name('credit-cards.show');
+
+Route::get('/credit-cards/{creditCard}/edit', [
+    CreditCardController::class,
+    'edit',
+])->name('credit-cards.edit');
+
+Route::put('/credit-cards/{creditCard}', [
+    CreditCardController::class,
+    'update',
+])->name('credit-cards.update');
+
+Route::delete('/credit-cards/{creditCard}', [
+    CreditCardController::class,
+    'destroy',
+])->name('credit-cards.destroy');
     Route::get('/dashboard', [
         DashboardController::class,
         'index',

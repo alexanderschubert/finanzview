@@ -213,6 +213,179 @@ class CreditCardSecurityTest extends TestCase
         ]);
     }
 
+
+    public function test_user_can_view_own_credit_card(): void
+    {
+        $user = $this->createUser();
+        $creditCard = $this->createCreditCard($user);
+
+        $response = $this->actingAs($user)
+            ->get(route('credit-cards.show', $creditCard));
+
+        $response->assertOk();
+        $response->assertViewIs('credit-cards.show');
+        $response->assertSee($creditCard->name);
+    }
+
+    public function test_user_cannot_view_another_users_credit_card(): void
+    {
+        $owner = $this->createUser();
+        $attacker = $this->createUser();
+
+        $creditCard = $this->createCreditCard($owner);
+
+        $response = $this->actingAs($attacker)
+            ->get(route('credit-cards.show', $creditCard));
+
+        $response->assertForbidden();
+    }
+
+    public function test_user_can_edit_own_credit_card(): void
+    {
+        $user = $this->createUser();
+        $creditCard = $this->createCreditCard($user);
+
+        $response = $this->actingAs($user)
+            ->get(route('credit-cards.edit', $creditCard));
+
+        $response->assertOk();
+        $response->assertViewIs('credit-cards.edit');
+    }
+
+    public function test_user_cannot_edit_another_users_credit_card(): void
+    {
+        $owner = $this->createUser();
+        $attacker = $this->createUser();
+
+        $creditCard = $this->createCreditCard($owner);
+
+        $response = $this->actingAs($attacker)
+            ->get(route('credit-cards.edit', $creditCard));
+
+        $response->assertForbidden();
+    }
+
+    public function test_user_can_update_own_credit_card(): void
+    {
+        $user = $this->createUser();
+        $creditCard = $this->createCreditCard($user);
+
+        $response = $this->actingAs($user)->put(
+            route('credit-cards.update', $creditCard),
+            [
+                'name' => 'Geänderte Kreditkarte',
+                'issuer' => 'Neue Bank',
+                'last_four' => '9876',
+                'credit_limit' => '3000',
+                'current_balance' => '900',
+                'billing_day' => 20,
+                'payment_due_day' => 10,
+                'color' => '#123456',
+                'is_active' => '1',
+            ]
+        );
+
+        $response
+            ->assertRedirect(route('credit-cards.show', $creditCard))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('credit_cards', [
+            'id' => $creditCard->id,
+            'user_id' => $user->id,
+            'name' => 'Geänderte Kreditkarte',
+            'last_four' => '9876',
+            'credit_limit' => '3000.00',
+            'current_balance' => '900.00',
+        ]);
+    }
+
+    public function test_user_cannot_update_another_users_credit_card(): void
+    {
+        $owner = $this->createUser();
+        $attacker = $this->createUser();
+
+        $creditCard = $this->createCreditCard($owner);
+
+        $response = $this->actingAs($attacker)->put(
+            route('credit-cards.update', $creditCard),
+            [
+                'name' => 'Hacked Card',
+                'current_balance' => '999999',
+            ]
+        );
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('credit_cards', [
+            'id' => $creditCard->id,
+            'user_id' => $owner->id,
+            'name' => 'Test Kreditkarte',
+            'current_balance' => '500.00',
+        ]);
+    }
+
+    public function test_user_cannot_assign_another_users_account_when_updating_credit_card(): void
+    {
+        $owner = $this->createUser();
+        $attacker = $this->createUser();
+
+        $creditCard = $this->createCreditCard($attacker);
+        $foreignAccount = $this->createAccount($owner);
+
+        $response = $this->actingAs($attacker)->put(
+            route('credit-cards.update', $creditCard),
+            [
+                'name' => 'Meine Karte',
+                'account_id' => $foreignAccount->id,
+                'current_balance' => '500',
+            ]
+        );
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('credit_cards', [
+            'id' => $creditCard->id,
+            'user_id' => $attacker->id,
+            'account_id' => null,
+        ]);
+    }
+
+    public function test_user_cannot_delete_another_users_credit_card(): void
+    {
+        $owner = $this->createUser();
+        $attacker = $this->createUser();
+
+        $creditCard = $this->createCreditCard($owner);
+
+        $response = $this->actingAs($attacker)
+            ->delete(route('credit-cards.destroy', $creditCard));
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('credit_cards', [
+            'id' => $creditCard->id,
+            'user_id' => $owner->id,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_user_can_archive_own_credit_card(): void
+    {
+        $user = $this->createUser();
+        $creditCard = $this->createCreditCard($user);
+
+        $response = $this->actingAs($user)
+            ->delete(route('credit-cards.destroy', $creditCard));
+
+        $response
+            ->assertRedirect(route('credit-cards.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSoftDeleted('credit_cards', [
+            'id' => $creditCard->id,
+        ]);
+    }
+
     public function test_user_can_only_see_own_credit_cards(): void
     {
         $user = $this->createUser();
