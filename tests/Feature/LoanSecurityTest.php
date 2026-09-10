@@ -716,6 +716,25 @@ class LoanSecurityTest extends TestCase
         ]);
 
         /*
+         * Eine bereits vorhandene Sondertilgung mit hoher
+         * installment_number darf die reguläre Planung nicht
+         * auf diese Nummer nach hinten verschieben.
+         *
+         * Genau dieser Fall entspricht dem Produktionsszenario,
+         * bei dem eine Sondertilgung z.B. die Nummer 49 besitzt.
+         */
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 49,
+            'due_date' => '2026-09-04',
+            'amount' => 100.00,
+            'payment_type' => 'extra',
+            'paid_date' => '2026-09-04',
+            'status' => 'paid',
+        ]);
+
+        /*
          * Nur 500 € von 1.000 € Restschuld werden getilgt.
          */
         $response = $this
@@ -763,6 +782,48 @@ class LoanSecurityTest extends TestCase
             250.00,
             (float) $plannedPayments->first()->amount
         );
+
+        /*
+         * Die reguläre Planung beginnt weiterhin mit der nächsten
+         * regulären Rate und nicht erst nach der Sondertilgung Nr. 49.
+         */
+        $this->assertEquals(
+            1,
+            (int) $plannedPayments->first()->installment_number
+        );
+
+        /*
+         * Das Fälligkeitsdatum bleibt beim ursprünglich nächsten
+         * regulären Termin.
+         */
+        $this->assertEquals(
+            '2026-10-01',
+            $plannedPayments->first()->due_date->format('Y-m-d')
+        );
+
+        /*
+         * Auch die zweite reguläre Rate bleibt einen Monat später.
+         */
+        $this->assertEquals(
+            2,
+            (int) $plannedPayments->get(1)->installment_number
+        );
+
+        $this->assertEquals(
+            '2026-11-01',
+            $plannedPayments->get(1)->due_date->format('Y-m-d')
+        );
+
+        /*
+         * Die Sondertilgung Nr. 49 bleibt erhalten.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 49,
+            'payment_type' => 'extra',
+            'amount' => 100.00,
+            'status' => 'paid',
+        ]);
 
         /*
          * Die neue erste Rate enthält bereits eine

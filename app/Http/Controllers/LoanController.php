@@ -636,21 +636,24 @@ class LoanController extends Controller
         Loan $loan
     ): void {
         /*
-         * Ohne Rate oder Zinssatz kann kein
-         * amortisierter Zahlungsplan berechnet werden.
+         * Das nächste Fälligkeitsdatum der bereits geplanten regulären
+         * Rate merken, bevor der bestehende Plan gelöscht wird.
+         *
+         * Wichtig:
+         * Sondertilgungen dürfen die reguläre zeitliche Planung
+         * nicht nach hinten verschieben.
          */
-        if (
-            !$loan->installment_amount ||
-            (float) $loan->installment_amount <= 0
-        ) {
-            return;
-        }
+        $nextPlannedDueDate = $loan->payments()
+            ->where('payment_type', 'regular')
+            ->where('status', 'planned')
+            ->orderBy('due_date')
+            ->value('due_date');
 
         /*
-         * Alle zukünftigen geplanten Raten entfernen.
+         * Nur geplante reguläre Raten entfernen.
          *
          * Bereits bezahlte Raten und Sondertilgungen
-         * werden nicht verändert.
+         * bleiben vollständig erhalten.
          */
         $loan->payments()
             ->where('status', 'planned')
@@ -673,8 +676,7 @@ class LoanController extends Controller
         /*
          * Neue Amortisation ab der aktuellen Restschuld.
          *
-         * Die ursprüngliche Monatsrate und der Zinssatz
-         * des Kredits bleiben unverändert.
+         * Monatsrate und Zinssatz des Kredits bleiben unverändert.
          */
         $amortizationService = app(
             LoanAmortizationService::class
@@ -688,33 +690,97 @@ class LoanController extends Controller
         );
 
         /*
-         * Die nächste freie Ratenummer ermitteln.
+         * Reguläre Raten besitzen ihre eigene Sequenz.
          *
-         * Reguläre Raten und Sondertilgungen teilen sich
-         * aufgrund des UNIQUE-Index denselben Nummernraum.
-         * Deshalb muss über ALLE vorhandenen Zahlungen
-         * gesucht werden.
+         * Sondertilgungen dürfen die reguläre Rate-Nummer nicht
+         * nach hinten verschieben.
          */
         $nextRegularNumber = (
             (int) $loan->payments()
+                ->where('payment_type', 'regular')
                 ->max('installment_number')
         ) + 1;
 
         /*
-         * Neue reguläre Raten anlegen.
+         * Wegen der bestehenden UNIQUE-Regel auf
+         * (loan_id, installment_number) müssen Nummern übersprungen
+         * werden, die bereits durch Sondertilgungen belegt sind.
          */
-        foreach ($plan as $payment) {
-            $installmentNumber =
-                $nextRegularNumber
-                + $payment['installment_number']
-                - 1;
+        $usedNumbers = $loan->payments()
+            ->pluck('installment_number')
+            ->map(fn ($number) => (int) $number)
+            ->all();
 
-            $dueDate = $loan->start_date
-                ? $loan->start_date
-                    ->copy()
-                    ->addMonths($installmentNumber - 1)
-                : now()->startOfMonth()
-                    ->addMonths($payment['installment_number'] - 1);
+        $usedNumbers = array_fill_keys(
+            $usedNumbers,
+            true
+        );
+
+        /*
+         * Fälligkeitsdatum bestimmen.
+         *
+         * Normalfall:
+         * Der bisher nächste geplante Termin bleibt erhalten.
+         *
+         * Dadurch kann eine Sondertilgung die Laufzeit verkürzen,
+         * ohne den nächsten regulären Zahlungstermin zu verschieben.
+         */
+        if ($nextPlannedDueDate) {
+            $nextDueDate = \Carbon\Carbon::parse(
+                $nextPlannedDueDate
+            );
+        } else {
+            /*
+             * Fallback, falls kein geplanter Termin vorhanden war:
+             * Monat nach der letzten regulären Rate.
+             */
+            $lastRegularDueDate = $loan->payments()
+                ->where('payment_type', 'regular')
+                ->orderByDesc('due_date')
+                ->value('due_date');
+
+            if ($lastRegularDueDate) {
+                $nextDueDate = \Carbon\Carbon::parse(
+                    $lastRegularDueDate
+                )->addMonth();
+            } elseif ($loan->start_date) {
+                $nextDueDate = $loan->start_date->copy();
+            } else {
+                $nextDueDate = now()->startOfMonth();
+            }
+        }
+
+        /*
+         * Neue reguläre Raten erzeugen.
+         */
+        foreach ($plan as $index => $payment) {
+            /*
+             * Nächste freie Nummer suchen.
+             *
+             * Die Nummer ist nur der eindeutige Datenbank-Schlüssel.
+             * Sie bestimmt NICHT das Fälligkeitsdatum.
+             */
+            while (isset($usedNumbers[$nextRegularNumber])) {
+                $nextRegularNumber++;
+            }
+
+            $installmentNumber = $nextRegularNumber;
+
+            $usedNumbers[$installmentNumber] = true;
+
+            $nextRegularNumber++;
+
+            /*
+             * Das Fälligkeitsdatum basiert auf der Position
+             * innerhalb des neu berechneten Plans.
+             *
+             * Dadurch bleiben die monatlichen Termine korrekt,
+             * auch wenn Nummern wegen Sondertilgungen übersprungen
+             * werden müssen.
+             */
+            $dueDate = $nextDueDate
+                ->copy()
+                ->addMonths($index);
 
             LoanPayment::create([
                 'loan_id' => $loan->id,
