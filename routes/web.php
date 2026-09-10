@@ -143,6 +143,17 @@ Route::middleware(['auth', 'active'])->group(function () {
       ])->name('settings.data-export.json');
 
 
+      Route::post('/settings/data-export/import', [
+          DataExportController::class,
+          'importPreview',
+      ])->name('settings.data-export.import');
+
+      Route::post('/settings/data-export/import/restore', [
+          DataExportController::class,
+          'importRestore',
+      ])->name('settings.data-export.import.restore');
+
+
 Route::get('/settings/dashboard', [
         DashboardSettingsController::class,
         'edit',

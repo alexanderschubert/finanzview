@@ -6,6 +6,24 @@
 
 <div class="max-w-5xl mx-auto space-y-8">
 
+    @if(session('success'))
+        <div class="rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5">
+            <div class="flex gap-3">
+                <div class="text-xl">✓</div>
+
+                <div>
+                    <h3 class="font-semibold text-emerald-900 dark:text-emerald-200">
+                        Wiederherstellung erfolgreich
+                    </h3>
+
+                    <p class="text-sm text-emerald-800 dark:text-emerald-300 mt-1">
+                        {{ session('success') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div>
         <a
             href="{{ route('settings.index') }}"
@@ -240,6 +258,122 @@
     </section>
 
 
+    {{-- BACKUP IMPORT --}}
+    <section class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+        <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+
+            <div class="flex items-start gap-4">
+
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-xl">
+                    ♻️
+                </div>
+
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                        Backup wiederherstellen
+                    </h2>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Stelle ein zuvor exportiertes FinanzView-Backup wieder her.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="p-6">
+
+            @if($errors->has('backup'))
+                <div class="mb-5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-sm text-red-800 dark:text-red-300">
+                    {{ $errors->first('backup') }}
+                </div>
+            @endif
+
+
+            <div class="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-4 mb-6">
+
+                <div class="flex gap-3">
+
+                    <div>⚠️</div>
+
+                    <div class="text-sm text-amber-800 dark:text-amber-300">
+
+                        <p class="font-semibold mb-1">
+                            Bitte nur vertrauenswürdige Backups verwenden.
+                        </p>
+
+                        <p>
+                            Das Backup wird zunächst geprüft und eine Vorschau angezeigt.
+                            Erst danach kann die Wiederherstellung ausdrücklich bestätigt werden.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ route('settings.data-export.import') }}"
+                enctype="multipart/form-data"
+                class="space-y-5"
+            >
+
+                @csrf
+
+                <div>
+
+                    <label
+                        for="backup"
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                    >
+                        FinanzView-Backup
+                    </label>
+
+                    <input
+                        type="file"
+                        id="backup"
+                        name="backup"
+                        accept=".json,application/json"
+                        required
+                        class="block w-full text-sm text-slate-600 dark:text-slate-300
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-xl file:border-0
+                               file:bg-slate-100 dark:file:bg-slate-800
+                               file:text-slate-700 dark:file:text-slate-200
+                               hover:file:bg-slate-200 dark:hover:file:bg-slate-700"
+                    >
+
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Maximale Dateigröße: 20 MB
+                    </p>
+
+                </div>
+
+
+                <div class="flex justify-end">
+
+                    <button
+                        type="submit"
+                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium transition"
+                    >
+                        Backup prüfen
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
     {{-- HINWEIS --}}
     <div class="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-5">
 
@@ -254,7 +388,7 @@
 
                 <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">
                     Bewahre deine Backup-Dateien sicher auf. Ein JSON-Backup kann sensible Finanzinformationen enthalten.
-                    Ein Import bzw. eine Wiederherstellung wird in einem späteren Schritt ergänzt.
+                    Verwende für die Wiederherstellung ausschließlich Backups aus vertrauenswürdigen Quellen.
                 </p>
             </div>
 
