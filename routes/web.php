@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\DashboardSettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Settings\DataExportController;
+use App\Http\Controllers\CreditCardController;
 
 
 /*
@@ -121,6 +122,17 @@ Route::middleware(['auth', 'active'])->group(function () {
      * =========================================================
      */
 
+Route::get('/credit-cards/create', [
+    CreditCardController::class,
+    'create',
+])->name('credit-cards.create');
+
+Route::post('/credit-cards', [
+    CreditCardController::class,
+    'store',
+])->name('credit-cards.store');
+
+Route::get('/credit-cards', [CreditCardController::class, 'index'])->name('credit-cards.index');
     Route::get('/dashboard', [
         DashboardController::class,
         'index',
