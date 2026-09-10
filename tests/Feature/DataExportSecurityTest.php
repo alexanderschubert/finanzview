@@ -732,4 +732,117 @@ class DataExportSecurityTest extends TestCase
             'name' => 'Testkonto',
         ]);
     }
+
+
+    public function test_same_backup_can_be_restored_twice_without_duplicates(): void
+    {
+        $user = $this->createUser();
+
+        $payload = $this->validBackup();
+
+        /*
+         * Erster Restore
+         */
+        $token1 = $this->storeBackup($payload);
+
+        $response1 = $this
+            ->withSession([
+                'finanzview_import_token' => $token1,
+            ])
+            ->actingAs($user)
+            ->post(
+                route('settings.data-export.import.restore'),
+                [
+                    'token' => $token1,
+                    'confirm' => '1',
+                ]
+            );
+
+        $response1->assertRedirect(
+            route('settings.data-export')
+        );
+
+        $countsAfterFirstRestore = [
+            'accounts' => DB::table('accounts')
+                ->where('user_id', $user->id)
+                ->count(),
+
+            'categories' => DB::table('categories')
+                ->where('user_id', $user->id)
+                ->count(),
+
+            'tags' => DB::table('tags')
+                ->where('user_id', $user->id)
+                ->count(),
+
+            'transactions' => DB::table('transactions')
+                ->where('user_id', $user->id)
+                ->count(),
+
+            'budgets' => DB::table('budgets')
+                ->where('user_id', $user->id)
+                ->count(),
+        ];
+
+        /*
+         * Zweiter Restore mit exakt demselben Backup.
+         */
+        $token2 = $this->storeBackup($payload);
+
+        $response2 = $this
+            ->withSession([
+                'finanzview_import_token' => $token2,
+            ])
+            ->actingAs($user)
+            ->post(
+                route('settings.data-export.import.restore'),
+                [
+                    'token' => $token2,
+                    'confirm' => '1',
+                ]
+            );
+
+        $response2->assertRedirect(
+            route('settings.data-export')
+        );
+
+        /*
+         * Es darf kein weiterer Datensatz entstanden sein.
+         */
+        $this->assertSame(
+            $countsAfterFirstRestore['accounts'],
+            DB::table('accounts')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+
+        $this->assertSame(
+            $countsAfterFirstRestore['categories'],
+            DB::table('categories')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+
+        $this->assertSame(
+            $countsAfterFirstRestore['tags'],
+            DB::table('tags')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+
+        $this->assertSame(
+            $countsAfterFirstRestore['transactions'],
+            DB::table('transactions')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+
+        $this->assertSame(
+            $countsAfterFirstRestore['budgets'],
+            DB::table('budgets')
+                ->where('user_id', $user->id)
+                ->count()
+        );
+    }
+
 }
