@@ -536,7 +536,6 @@ class LoanController extends Controller
              */
             $nextNumber = (
                 (int) $lockedLoan->payments()
-                    ->lockForUpdate()
                     ->max('installment_number')
             ) + 1;
 
