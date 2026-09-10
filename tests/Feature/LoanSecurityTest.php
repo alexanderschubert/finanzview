@@ -434,4 +434,312 @@ class LoanSecurityTest extends TestCase
             'paid_amount' => 9000.00,
         ]);
     }
+
+    public function test_complete_extra_payment_cancels_future_planned_payments(): void
+    {
+        $user = $this->createUser();
+
+        $loan = $this->createLoan($user, [
+            'principal_amount' => 10000.00,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        /*
+         * Bereits bezahlte Rate.
+         */
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 1,
+            'due_date' => '2026-08-01',
+            'amount' => 250.00,
+            'payment_type' => 'regular',
+            'paid_date' => '2026-08-01',
+            'status' => 'paid',
+        ]);
+
+        /*
+         * Zukünftige geplante Raten.
+         */
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 2,
+            'due_date' => '2026-09-01',
+            'amount' => 250.00,
+            'payment_type' => 'regular',
+            'paid_date' => null,
+            'status' => 'planned',
+        ]);
+
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 3,
+            'due_date' => '2026-10-01',
+            'amount' => 250.00,
+            'payment_type' => 'regular',
+            'paid_date' => null,
+            'status' => 'planned',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.extra-payment', $loan),
+                $this->extraPaymentData([
+                    'amount' => '1000.00',
+                    'notes' => 'Vollständige Ablösung',
+                ])
+            );
+
+        $response->assertRedirect(
+            route('loans.show', $loan)
+        );
+
+        $response->assertSessionHas('success');
+
+        /*
+         * Kredit ist vollständig getilgt.
+         */
+        $this->assertDatabaseHas('loans', [
+            'id' => $loan->id,
+            'paid_amount' => 10000.00,
+            'is_active' => false,
+        ]);
+
+        /*
+         * Sondertilgung wurde als bezahlt gespeichert.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'payment_type' => 'extra',
+            'amount' => 1000.00,
+            'status' => 'paid',
+            'notes' => 'Vollständige Ablösung',
+        ]);
+
+        /*
+         * Bereits bezahlte Rate bleibt bezahlt.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 1,
+            'status' => 'paid',
+        ]);
+
+        /*
+         * Alle noch geplanten Raten werden storniert.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 2,
+            'status' => 'cancelled',
+        ]);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 3,
+            'status' => 'cancelled',
+        ]);
+    }
+
+    public function test_exact_full_extra_payment_deactivates_loan(): void
+    {
+        $user = $this->createUser();
+
+        $loan = $this->createLoan($user, [
+            'principal_amount' => 10000.00,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.extra-payment', $loan),
+                $this->extraPaymentData([
+                    'amount' => '1000.00',
+                ])
+            );
+
+        $response->assertRedirect(
+            route('loans.show', $loan)
+        );
+
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('loans', [
+            'id' => $loan->id,
+            'paid_amount' => 10000.00,
+            'is_active' => false,
+        ]);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'amount' => 1000.00,
+            'payment_type' => 'extra',
+            'status' => 'paid',
+        ]);
+    }
+
+    public function test_partial_extra_payment_keeps_future_planned_payments(): void
+    {
+        $user = $this->createUser();
+
+        $loan = $this->createLoan($user, [
+            'principal_amount' => 10000.00,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        /*
+         * Zukünftige geplante Raten.
+         */
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 1,
+            'due_date' => '2026-10-01',
+            'amount' => 250.00,
+            'payment_type' => 'regular',
+            'paid_date' => null,
+            'status' => 'planned',
+        ]);
+
+        LoanPayment::create([
+            'loan_id' => $loan->id,
+            'transaction_id' => null,
+            'installment_number' => 2,
+            'due_date' => '2026-11-01',
+            'amount' => 250.00,
+            'payment_type' => 'regular',
+            'paid_date' => null,
+            'status' => 'planned',
+        ]);
+
+        /*
+         * Nur 500 € von 1.000 € Restschuld werden getilgt.
+         */
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.extra-payment', $loan),
+                $this->extraPaymentData([
+                    'amount' => '500.00',
+                ])
+            );
+
+        $response->assertRedirect(
+            route('loans.show', $loan)
+        );
+
+        /*
+         * Kredit bleibt aktiv.
+         */
+        $this->assertDatabaseHas('loans', [
+            'id' => $loan->id,
+            'paid_amount' => 9500.00,
+            'is_active' => true,
+        ]);
+
+        /*
+         * Beide zukünftigen Raten bleiben geplant.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 1,
+            'status' => 'planned',
+        ]);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 2,
+            'status' => 'planned',
+        ]);
+
+        /*
+         * Sondertilgung wurde korrekt gespeichert.
+         */
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'payment_type' => 'extra',
+            'amount' => 500.00,
+            'status' => 'paid',
+        ]);
+    }
+
+    public function test_partial_extra_payment_keeps_loan_active(): void
+    {
+        $user = $this->createUser();
+
+        $loan = $this->createLoan($user, [
+            'principal_amount' => 10000.00,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.extra-payment', $loan),
+                $this->extraPaymentData([
+                    'amount' => '500.00',
+                ])
+            );
+
+        $response->assertRedirect(
+            route('loans.show', $loan)
+        );
+
+        $this->assertDatabaseHas('loans', [
+            'id' => $loan->id,
+            'paid_amount' => 9500.00,
+            'is_active' => true,
+        ]);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'amount' => 500.00,
+            'payment_type' => 'extra',
+            'status' => 'paid',
+        ]);
+    }
+
+    public function test_extra_payment_above_remaining_amount_is_rolled_back(): void
+    {
+        $user = $this->createUser();
+
+        $loan = $this->createLoan($user, [
+            'principal_amount' => 10000.00,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.extra-payment', $loan),
+                $this->extraPaymentData([
+                    'amount' => '1001.00',
+                ])
+            );
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('amount');
+
+        $this->assertDatabaseHas('loans', [
+            'id' => $loan->id,
+            'paid_amount' => 9000.00,
+            'is_active' => true,
+        ]);
+
+        $this->assertDatabaseMissing('loan_payments', [
+            'loan_id' => $loan->id,
+            'amount' => 1001.00,
+            'payment_type' => 'extra',
+        ]);
+    }
+
 }

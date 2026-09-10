@@ -858,6 +858,12 @@
                                                 Sondertilgung
                                             </p>
 
+                                            @if($payment->notes)
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                                                    {{ $payment->notes }}
+                                                </p>
+                                            @endif
+
                                         </div>
 
                                         <p class="font-semibold text-slate-900 dark:text-white">
@@ -1005,6 +1011,60 @@
                                     "
                                 >
 
+                            </div>
+
+
+                            <div>
+                                <label
+                                    for="extra_notes"
+                                    class="
+                                        block
+                                        text-sm
+                                        font-medium
+                                        text-slate-700
+                                        dark:text-slate-300
+                                        mb-2
+                                    "
+                                >
+                                    Notiz
+                                    <span class="font-normal text-slate-400 dark:text-slate-500">
+                                        (optional)
+                                    </span>
+                                </label>
+
+                                <textarea
+                                    id="extra_notes"
+                                    name="notes"
+                                    rows="3"
+                                    maxlength="1000"
+                                    placeholder="z. B. Sonderzahlung aus Bonuszahlung"
+                                    class="
+                                        w-full
+                                        rounded-xl
+                                        border
+                                        border-slate-200
+                                        dark:border-slate-700
+                                        bg-white
+                                        dark:bg-slate-800
+                                        px-4
+                                        py-3
+                                        text-slate-900
+                                        dark:text-white
+                                        placeholder-slate-400
+                                        dark:placeholder-slate-500
+                                        outline-none
+                                        resize-y
+                                        focus:ring-2
+                                        focus:ring-emerald-500/20
+                                        focus:border-emerald-500
+                                    "
+                                >{{ old('notes') }}</textarea>
+
+                                @error('notes')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
 
 

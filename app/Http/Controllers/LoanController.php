@@ -493,46 +493,55 @@ class LoanController extends Controller
 
         $amount = (float) $validated['amount'];
 
-        /*
-         * Aktuelle Restschuld berechnen.
-         */
-        $remainingAmount = max(
-            0,
-            (float) $loan->principal_amount
-                - (float) $loan->paid_amount
-        );
-
-        /*
-         * Sondertilgung darf die Restschuld
-         * nicht überschreiten.
-         */
-        if ($amount > $remainingAmount) {
-            return back()
-                ->withErrors([
-                    'amount' =>
-                        'Die Sondertilgung darf nicht größer als die aktuelle Restschuld sein.',
-                ])
-                ->withInput();
-        }
-
         DB::transaction(function () use (
             $loan,
             $validated,
             $amount
         ) {
             /*
+             * Kredit innerhalb der Transaktion erneut laden
+             * und sperren. Dadurch können parallele
+             * Sondertilgungen nicht dieselbe Restschuld
+             * gleichzeitig verwenden.
+             */
+            $lockedLoan = Loan::whereKey($loan->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            /*
+             * Aktuelle Restschuld anhand des gesperrten
+             * Datensatzes berechnen.
+             */
+            $remainingAmount = max(
+                0,
+                (float) $lockedLoan->principal_amount
+                    - (float) $lockedLoan->paid_amount
+            );
+
+            /*
+             * Sondertilgung darf die Restschuld
+             * nicht überschreiten.
+             */
+            if ($amount > $remainingAmount) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'amount' => 'Die Sondertilgung darf nicht größer als die aktuelle Restschuld sein.',
+                ]);
+            }
+
+            /*
              * Nächste freie Nummer verwenden.
              *
-             * Dadurch entsteht kein Konflikt mit
-             * den bereits vorhandenen normalen Raten.
+             * Sondertilgungen werden bewusst hinter den
+             * normalen Raten geführt.
              */
             $nextNumber = (
-                (int) $loan->payments()
+                (int) $lockedLoan->payments()
+                    ->lockForUpdate()
                     ->max('installment_number')
             ) + 1;
 
             LoanPayment::create([
-                'loan_id' => $loan->id,
+                'loan_id' => $lockedLoan->id,
 
                 'transaction_id' => null,
 
@@ -547,15 +556,44 @@ class LoanController extends Controller
                 'paid_date' => $validated['paid_date'],
 
                 'status' => 'paid',
+
+                'notes' => $validated['notes'] ?? null,
             ]);
 
             /*
              * Gesamte bisherige Tilgung erhöhen.
              */
-            $loan->increment(
-                'paid_amount',
-                $amount
+            $newPaidAmount = min(
+                (float) $lockedLoan->principal_amount,
+                (float) $lockedLoan->paid_amount + $amount
             );
+
+            /*
+             * Ist der Kredit vollständig getilgt,
+             * wird er automatisch deaktiviert.
+             */
+            $lockedLoan->update([
+                'paid_amount' => $newPaidAmount,
+                'is_active' => $newPaidAmount
+                    < (float) $lockedLoan->principal_amount,
+            ]);
+
+            /*
+             * Bei vollständiger Tilgung werden alle noch
+             * geplanten zukünftigen Raten storniert.
+             *
+             * Bereits bezahlte Raten bleiben unverändert.
+             */
+            if (
+                $newPaidAmount >=
+                (float) $lockedLoan->principal_amount
+            ) {
+                $lockedLoan->payments()
+                    ->where('status', 'planned')
+                    ->update([
+                        'status' => 'cancelled',
+                    ]);
+            }
         });
 
         return redirect()

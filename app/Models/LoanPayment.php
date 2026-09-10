@@ -19,6 +19,7 @@ class LoanPayment extends Model
         'payment_type',
         'paid_date',
         'status',
+        'notes',
     ];
 
     protected function casts(): array
