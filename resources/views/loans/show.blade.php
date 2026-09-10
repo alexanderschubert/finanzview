@@ -541,23 +541,35 @@
                                         "
                                     >
 
-                                        <th class="py-3 pr-4 font-medium text-slate-400 dark:text-slate-500">
+                                        <th class="py-3 pr-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
                                             Rate
                                         </th>
 
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500">
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
                                             Fälligkeit
                                         </th>
 
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500">
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
                                             Betrag
                                         </th>
 
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500">
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
+                                            Zins
+                                        </th>
+
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
+                                            Tilgung
+                                        </th>
+
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
+                                            Restschuld
+                                        </th>
+
+                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
                                             Typ
                                         </th>
 
-                                        <th class="py-3 pl-4 text-right font-medium text-slate-400 dark:text-slate-500">
+                                        <th class="py-3 pl-4 text-right font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
                                             Status
                                         </th>
 
@@ -579,7 +591,7 @@
                                             "
                                         >
 
-                                            <td class="py-4 pr-4 font-medium text-slate-900 dark:text-white">
+                                            <td class="py-4 pr-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
                                                 {{ $payment->installment_number }}
                                             </td>
 
@@ -587,13 +599,52 @@
                                                 {{ $payment->due_date->format('d.m.Y') }}
                                             </td>
 
-                                            <td class="py-4 px-4 whitespace-nowrap font-medium text-slate-900 dark:text-white">
+                                            <td class="py-4 px-4 whitespace-nowrap font-medium text-slate-900 dark:text-white text-right">
                                                 {{ number_format(
                                                     $payment->amount,
                                                     2,
                                                     ',',
                                                     '.'
                                                 ) }} €
+                                            </td>
+
+                                            <td class="py-4 px-4 whitespace-nowrap text-right text-slate-600 dark:text-slate-300">
+                                                @if($payment->payment_type === 'regular')
+                                                    {{ number_format(
+                                                        $payment->interest_amount ?? 0,
+                                                        2,
+                                                        ',',
+                                                        '.'
+                                                    ) }} €
+                                                @else
+                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="py-4 px-4 whitespace-nowrap text-right text-slate-600 dark:text-slate-300">
+                                                @if($payment->payment_type === 'regular')
+                                                    {{ number_format(
+                                                        $payment->principal_amount ?? 0,
+                                                        2,
+                                                        ',',
+                                                        '.'
+                                                    ) }} €
+                                                @else
+                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="py-4 px-4 whitespace-nowrap text-right font-medium text-slate-900 dark:text-white">
+                                                @if($payment->payment_type === 'regular')
+                                                    {{ number_format(
+                                                        $payment->remaining_amount ?? 0,
+                                                        2,
+                                                        ',',
+                                                        '.'
+                                                    ) }} €
+                                                @else
+                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
+                                                @endif
                                             </td>
 
                                             <td class="py-4 px-4">
@@ -677,7 +728,7 @@
                                                             dark:text-red-400
                                                         "
                                                     >
-                                                        Überfällig
+                                                        ⚠ Überfällig
                                                     </span>
 
                                                 @elseif($payment->status === 'cancelled')
