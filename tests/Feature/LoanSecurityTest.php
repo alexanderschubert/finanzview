@@ -124,6 +124,102 @@ class LoanSecurityTest extends TestCase
         ]);
     }
 
+    public function test_creating_loan_generates_amortization_payment_plan(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route('loans.store'),
+                $this->validLoanData([
+                    'principal_amount' => '20000.00',
+                    'paid_amount' => '0.00',
+                    'interest_rate' => '5.000',
+                    'installment_amount' => '460.59',
+                    'total_installments' => '48',
+                    'paid_installments' => '0',
+                    'start_date' => '2026-09-01',
+                ])
+            );
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $loan = Loan::where('user_id', $user->id)
+            ->where('name', 'Neuer Kredit')
+            ->first();
+
+        $this->assertNotNull($loan);
+
+        $this->assertDatabaseCount('loan_payments', 48);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 1,
+            'payment_type' => 'regular',
+            'status' => 'planned',
+            'amount' => 460.59,
+            'interest_amount' => 83.33,
+            'principal_amount' => 377.26,
+            'remaining_amount' => 19622.74,
+        ]);
+
+        $this->assertDatabaseHas('loan_payments', [
+            'loan_id' => $loan->id,
+            'installment_number' => 48,
+            'payment_type' => 'regular',
+            'status' => 'planned',
+        ]);
+    }
+
+    public function test_generated_amortization_plan_contains_decreasing_interest(): void
+    {
+        $user = $this->createUser();
+
+        $this
+            ->actingAs($user)
+            ->post(
+                route('loans.store'),
+                $this->validLoanData([
+                    'principal_amount' => '20000.00',
+                    'paid_amount' => '0.00',
+                    'interest_rate' => '5.000',
+                    'installment_amount' => '460.59',
+                    'total_installments' => '48',
+                    'paid_installments' => '0',
+                    'start_date' => '2026-09-01',
+                ])
+            )
+            ->assertRedirect();
+
+        $loan = Loan::where('user_id', $user->id)
+            ->where('name', 'Neuer Kredit')
+            ->firstOrFail();
+
+        $firstPayment = LoanPayment::where('loan_id', $loan->id)
+            ->where('installment_number', 1)
+            ->firstOrFail();
+
+        $secondPayment = LoanPayment::where('loan_id', $loan->id)
+            ->where('installment_number', 2)
+            ->firstOrFail();
+
+        $lastPayment = LoanPayment::where('loan_id', $loan->id)
+            ->orderByDesc('installment_number')
+            ->firstOrFail();
+
+        $this->assertEquals(83.33, (float) $firstPayment->interest_amount);
+        $this->assertEquals(81.76, (float) $secondPayment->interest_amount);
+
+        $this->assertGreaterThan(
+            (float) $secondPayment->interest_amount,
+            (float) $firstPayment->interest_amount
+        );
+
+        $this->assertEquals(0.00, (float) $lastPayment->remaining_amount);
+    }
+
     public function test_user_cannot_create_loan_using_another_users_account(): void
     {
         $user = $this->createUser();
@@ -645,19 +741,42 @@ class LoanSecurityTest extends TestCase
         ]);
 
         /*
-         * Beide zukünftigen Raten bleiben geplant.
+         * Die zukünftigen regulären Raten wurden nach
+         * der Sondertilgung neu berechnet.
+         *
+         * Die alte geplante Rate 1 und 2 werden dabei
+         * nicht unverändert übernommen.
          */
-        $this->assertDatabaseHas('loan_payments', [
-            'loan_id' => $loan->id,
-            'installment_number' => 1,
-            'status' => 'planned',
-        ]);
+        $plannedPayments = LoanPayment::query()
+            ->where('loan_id', $loan->id)
+            ->where('payment_type', 'regular')
+            ->where('status', 'planned')
+            ->orderBy('installment_number')
+            ->get();
 
-        $this->assertDatabaseHas('loan_payments', [
-            'loan_id' => $loan->id,
-            'installment_number' => 2,
-            'status' => 'planned',
-        ]);
+        $this->assertNotEmpty($plannedPayments);
+
+        /*
+         * Die neue Monatsrate bleibt unverändert bei 250 €.
+         */
+        $this->assertEquals(
+            250.00,
+            (float) $plannedPayments->first()->amount
+        );
+
+        /*
+         * Die neue erste Rate enthält bereits eine
+         * berechnete Zins- und Tilgungskomponente.
+         */
+        $this->assertGreaterThan(
+            0,
+            (float) $plannedPayments->first()->principal_amount
+        );
+
+        $this->assertGreaterThanOrEqual(
+            0,
+            (float) $plannedPayments->first()->interest_amount
+        );
 
         /*
          * Sondertilgung wurde korrekt gespeichert.

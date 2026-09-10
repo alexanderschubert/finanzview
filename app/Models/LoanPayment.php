@@ -16,6 +16,9 @@ class LoanPayment extends Model
         'installment_number',
         'due_date',
         'amount',
+        'interest_amount',
+        'principal_amount',
+        'remaining_amount',
         'payment_type',
         'paid_date',
         'status',
@@ -28,6 +31,9 @@ class LoanPayment extends Model
             'due_date' => 'date',
             'paid_date' => 'date',
             'amount' => 'decimal:2',
+            'interest_amount' => 'decimal:2',
+            'principal_amount' => 'decimal:2',
+            'remaining_amount' => 'decimal:2',
         ];
     }
 

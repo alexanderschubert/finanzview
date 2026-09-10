@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\FinancialProvider;
 use App\Models\Loan;
 use App\Models\LoanPayment;
+use App\Services\LoanAmortizationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -581,7 +582,8 @@ class LoanController extends Controller
              * Bei vollständiger Tilgung werden alle noch
              * geplanten zukünftigen Raten storniert.
              *
-             * Bereits bezahlte Raten bleiben unverändert.
+             * Bereits bezahlte Raten und die Sondertilgung
+             * selbst bleiben unverändert.
              */
             if (
                 $newPaidAmount >=
@@ -592,6 +594,19 @@ class LoanController extends Controller
                     ->update([
                         'status' => 'cancelled',
                     ]);
+            } else {
+                /*
+                 * Variante A:
+                 *
+                 * Die Monatsrate und der Zinssatz bleiben gleich.
+                 * Durch die reduzierte Restschuld wird der
+                 * zukünftige Zahlungsplan neu berechnet.
+                 *
+                 * Nur zukünftige geplante Raten werden ersetzt.
+                 */
+                $this->regenerateFuturePaymentPlan(
+                    $lockedLoan
+                );
             }
         });
 
@@ -607,13 +622,140 @@ class LoanController extends Controller
     }
 
     /**
+     * Zukünftigen Tilgungsplan nach einer Sondertilgung
+     * neu berechnen.
+     *
+     * Variante A:
+     * - Monatsrate bleibt unverändert.
+     * - Zinssatz bleibt unverändert.
+     * - Restschuld wird reduziert.
+     * - Laufzeit verkürzt sich.
+     * - Historische Zahlungen bleiben unverändert.
+     */
+    private function regenerateFuturePaymentPlan(
+        Loan $loan
+    ): void {
+        /*
+         * Ohne Rate oder Zinssatz kann kein
+         * amortisierter Zahlungsplan berechnet werden.
+         */
+        if (
+            !$loan->installment_amount ||
+            (float) $loan->installment_amount <= 0
+        ) {
+            return;
+        }
+
+        /*
+         * Alle zukünftigen geplanten Raten entfernen.
+         *
+         * Bereits bezahlte Raten und Sondertilgungen
+         * werden nicht verändert.
+         */
+        $loan->payments()
+            ->where('status', 'planned')
+            ->where('payment_type', 'regular')
+            ->delete();
+
+        /*
+         * Aktuelle Restschuld nach der Sondertilgung.
+         */
+        $remainingPrincipal = max(
+            0,
+            (float) $loan->principal_amount
+                - (float) $loan->paid_amount
+        );
+
+        if ($remainingPrincipal <= 0) {
+            return;
+        }
+
+        /*
+         * Neue Amortisation ab der aktuellen Restschuld.
+         *
+         * Die ursprüngliche Monatsrate und der Zinssatz
+         * des Kredits bleiben unverändert.
+         */
+        $amortizationService = app(
+            LoanAmortizationService::class
+        );
+
+        $plan = $amortizationService->calculateFromBalance(
+            $remainingPrincipal,
+            (float) ($loan->interest_rate ?? 0),
+            (float) $loan->installment_amount,
+            null
+        );
+
+        /*
+         * Die nächste freie Ratenummer ermitteln.
+         *
+         * Reguläre Raten und Sondertilgungen teilen sich
+         * aufgrund des UNIQUE-Index denselben Nummernraum.
+         * Deshalb muss über ALLE vorhandenen Zahlungen
+         * gesucht werden.
+         */
+        $nextRegularNumber = (
+            (int) $loan->payments()
+                ->max('installment_number')
+        ) + 1;
+
+        /*
+         * Neue reguläre Raten anlegen.
+         */
+        foreach ($plan as $payment) {
+            $installmentNumber =
+                $nextRegularNumber
+                + $payment['installment_number']
+                - 1;
+
+            $dueDate = $loan->start_date
+                ? $loan->start_date
+                    ->copy()
+                    ->addMonths($installmentNumber - 1)
+                : now()->startOfMonth()
+                    ->addMonths($payment['installment_number'] - 1);
+
+            LoanPayment::create([
+                'loan_id' => $loan->id,
+
+                'transaction_id' => null,
+
+                'installment_number' =>
+                    $installmentNumber,
+
+                'due_date' => $dueDate,
+
+                'amount' => $payment['amount'],
+
+                'interest_amount' =>
+                    $payment['interest_amount'],
+
+                'principal_amount' =>
+                    $payment['principal_amount'],
+
+                'remaining_amount' =>
+                    $payment['remaining_amount'],
+
+                'payment_type' => 'regular',
+
+                'paid_date' => null,
+
+                'status' => 'planned',
+
+                'notes' => null,
+            ]);
+        }
+    }
+
+    /**
      * Tilgungsplan erzeugen.
      */
     private function generatePaymentPlan(
         Loan $loan
     ): void {
         /*
-         * Ohne Startdatum oder Ratenanzahl
+         * Ohne Startdatum, Ratenanzahl oder Rate
          * kann kein Tilgungsplan erzeugt werden.
          */
         if (
@@ -632,16 +774,25 @@ class LoanController extends Controller
             ->map(fn ($number) => (int) $number)
             ->all();
 
+        /*
+         * Der Amortisationsservice berechnet den
+         * Zahlungsplan ab der ursprünglichen Kreditsumme.
+         *
+         * Sondertilgungen werden später separat behandelt.
+         */
+        $amortizationService = app(
+            LoanAmortizationService::class
+        );
+
+        $plan = $amortizationService->calculate($loan);
+
         $startDate = $loan->start_date->copy();
 
-        $paidInstallments =
-            (int) $loan->paid_installments;
+        $paidInstallments = (int) $loan->paid_installments;
 
-        for (
-            $number = 1;
-            $number <= $loan->total_installments;
-            $number++
-        ) {
+        foreach ($plan as $payment) {
+            $number = $payment['installment_number'];
+
             /*
              * Falls die Rate bereits existiert,
              * nichts neu anlegen.
@@ -660,15 +811,13 @@ class LoanController extends Controller
                 ->copy()
                 ->addMonths($number - 1);
 
-            $status =
-                $number <= $paidInstallments
-                    ? 'paid'
-                    : 'planned';
+            $status = $number <= $paidInstallments
+                ? 'paid'
+                : 'planned';
 
-            $paidDate =
-                $status === 'paid'
-                    ? $dueDate
-                    : null;
+            $paidDate = $status === 'paid'
+                ? $dueDate
+                : null;
 
             LoanPayment::create([
                 'loan_id' => $loan->id,
@@ -679,8 +828,16 @@ class LoanController extends Controller
 
                 'due_date' => $dueDate,
 
-                'amount' =>
-                    $loan->installment_amount,
+                'amount' => $payment['amount'],
+
+                'interest_amount' =>
+                    $payment['interest_amount'],
+
+                'principal_amount' =>
+                    $payment['principal_amount'],
+
+                'remaining_amount' =>
+                    $payment['remaining_amount'],
 
                 'payment_type' => 'regular',
 
