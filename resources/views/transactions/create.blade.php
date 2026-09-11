@@ -53,7 +53,7 @@
             </h2>
 
             <p class="text-slate-400 mt-2">
-                Erfasse eine Einnahme oder Ausgabe.
+                Erfasse eine Einnahme, Ausgabe oder Überweisung.
             </p>
 
         </div>
@@ -271,7 +271,7 @@
                             </label>
 
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                                 {{-- AUSGABE --}}
 
@@ -369,6 +369,56 @@
                                     </div>
 
                                 </label>
+
+
+                                {{-- ÜBERWEISUNG --}}
+
+                                <label class="cursor-pointer">
+
+                                    <input
+                                        type="radio"
+                                        name="type"
+                                        value="transfer"
+                                        class="peer sr-only"
+                                        @checked(old('type') === 'transfer')
+                                    >
+
+                                    <div
+                                        class="
+                                            rounded-2xl
+                                            border
+                                            border-slate-700
+                                            bg-slate-950/40
+                                            p-4
+                                            transition
+                                            hover:border-slate-500
+                                            peer-checked:border-blue-500
+                                            peer-checked:bg-blue-500/10
+                                        "
+                                    >
+
+                                        <div class="text-2xl">
+                                            ⇄
+                                        </div>
+
+                                        <p
+                                            class="
+                                                font-medium
+                                                text-slate-100
+                                                mt-2
+                                            "
+                                        >
+                                            Überweisung
+                                        </p>
+
+                                        <p class="text-xs text-slate-400 mt-1">
+                                            Geld zwischen Konten verschieben
+                                        </p>
+
+                                    </div>
+
+                                </label>
+
 
                             </div>
 
@@ -717,11 +767,83 @@
 
 
 
+
+                    {{-- ============================================= --}}
+                    {{-- ZIELKONTO BEI ÜBERWEISUNG --}}
+                    {{-- ============================================= --}}
+
+                    <div
+                        id="transfer-account-card"
+                        class="
+                            hidden
+                            rounded-3xl
+                            border
+                            border-blue-500/30
+                            bg-blue-500/5
+                            shadow-sm
+                            p-6
+                        "
+                    >
+
+                        <h3 class="font-semibold text-slate-100">
+                            Zielkonto
+                        </h3>
+
+                        <p class="text-sm text-slate-400 mt-1 mb-4">
+                            Auf welches Konto wird das Geld überwiesen?
+                        </p>
+
+                        <select
+                            name="transfer_account_id"
+                            id="transfer_account_id"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-700
+                                bg-slate-950/60
+                                px-4
+                                py-3
+                                text-sm
+                                text-slate-100
+                                focus:outline-none
+                                focus:border-blue-500
+                                focus:ring-2
+                                focus:ring-blue-500/30
+                                transition
+                            "
+                        >
+
+                            <option
+                                value=""
+                                class="bg-slate-900 text-slate-400"
+                            >
+                                Zielkonto auswählen
+                            </option>
+
+                            @foreach ($accounts as $account)
+
+                                <option
+                                    value="{{ $account->id }}"
+                                    class="bg-slate-900 text-slate-100"
+                                >
+                                    {{ $account->icon ?: '🏦' }}
+                                    {{ $account->name }}
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+
                     {{-- ============================================= --}}
                     {{-- KATEGORIE --}}
                     {{-- ============================================= --}}
 
                     <div
+                        id="category-card"
                         class="
                             rounded-3xl
                             border
@@ -1013,28 +1135,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const categorySelect =
         document.getElementById('category_id');
 
-    if (!typeInputs.length || !categorySelect) {
+    const categoryCard =
+        document.getElementById('category-card');
+
+    const transferAccountCard =
+        document.getElementById('transfer-account-card');
+
+    const transferAccountSelect =
+        document.getElementById('transfer_account_id');
+
+    const sourceAccountSelect =
+        document.getElementById('account_id');
+
+
+    if (!typeInputs.length) {
         return;
     }
 
 
-    const categories =
-        Array.from(categorySelect.options)
+    const categories = categorySelect
+        ? Array.from(categorySelect.options)
             .filter(option => option.dataset.type)
             .map(option => ({
                 id: option.value,
                 type: option.dataset.type,
                 name: option.dataset.name,
                 icon: option.dataset.icon
-            }));
+            }))
+        : [];
 
 
     const initialCategory =
-        categorySelect.value;
+        categorySelect
+            ? categorySelect.value
+            : '';
 
 
     function getSelectedType()
     {
+
         const selected =
             document.querySelector(
                 'input[name="type"]:checked'
@@ -1043,14 +1182,91 @@ document.addEventListener('DOMContentLoaded', function () {
         return selected
             ? selected.value
             : 'expense';
+
+    }
+
+
+    function updateTransferFields()
+    {
+
+        const selectedType =
+            getSelectedType();
+
+        const isTransfer =
+            selectedType === 'transfer';
+
+
+        if (transferAccountCard) {
+
+            transferAccountCard.classList.toggle(
+                'hidden',
+                !isTransfer
+            );
+
+        }
+
+
+        if (transferAccountSelect) {
+
+            transferAccountSelect.required =
+                isTransfer;
+
+            if (!isTransfer) {
+                transferAccountSelect.value = '';
+            }
+
+        }
+
+
+        if (categoryCard) {
+
+            categoryCard.classList.toggle(
+                'hidden',
+                isTransfer
+            );
+
+        }
+
+
+        if (categorySelect) {
+
+            categorySelect.required = false;
+
+            if (isTransfer) {
+                categorySelect.value = '';
+            }
+
+        }
+
+
+        if (sourceAccountSelect) {
+
+            sourceAccountSelect.required = true;
+
+        }
+
     }
 
 
     function updateCategories()
     {
 
+        if (!categorySelect) {
+            return;
+        }
+
+
         const selectedType =
             getSelectedType();
+
+
+        if (selectedType === 'transfer') {
+
+            categorySelect.value = '';
+
+            return;
+
+        }
 
 
         const currentValue =
@@ -1138,13 +1354,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         input.addEventListener(
             'change',
-            updateCategories
+            function () {
+                updateCategories();
+                updateTransferFields();
+            }
         );
 
     });
 
 
     updateCategories();
+    updateTransferFields();
 
 });
 

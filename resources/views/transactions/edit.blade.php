@@ -161,7 +161,7 @@
                         </label>
 
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
 
                             {{-- AUSGABE --}}
@@ -252,6 +252,52 @@
                                 </div>
 
                             </label>
+
+
+                            {{-- ÜBERWEISUNG --}}
+
+                            <label class="cursor-pointer">
+
+                                <input
+                                    type="radio"
+                                    name="type"
+                                    value="transfer"
+                                    class="peer sr-only"
+                                    @checked(
+                                        old('type', $transaction->type) === 'transfer'
+                                    )
+                                >
+
+                                <div
+                                    class="
+                                        rounded-2xl
+                                        border-2
+                                        border-slate-200 dark:border-slate-700
+                                        bg-white dark:bg-slate-800
+                                        p-4
+                                        transition
+                                        hover:bg-slate-50 dark:hover:bg-slate-700
+                                        peer-checked:border-blue-500
+                                        peer-checked:bg-blue-950/30
+                                    "
+                                >
+
+                                    <div class="text-2xl">
+                                        ⇄
+                                    </div>
+
+                                    <p class="font-medium text-slate-900 dark:text-white mt-2">
+                                        Überweisung
+                                    </p>
+
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                        Geld zwischen Konten verschieben
+                                    </p>
+
+                                </div>
+
+                            </label>
+
 
                         </div>
 
@@ -568,7 +614,79 @@
                 {{-- KATEGORIE --}}
                 {{-- ================================================= --}}
 
+                {{-- ================================================= --}}
+                {{-- ZIELKONTO BEI ÜBERWEISUNG --}}
+                {{-- ================================================= --}}
+
                 <div
+                    id="transfer-account-card"
+                    class="
+                        hidden
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-blue-50 dark:bg-blue-950/20
+                        rounded-3xl
+                        shadow-sm
+                        border border-blue-100 dark:border-blue-900
+                        p-6
+                    "
+                >
+
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Zielkonto
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Auf welches Konto wird das Geld überwiesen?
+                    </p>
+
+                    <select
+                        name="transfer_account_id"
+                        id="transfer_account_id"
+                        class="
+                            box-border
+                            w-full
+                            min-w-0
+                            rounded-xl
+                            border border-slate-200 dark:border-slate-700
+                            bg-white dark:bg-slate-800
+                            text-slate-900 dark:text-white
+                            px-4 py-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500/20
+                            focus:border-blue-500
+                        "
+                    >
+
+                        <option value="">
+                            Zielkonto auswählen
+                        </option>
+
+                        @foreach ($accounts as $account)
+
+                            <option
+                                value="{{ $account->id }}"
+                                @selected(
+                                    old(
+                                        'transfer_account_id',
+                                        $transaction->transfer_account_id
+                                    ) == $account->id
+                                )
+                            >
+                                {{ $account->icon ?: '🏦' }}
+                                {{ $account->name }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+<div
+                        id="category-card"
                     class="
                         w-full
                         min-w-0
@@ -893,26 +1011,46 @@ document.addEventListener('DOMContentLoaded', function () {
             'category_id'
         );
 
-    if (!typeInputs.length || !categorySelect) {
+    const categoryCard =
+        document.getElementById(
+            'category-card'
+        );
+
+    const transferAccountCard =
+        document.getElementById(
+            'transfer-account-card'
+        );
+
+    const transferAccountSelect =
+        document.getElementById(
+            'transfer_account_id'
+        );
+
+
+    if (!typeInputs.length) {
         return;
     }
 
 
     const categories =
-        Array.from(
-            categorySelect.options
-        )
-        .filter(option => option.dataset.type)
-        .map(option => ({
-            id: option.value,
-            type: option.dataset.type,
-            name: option.dataset.name,
-            icon: option.dataset.icon
-        }));
+        categorySelect
+            ? Array.from(
+                categorySelect.options
+            )
+            .filter(option => option.dataset.type)
+            .map(option => ({
+                id: option.value,
+                type: option.dataset.type,
+                name: option.dataset.name,
+                icon: option.dataset.icon
+            }))
+            : [];
 
 
     const initialCategory =
-        categorySelect.value;
+        categorySelect
+            ? categorySelect.value
+            : '';
 
 
     function getSelectedType()
@@ -930,11 +1068,73 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    function updateTransferFields()
+    {
+
+        const isTransfer =
+            getSelectedType() === 'transfer';
+
+
+        if (transferAccountCard) {
+
+            transferAccountCard.classList.toggle(
+                'hidden',
+                !isTransfer
+            );
+
+        }
+
+
+        if (transferAccountSelect) {
+
+            transferAccountSelect.required =
+                isTransfer;
+
+            if (!isTransfer) {
+                transferAccountSelect.value = '';
+            }
+
+        }
+
+
+        if (categoryCard) {
+
+            categoryCard.classList.toggle(
+                'hidden',
+                isTransfer
+            );
+
+        }
+
+
+        if (categorySelect && isTransfer) {
+
+            categorySelect.value = '';
+
+        }
+
+    }
+
+
     function updateCategories()
     {
 
+        if (!categorySelect) {
+            return;
+        }
+
+
         const selectedType =
             getSelectedType();
+
+
+        if (selectedType === 'transfer') {
+
+            categorySelect.value = '';
+
+            return;
+
+        }
 
 
         const currentValue =
@@ -1001,17 +1201,10 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
 
-        if (matchingOption) {
-
-            categorySelect.value =
-                currentValue;
-
-        } else {
-
-            categorySelect.value =
-                '';
-
-        }
+        categorySelect.value =
+            matchingOption
+                ? currentValue
+                : '';
 
     }
 
@@ -1020,13 +1213,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         input.addEventListener(
             'change',
-            updateCategories
+            function () {
+
+                updateCategories();
+                updateTransferFields();
+
+            }
         );
 
     });
 
 
     updateCategories();
+    updateTransferFields();
 
 });
 

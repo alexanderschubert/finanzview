@@ -28,6 +28,7 @@ class TransactionController extends Controller
             ->with([
                 'account',
                 'category',
+                'transferAccount',
             ])
             ->orderByDesc('transaction_date')
             ->orderByDesc('id');
@@ -63,7 +64,7 @@ class TransactionController extends Controller
 
             $type = $request->input('type');
 
-            if (in_array($type, ['income', 'expense'], true)) {
+            if (in_array($type, ['income', 'expense', 'transfer'], true)) {
 
                 $query->where('type', $type);
 

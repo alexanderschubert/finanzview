@@ -334,6 +334,13 @@
                         Einnahmen
                     </option>
 
+                    <option
+                        value="transfer"
+                        @selected(request('type') === 'transfer')
+                    >
+                        Überweisungen
+                    </option>
+
                 </select>
 
             </div>
@@ -710,7 +717,7 @@
                 </h3>
 
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Deine erfassten Einnahmen und Ausgaben
+                    Deine erfassten Einnahmen, Ausgaben und Überweisungen.
                 </p>
 
             </div>
@@ -834,10 +841,14 @@
                                         flex-shrink-0
                                         {{ $transaction->type === 'income'
                                             ? 'bg-emerald-50 dark:bg-emerald-950/40'
-                                            : 'bg-red-50 dark:bg-red-950/40' }}
+                                            : ($transaction->type === 'transfer'
+                                                ? 'bg-blue-50 dark:bg-blue-950/40'
+                                                : 'bg-red-50 dark:bg-red-950/40') }}
                                     "
                                 >
-                                    {{ $transaction->category?->icon ?: '💳' }}
+                                    {{ $transaction->type === 'transfer'
+                                        ? '⇄'
+                                        : ($transaction->category?->icon ?: '💳') }}
                                 </div>
 
 
@@ -911,7 +922,9 @@
 
                                             {{ $transaction->type === 'income'
                                                 ? '+'
-                                                : '-' }}
+                                                : ($transaction->type === 'transfer'
+                                                    ? ''
+                                                    : '-') }}
 
                                             {{ number_format(
                                                 $transaction->amount,
@@ -930,9 +943,22 @@
 
                                         <span class="text-xs text-slate-500 dark:text-slate-400">
 
-                                            {{ $transaction->account?->icon ?: '🏦' }}
+                                            @if ($transaction->type === 'transfer')
 
-                                            {{ $transaction->account?->name ?: 'Kein Konto' }}
+                                                {{ $transaction->account?->icon ?: '🏦' }}
+                                                {{ $transaction->account?->name ?: 'Kein Konto' }}
+
+                                                <span class="mx-1 text-blue-500">→</span>
+
+                                                {{ $transaction->transferAccount?->icon ?: '🏦' }}
+                                                {{ $transaction->transferAccount?->name ?: 'Kein Konto' }}
+
+                                            @else
+
+                                                {{ $transaction->account?->icon ?: '🏦' }}
+                                                {{ $transaction->account?->name ?: 'Kein Konto' }}
+
+                                            @endif
 
                                         </span>
 
@@ -996,10 +1022,14 @@
                                         flex-shrink-0
                                         {{ $transaction->type === 'income'
                                             ? 'bg-emerald-50 dark:bg-emerald-950/40'
-                                            : 'bg-red-50 dark:bg-red-950/40' }}
+                                            : ($transaction->type === 'transfer'
+                                                ? 'bg-blue-50 dark:bg-blue-950/40'
+                                                : 'bg-red-50 dark:bg-red-950/40') }}
                                     "
                                 >
-                                    {{ $transaction->category?->icon ?: '💳' }}
+                                    {{ $transaction->type === 'transfer'
+                                        ? '⇄'
+                                        : ($transaction->category?->icon ?: '💳') }}
                                 </div>
 
 
@@ -1095,9 +1125,22 @@
 
                             <div class="text-sm text-slate-600 dark:text-slate-300 truncate">
 
-                                {{ $transaction->account?->icon ?: '🏦' }}
+                                @if ($transaction->type === 'transfer')
 
-                                {{ $transaction->account?->name ?: 'Kein Konto' }}
+                                    {{ $transaction->account?->icon ?: '🏦' }}
+                                    {{ $transaction->account?->name ?: 'Kein Konto' }}
+
+                                    <span class="text-blue-500 mx-1">→</span>
+
+                                    {{ $transaction->transferAccount?->icon ?: '🏦' }}
+                                    {{ $transaction->transferAccount?->name ?: 'Kein Konto' }}
+
+                                @else
+
+                                    {{ $transaction->account?->icon ?: '🏦' }}
+                                    {{ $transaction->account?->name ?: 'Kein Konto' }}
+
+                                @endif
 
                             </div>
 
@@ -1120,13 +1163,17 @@
                                     whitespace-nowrap
                                     {{ $transaction->type === 'income'
                                         ? 'text-emerald-600 dark:text-emerald-400'
-                                        : 'text-red-600 dark:text-red-400' }}
+                                        : ($transaction->type === 'transfer'
+                                            ? 'text-blue-600 dark:text-blue-400'
+                                            : 'text-red-600 dark:text-red-400') }}
                                 "
                             >
 
                                 {{ $transaction->type === 'income'
                                     ? '+'
-                                    : '-' }}
+                                    : ($transaction->type === 'transfer'
+                                        ? ''
+                                        : '-') }}
 
                                 {{ number_format(
                                     $transaction->amount,
