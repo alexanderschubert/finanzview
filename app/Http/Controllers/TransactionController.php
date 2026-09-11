@@ -207,6 +207,12 @@ class TransactionController extends Controller
                 'exists:accounts,id',
             ],
 
+            'transfer_account_id' => [
+                'nullable',
+                'integer',
+                'exists:accounts,id',
+            ],
+
             'category_id' => [
                 'nullable',
                 'integer',
@@ -215,7 +221,7 @@ class TransactionController extends Controller
 
             'type' => [
                 'required',
-                'in:income,expense',
+                'in:income,expense,transfer',
             ],
 
             'amount' => [
@@ -280,6 +286,54 @@ class TransactionController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Transfer prüfen
+        |--------------------------------------------------------------------------
+        */
+
+        $transferAccountId = $validated['transfer_account_id'] ?? null;
+
+        if ($validated['type'] === 'transfer') {
+
+            if ($transferAccountId === null) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Bei einer Umbuchung muss ein Zielkonto ausgewählt werden.',
+                    ])
+                    ->withInput();
+            }
+
+            if ((int) $transferAccountId === (int) $validated['account_id']) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Quell- und Zielkonto dürfen nicht identisch sein.',
+                    ])
+                    ->withInput();
+            }
+
+            $transferAccountExists = Account::query()
+                ->whereKey($transferAccountId)
+                ->where('user_id', $user->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if (!$transferAccountExists) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Das ausgewählte Zielkonto ist ungültig.',
+                    ])
+                    ->withInput();
+            }
+
+        } else {
+            $transferAccountId = null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Kategorie prüfen
         |--------------------------------------------------------------------------
         */
@@ -337,6 +391,7 @@ class TransactionController extends Controller
 
         $transaction->user_id = $user->id;
         $transaction->account_id = $validated['account_id'];
+        $transaction->transfer_account_id = $transferAccountId;
         $transaction->category_id = $validated['category_id'] ?? null;
         $transaction->type = $validated['type'];
         $transaction->amount = $validated['amount'];
@@ -413,6 +468,12 @@ class TransactionController extends Controller
                 'exists:accounts,id',
             ],
 
+            'transfer_account_id' => [
+                'nullable',
+                'integer',
+                'exists:accounts,id',
+            ],
+
             'category_id' => [
                 'nullable',
                 'integer',
@@ -421,7 +482,7 @@ class TransactionController extends Controller
 
             'type' => [
                 'required',
-                'in:income,expense',
+                'in:income,expense,transfer',
             ],
 
             'amount' => [
@@ -486,6 +547,54 @@ class TransactionController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Transfer-Zielkonto prüfen
+        |--------------------------------------------------------------------------
+        */
+
+        $transferAccountId = $validated['transfer_account_id'] ?? null;
+
+        if ($validated['type'] === 'transfer') {
+
+            if ($transferAccountId === null) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Bei einer Umbuchung muss ein Zielkonto ausgewählt werden.',
+                    ])
+                    ->withInput();
+            }
+
+            if ((int) $transferAccountId === (int) $validated['account_id']) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Quell- und Zielkonto dürfen nicht identisch sein.',
+                    ])
+                    ->withInput();
+            }
+
+            $transferAccountExists = Account::query()
+                ->whereKey($transferAccountId)
+                ->where('user_id', $user->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if (!$transferAccountExists) {
+                return back()
+                    ->withErrors([
+                        'transfer_account_id' =>
+                            'Das ausgewählte Zielkonto ist ungültig.',
+                    ])
+                    ->withInput();
+            }
+
+        } else {
+            $transferAccountId = null;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Kategorie des Benutzers prüfen
         |--------------------------------------------------------------------------
         */
@@ -533,6 +642,7 @@ class TransactionController extends Controller
         */
 
         $transaction->account_id = $validated['account_id'];
+        $transaction->transfer_account_id = $transferAccountId;
         $transaction->category_id = $validated['category_id'] ?? null;
         $transaction->type = $validated['type'];
         $transaction->amount = $validated['amount'];

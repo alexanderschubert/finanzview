@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DashboardSetting;
+use App\Models\Transaction;
 use App\Services\BudgetService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -151,10 +152,21 @@ class DashboardController extends Controller
                     ->where('type', 'expense')
                     ->sum('amount');
 
+                $outgoingTransfers = $account->transactions()
+                    ->where('type', 'transfer')
+                    ->sum('amount');
+
+                $incomingTransfers = Transaction::query()
+                    ->where('transfer_account_id', $account->id)
+                    ->where('type', 'transfer')
+                    ->sum('amount');
+
                 $account->calculated_balance =
                     (float) $account->opening_balance
                     + (float) $income
-                    - (float) $expense;
+                    - (float) $expense
+                    - (float) $outgoingTransfers
+                    + (float) $incomingTransfers;
             }
         }
 
@@ -460,10 +472,62 @@ class DashboardController extends Controller
                     ->sum('amount');
 
 
+                /*
+                 * Transfers:
+                 *
+                 * Ein Transfer innerhalb der einbezogenen Konten
+                 * verändert das Gesamtvermögen nicht.
+                 *
+                 * Nur Transfers über die Grenze der einbezogenen
+                 * Konten verändern den Vermögenswert:
+                 *
+                 * - aus einem einbezogenen Konto heraus -> minus
+                 * - in ein einbezogenes Konto hinein -> plus
+                 */
+
+                $includedAccountIds = $includedAccounts
+                    ->pluck('id');
+
+                $transferOutUntil = Transaction::query()
+                    ->where('type', 'transfer')
+                    ->whereIn('account_id', $includedAccountIds)
+                    ->whereNotNull('transfer_account_id')
+                    ->whereNotIn(
+                        'transfer_account_id',
+                        $includedAccountIds
+                    )
+                    ->where(
+                        'transaction_date',
+                        '<=',
+                        $wealthEnd
+                    )
+                    ->sum('amount');
+
+                $transferInUntil = Transaction::query()
+                    ->where('type', 'transfer')
+                    ->whereNotNull('transfer_account_id')
+                    ->whereIn(
+                        'transfer_account_id',
+                        $includedAccountIds
+                    )
+                    ->whereNotIn(
+                        'account_id',
+                        $includedAccountIds
+                    )
+                    ->where(
+                        'transaction_date',
+                        '<=',
+                        $wealthEnd
+                    )
+                    ->sum('amount');
+
+
                 $wealthBalance =
                     $openingBalance
                     + $incomeUntil
-                    - $expenseUntil;
+                    - $expenseUntil
+                    - $transferOutUntil
+                    + $transferInUntil;
 
 
                 $wealthMonths->push([

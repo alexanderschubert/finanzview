@@ -58,18 +58,35 @@ class Account extends Model
     /**
      * Aktueller Kontostand.
      *
-     * Startsaldo + Einnahmen - Ausgaben
+     * Startsaldo
+     * + Einnahmen
+     * - Ausgaben
+     * - ausgehende Transfers
+     * + eingehende Transfers
      */
     public function getCurrentBalanceAttribute(): float
-{
-    $income = $this->transactions()
-        ->where('type', 'income')
-        ->sum('amount');
+    {
+        $income = $this->transactions()
+            ->where('type', 'income')
+            ->sum('amount');
 
-    $expenses = $this->transactions()
-        ->where('type', 'expense')
-        ->sum('amount');
+        $expenses = $this->transactions()
+            ->where('type', 'expense')
+            ->sum('amount');
 
-    return (float) $this->opening_balance + $income - $expenses;
-}
+        $outgoingTransfers = $this->transactions()
+            ->where('type', 'transfer')
+            ->sum('amount');
+
+        $incomingTransfers = Transaction::query()
+            ->where('transfer_account_id', $this->id)
+            ->where('type', 'transfer')
+            ->sum('amount');
+
+        return (float) $this->opening_balance
+            + (float) $income
+            - (float) $expenses
+            - (float) $outgoingTransfers
+            + (float) $incomingTransfers;
+    }
 }

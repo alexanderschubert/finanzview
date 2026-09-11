@@ -16,6 +16,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'account_id',
+        'transfer_account_id',
         'credit_card_id',
         'category_id',
         'type',
@@ -48,6 +49,14 @@ class Transaction extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    public function transferAccount(): BelongsTo
+    {
+        return $this->belongsTo(
+            Account::class,
+            'transfer_account_id'
+        );
     }
 
     public function creditCard(): BelongsTo
