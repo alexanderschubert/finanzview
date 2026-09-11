@@ -38,7 +38,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('recurring:process')->dailyAt('00:05');
+        // Wiederkehrende Buchungen
+        $schedule->command('recurring:process')
+            ->dailyAt('00:05');
+
+        // Kreditkartenabrechnungen
+        $schedule->command('credit-cards:generate-statements')
+            ->dailyAt('00:10');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

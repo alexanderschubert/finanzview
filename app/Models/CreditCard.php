@@ -55,4 +55,9 @@ class CreditCard extends Model
     {
         return $this->hasMany(CreditCardStatement::class);
     }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }
