@@ -172,7 +172,7 @@
         );
 
         $totalBalance = $includedAccounts->sum(
-            'calculated_balance'
+            fn ($account) => $account->current_balance
         );
 
     @endphp
@@ -658,14 +658,14 @@
                                         font-semibold
                                         tracking-tight
                                         mt-1
-                                        {{ $account->calculated_balance >= 0
+                                        {{ $account->current_balance >= 0
                                             ? 'text-slate-900 dark:text-white'
                                             : 'text-red-600 dark:text-red-400' }}
                                     "
                                 >
 
                                     {{ number_format(
-                                        $account->calculated_balance,
+                                        $account->current_balance,
                                         2,
                                         ',',
                                         '.'
