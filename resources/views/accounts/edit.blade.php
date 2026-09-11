@@ -810,7 +810,7 @@
                     <p class="text-2xl font-semibold mt-2">
 
                         {{ number_format(
-                            $account->calculated_balance,
+                            $account->current_balance,
                             2,
                             ',',
                             '.'
