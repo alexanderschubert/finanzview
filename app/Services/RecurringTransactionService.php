@@ -6,6 +6,7 @@ use App\Models\RecurringTransaction;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RecurringTransactionService
 {
@@ -41,6 +42,29 @@ class RecurringTransactionService
                 ->first();
 
             if (! $recurring || ! $recurring->is_active) {
+                return;
+            }
+
+            /*
+             * Keine Buchungen auf gelöschte oder deaktivierte Konten.
+             *
+             * Bewusst wird next_date NICHT weitergeschoben und die
+             * Vorlage NICHT deaktiviert: Wird das Konto wieder
+             * aktiviert/wiederhergestellt, werden die verpassten
+             * Termine nachgeholt. Gelöschte Konten werden per
+             * Soft-Delete ausgeblendet (account() liefert dann null).
+             */
+            $account = $recurring->account()->first();
+
+            if (! $account || ! $account->is_active) {
+                Log::info(
+                    'Wiederkehrende Buchung übersprungen: Konto gelöscht oder inaktiv.',
+                    [
+                        'recurring_transaction_id' => $recurring->id,
+                        'account_id' => $recurring->account_id,
+                    ]
+                );
+
                 return;
             }
 
@@ -112,7 +136,8 @@ class RecurringTransactionService
                  */
                 $nextDate = $this->calculateNextDate(
                     $recurring->next_date,
-                    $recurring->frequency
+                    $recurring->frequency,
+                    $recurring->anchor_day
                 );
 
                 /*
@@ -144,30 +169,47 @@ class RecurringTransactionService
 
     /**
      * Berechnet das nächste Ausführungsdatum.
+     *
+     * Monatliche, quartalsweise und jährliche Termine werden über
+     * den Ankertag berechnet, damit kein Tagesdrift entsteht:
+     * 31.01. -> 28.02. -> 31.03. bzw. 29.02.2028 -> 28.02.2029
+     * -> ... -> 29.02.2032.
      */
     private function calculateNextDate(
         Carbon $date,
-        string $frequency
+        string $frequency,
+        ?int $anchorDay = null
     ): Carbon {
 
-        return match ($frequency) {
-
-            'weekly' =>
-                $date->copy()->addWeek(),
-
-            'monthly' =>
-                $date->copy()->addMonthNoOverflow(),
-
-            'quarterly' =>
-                $date->copy()->addMonthsNoOverflow(3),
-
-            'yearly' =>
-                $date->copy()->addYearNoOverflow(),
-
+        $months = match ($frequency) {
+            'weekly' => null,
+            'monthly' => 1,
+            'quarterly' => 3,
+            'yearly' => 12,
             default =>
                 throw new \InvalidArgumentException(
                     "Unbekanntes Intervall: {$frequency}"
                 ),
         };
+
+        if ($months === null) {
+            return $date->copy()->addWeek();
+        }
+
+        $anchorDay = $anchorDay && $anchorDay >= 1 && $anchorDay <= 31
+            ? $anchorDay
+            : (int) $date->day;
+
+        /*
+         * Zuerst auf den Monatsersten setzen (kein Überlauf),
+         * dann den Ankertag auf die Monatslänge begrenzen.
+         */
+        $next = $date->copy()
+            ->startOfMonth()
+            ->addMonths($months);
+
+        return $next->day(
+            min($anchorDay, $next->daysInMonth)
+        );
     }
 }

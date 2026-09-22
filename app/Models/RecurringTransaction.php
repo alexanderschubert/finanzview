@@ -21,6 +21,7 @@ class RecurringTransaction extends Model
         'type',
         'frequency',
         'next_date',
+        'anchor_day',
         'end_date',
         'is_active',
     ];
@@ -30,9 +31,41 @@ class RecurringTransaction extends Model
         return [
             'amount' => 'decimal:2',
             'next_date' => 'date',
+            'anchor_day' => 'integer',
             'end_date' => 'date',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Ausführungstag (anchor_day) automatisch pflegen.
+     *
+     * Der Ankertag wird aus next_date übernommen, wenn noch keiner
+     * gesetzt ist oder next_date auf einen anderen Tag geändert
+     * wurde. Ein durch Monatsende gekürzter Termin (z. B. 28.02.
+     * bei Ankertag 31) ändert den Ankertag NICHT.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (RecurringTransaction $recurring) {
+            if (! $recurring->next_date) {
+                return;
+            }
+
+            if ($recurring->isDirty('anchor_day') && $recurring->anchor_day) {
+                return;
+            }
+
+            $day = (int) $recurring->next_date->day;
+            $anchor = (int) $recurring->anchor_day;
+
+            if (
+                $anchor < 1
+                || $day !== min($anchor, $recurring->next_date->daysInMonth)
+            ) {
+                $recurring->anchor_day = $day;
+            }
+        });
     }
 
     /**

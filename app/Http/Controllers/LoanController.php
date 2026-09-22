@@ -433,7 +433,26 @@ class LoanController extends Controller
         $validated['is_active'] =
             $request->boolean('is_active');
 
-        $loan->update($validated);
+        DB::transaction(function () use ($loan, $validated) {
+            $loan->fill($validated);
+
+            /*
+             * Felder, die den Tilgungsplan beeinflussen.
+             */
+            $scheduleChanged = $loan->isDirty([
+                'principal_amount',
+                'interest_rate',
+                'installment_amount',
+                'total_installments',
+                'start_date',
+            ]);
+
+            $loan->save();
+
+            if ($scheduleChanged) {
+                $this->rebuildPlannedPayments($loan->fresh());
+            }
+        });
 
         return redirect()
             ->route(
@@ -444,6 +463,38 @@ class LoanController extends Controller
                 'success',
                 'Kredit wurde aktualisiert.'
             );
+    }
+
+    /**
+     * Geplante (unbezahlte) Raten nach einer Änderung der
+     * Kreditdaten neu berechnen.
+     *
+     * - Gibt es noch keine bezahlten/stornierten Zahlungen,
+     *   wird der komplette Plan ab Startdatum neu erzeugt.
+     * - Andernfalls bleiben bezahlte Raten und Sondertilgungen
+     *   unverändert; nur die zukünftigen geplanten Raten werden
+     *   (wie nach einer Sondertilgung) ab der Restschuld neu
+     *   berechnet.
+     */
+    private function rebuildPlannedPayments(
+        Loan $loan
+    ): void {
+        $hasHistory = $loan->payments()
+            ->where('status', '!=', 'planned')
+            ->exists();
+
+        if (! $hasHistory) {
+            $loan->payments()
+                ->where('status', 'planned')
+                ->where('payment_type', 'regular')
+                ->delete();
+
+            $this->generatePaymentPlan($loan);
+
+            return;
+        }
+
+        $this->regenerateFuturePaymentPlan($loan);
     }
 
     /**
@@ -740,9 +791,11 @@ class LoanController extends Controller
                 ->value('due_date');
 
             if ($lastRegularDueDate) {
-                $nextDueDate = \Carbon\Carbon::parse(
-                    $lastRegularDueDate
-                )->addMonth();
+                $nextDueDate = $this->scheduledDueDate(
+                    $loan,
+                    \Carbon\Carbon::parse($lastRegularDueDate),
+                    1
+                );
             } elseif ($loan->start_date) {
                 $nextDueDate = $loan->start_date->copy();
             } else {
@@ -778,9 +831,11 @@ class LoanController extends Controller
              * auch wenn Nummern wegen Sondertilgungen übersprungen
              * werden müssen.
              */
-            $dueDate = $nextDueDate
-                ->copy()
-                ->addMonths($index);
+            $dueDate = $this->scheduledDueDate(
+                $loan,
+                $nextDueDate,
+                $index
+            );
 
             LoanPayment::create([
                 'loan_id' => $loan->id,
@@ -873,9 +928,13 @@ class LoanController extends Controller
                 continue;
             }
 
+            /*
+             * Immer vom Startdatum aus rechnen und ohne Überlauf:
+             * 31.01. -> 28.02. -> 31.03. (nicht 03.03.).
+             */
             $dueDate = $startDate
                 ->copy()
-                ->addMonths($number - 1);
+                ->addMonthsNoOverflow($number - 1);
 
             $status = $number <= $paidInstallments
                 ? 'paid'
@@ -912,6 +971,38 @@ class LoanController extends Controller
                 'status' => $status,
             ]);
         }
+    }
+
+    /**
+     * Fälligkeitsdatum einer Rate berechnen.
+     *
+     * Der Monatsabstand wird immer vom Startdatum des Kredits aus
+     * ohne Überlauf gerechnet. Dadurch springt der Zahltag nach
+     * kurzen Monaten wieder auf den ursprünglichen Tag zurück
+     * (31.01. -> 28.02. -> 31.03.).
+     *
+     * $base ist ein bereits bekannter Termin des Plans,
+     * $index die Anzahl Monate danach.
+     */
+    private function scheduledDueDate(
+        Loan $loan,
+        \Carbon\Carbon $base,
+        int $index
+    ): \Carbon\Carbon {
+        if ($loan->start_date) {
+            $start = $loan->start_date->copy()->startOfDay();
+
+            $offset = ($base->year - $start->year) * 12
+                + ($base->month - $start->month);
+
+            if ($offset >= 0) {
+                return $start->addMonthsNoOverflow(
+                    $offset + $index
+                );
+            }
+        }
+
+        return $base->copy()->addMonthsNoOverflow($index);
     }
 
     /**
