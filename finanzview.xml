@@ -8,11 +8,11 @@
 
   <Support>https://gitea.alxserver.de/alexander/finanzblick</Support>
 
-  <Project>Finanzblick</Project>
+  <Project>FinanzView</Project>
   <Overview>
-    Finanzblick – persönliche Finanzverwaltung auf Basis von Laravel.
+    FinanzView – persönliche Finanzverwaltung auf Basis von Laravel.
 
-    Dieses Template verwendet das fertige Finanzblick Docker Image aus der
+    Dieses Template verwendet das fertige FinanzView Docker Image aus der
     privaten Gitea Container Registry.
 
     PostgreSQL wird separat betrieben und über die DB_* Variablen konfiguriert.
@@ -22,7 +22,7 @@
 
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
 
-  <TemplateURL>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/finanzblick.xml</TemplateURL>
+  <TemplateURL>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/finanzview.xml</TemplateURL>
 
   <Icon>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/public/favicon.ico</Icon>
 
@@ -30,7 +30,7 @@
           Target="80"
           Default="8080"
           Mode="tcp"
-          Description="Port für die Finanzblick Weboberfläche."
+          Description="Port für die FinanzView Weboberfläche."
           Type="Port"
           Display="always"
           Required="true"
@@ -40,7 +40,7 @@
           Target="APP_URL"
           Default="http://[IP]:[PORT:8080]"
           Mode=""
-          Description="Öffentliche URL von Finanzblick. Bei Verwendung eines Reverse Proxy z.B. https://finanzblick.alxserver.de"
+          Description="Öffentliche URL von FinanzView. Bei Verwendung eines Reverse Proxy z.B. https://finanzblick.alxserver.de"
           Type="Variable"
           Display="always"
           Required="true"
@@ -120,7 +120,7 @@
           Target="TZ"
           Default="Europe/Berlin"
           Mode=""
-          Description="Zeitzone für Finanzblick."
+          Description="Zeitzone für FinanzView."
           Type="Variable"
           Display="always"
           Required="true"

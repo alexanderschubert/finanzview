@@ -4,7 +4,7 @@ set -eu
 cd /var/www/html
 
 echo "========================================"
-echo " Finanzblick – Container Start"
+echo " FinanzView – Container Start"
 echo "========================================"
 
 mkdir -p \
@@ -87,7 +87,7 @@ fi
 # ---------------------------------------------------------
 
 echo "========================================"
-echo " Finanzblick ist bereit"
+echo " FinanzView ist bereit"
 echo "========================================"
 
 exec "$@"

@@ -115,7 +115,7 @@ COPY --from=frontend /var/www/html/public/build ./public/build
 # ---------------------------------------------------------
 
 COPY docker/php/php.ini \
-    /usr/local/etc/php/conf.d/99-finanzblick.ini
+    /usr/local/etc/php/conf.d/99-finanzview.ini
 
 
 # ---------------------------------------------------------
@@ -137,7 +137,7 @@ RUN rm -f \
 # ---------------------------------------------------------
 
 COPY docker/nginx/default.conf \
-    /etc/nginx/conf.d/finanzblick.conf
+    /etc/nginx/conf.d/finanzview.conf
 
 
 # ---------------------------------------------------------
@@ -153,14 +153,14 @@ COPY docker/supervisord.conf \
 # ---------------------------------------------------------
 
 COPY docker/entrypoint.sh \
-    /usr/local/bin/finanzblick-entrypoint
+    /usr/local/bin/finanzview-entrypoint
 
 
 # ---------------------------------------------------------
 # Verzeichnisse und Berechtigungen
 # ---------------------------------------------------------
 
-RUN chmod +x /usr/local/bin/finanzblick-entrypoint \
+RUN chmod +x /usr/local/bin/finanzview-entrypoint \
     && mkdir -p \
         storage/framework/cache \
         storage/framework/sessions \
@@ -183,6 +183,6 @@ EXPOSE 80
 # Start
 # ---------------------------------------------------------
 
-ENTRYPOINT ["finanzblick-entrypoint"]
+ENTRYPOINT ["finanzview-entrypoint"]
 
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

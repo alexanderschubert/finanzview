@@ -103,7 +103,7 @@ FinanzView kann containerisiert betrieben werden und eignet sich dadurch besonde
 Eine vereinfachte Struktur des Projekts:
 
 ```text
-finanzblick/
+finanzview/
 ├── app/
 │   ├── Http/
 │   │   └── Controllers/
