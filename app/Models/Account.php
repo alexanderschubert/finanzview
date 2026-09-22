@@ -66,27 +66,30 @@ class Account extends Model
      */
     public function getCurrentBalanceAttribute(): float
     {
-        $income = $this->transactions()
-            ->where('type', 'income')
-            ->sum('amount');
+        /*
+         * Eine einzige Abfrage statt vier: Summen per CASE
+         * über alle Buchungen, an denen das Konto beteiligt ist.
+         * Soft-gelöschte Buchungen werden ignoriert.
+         */
+        $sums = Transaction::query()
+            ->where(function ($query) {
+                $query->where('account_id', $this->id)
+                    ->orWhere('transfer_account_id', $this->id);
+            })
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN account_id = ? AND type = 'income' THEN amount ELSE 0 END), 0) AS income,
+                 COALESCE(SUM(CASE WHEN account_id = ? AND type IN ('expense', 'transfer') THEN amount ELSE 0 END), 0) AS outgoing,
+                 COALESCE(SUM(CASE WHEN transfer_account_id = ? AND type = 'transfer' THEN amount ELSE 0 END), 0) AS incoming",
+                [$this->id, $this->id, $this->id]
+            )
+            ->first();
 
-        $expenses = $this->transactions()
-            ->where('type', 'expense')
-            ->sum('amount');
-
-        $outgoingTransfers = $this->transactions()
-            ->where('type', 'transfer')
-            ->sum('amount');
-
-        $incomingTransfers = Transaction::query()
-            ->where('transfer_account_id', $this->id)
-            ->where('type', 'transfer')
-            ->sum('amount');
-
-        return (float) $this->opening_balance
-            + (float) $income
-            - (float) $expenses
-            - (float) $outgoingTransfers
-            + (float) $incomingTransfers;
+        return round(
+            (float) $this->opening_balance
+                + (float) $sums->income
+                - (float) $sums->outgoing
+                + (float) $sums->incoming,
+            2
+        );
     }
 }

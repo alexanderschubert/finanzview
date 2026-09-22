@@ -143,30 +143,8 @@ class DashboardController extends Controller
                 ->get();
 
             foreach ($accounts as $account) {
-
-                $income = $account->transactions()
-                    ->where('type', 'income')
-                    ->sum('amount');
-
-                $expense = $account->transactions()
-                    ->where('type', 'expense')
-                    ->sum('amount');
-
-                $outgoingTransfers = $account->transactions()
-                    ->where('type', 'transfer')
-                    ->sum('amount');
-
-                $incomingTransfers = Transaction::query()
-                    ->where('transfer_account_id', $account->id)
-                    ->where('type', 'transfer')
-                    ->sum('amount');
-
                 $account->calculated_balance =
-                    (float) $account->opening_balance
-                    + (float) $income
-                    - (float) $expense
-                    - (float) $outgoingTransfers
-                    + (float) $incomingTransfers;
+                    $account->current_balance;
             }
         }
 
@@ -442,6 +420,13 @@ class DashboardController extends Controller
             $openingBalance = $includedAccounts
                 ->sum('opening_balance');
 
+            /*
+             * Nur die Konten, die auch im Gesamtvermögen
+             * enthalten sind (aktiv + include_in_total).
+             */
+            $includedAccountIds = $includedAccounts
+                ->pluck('id');
+
 
             for ($i = 5; $i >= 0; $i--) {
 
@@ -453,6 +438,7 @@ class DashboardController extends Controller
 
 
                 $incomeUntil = $user->transactions()
+                    ->whereIn('account_id', $includedAccountIds)
                     ->where('type', 'income')
                     ->where(
                         'transaction_date',
@@ -463,6 +449,7 @@ class DashboardController extends Controller
 
 
                 $expenseUntil = $user->transactions()
+                    ->whereIn('account_id', $includedAccountIds)
                     ->where('type', 'expense')
                     ->where(
                         'transaction_date',
@@ -484,9 +471,6 @@ class DashboardController extends Controller
                  * - aus einem einbezogenen Konto heraus -> minus
                  * - in ein einbezogenes Konto hinein -> plus
                  */
-
-                $includedAccountIds = $includedAccounts
-                    ->pluck('id');
 
                 $transferOutUntil = Transaction::query()
                     ->where('type', 'transfer')

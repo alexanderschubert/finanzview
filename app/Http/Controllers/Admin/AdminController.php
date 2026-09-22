@@ -180,9 +180,9 @@ class AdminController extends Controller
             return back()->with('error', 'Der letzte aktive Administrator kann nicht deaktiviert werden.');
         }
 
-        $user->update([
+        $user->forceFill([
             'is_active' => ! $user->is_active,
-        ]);
+        ])->save();
 
         return back()->with(
             'success',
@@ -212,9 +212,9 @@ class AdminController extends Controller
             return back()->with('error', 'Der letzte Administrator kann nicht entfernt werden.');
         }
 
-        $user->update([
+        $user->forceFill([
             'is_admin' => ! $user->is_admin,
-        ]);
+        ])->save();
 
         return back()->with(
             'success',

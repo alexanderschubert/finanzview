@@ -20,8 +20,6 @@ class User extends Authenticatable
         'email',
         'password',
         'theme',
-        'is_admin',
-        'is_active',
         'last_login_at',
     ];
 
