@@ -53,6 +53,19 @@ FinanzView unterstützt verschiedene Budgetarten:
 
 Die Berechnung der Budgets erfolgt zentral über den `BudgetService`, damit Dashboard, Budgetübersicht und Budgetdetails dieselbe Berechnungslogik verwenden.
 
+### 📈 Analysen
+
+- Zeiträume: dieser/letzter Monat, letzte 3/6/12 Monate, dieses/letztes Jahr oder frei wählbar
+- Filter nach Konto
+- Einnahmen, Ausgaben, Saldo und Sparquote mit Vergleich zur Vorperiode
+- Monatsverlauf von Einnahmen und Ausgaben
+- Ausgaben und Einnahmen nach Kategorie inkl. Anteil und Veränderung
+- Heatmap: Ausgaben je Kategorie und Monat
+- Top-Händler und größte Einzelausgaben
+- Export als CSV (Excel-kompatibel) sowie Druck/PDF über den Browser
+
+Umbuchungen zwischen eigenen Konten zählen nicht als Einnahme oder Ausgabe. Die Berechnung erfolgt im `ReportService`.
+
 ### 📊 Dashboard
 
 Das Dashboard soll einen schnellen Überblick über die persönliche finanzielle Situation ermöglichen.

@@ -116,6 +116,7 @@
 
     <aside
         class="
+            print:hidden
             hidden
             lg:flex
             w-64
@@ -322,28 +323,48 @@
             </a>
 
 
-            {{-- ANALYSEN --}}
+            {{-- KREDITKARTEN --}}
 
             <a
-                href="#"
+                href="{{ route('credit-cards.index') }}"
                 class="
                     flex items-center gap-3
                     px-4 py-3
                     rounded-xl
-                    text-sm
-                    font-medium
-                    text-slate-500
-                    cursor-not-allowed
+                    text-sm font-medium
+                    transition
+                    {{ request()->routeIs('credit-cards.*')
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
+                "
+            >
+
+                <span class="text-lg">🪪</span>
+
+                <span>Kreditkarten</span>
+
+            </a>
+
+
+            {{-- ANALYSEN --}}
+
+            <a
+                href="{{ route('reports.index') }}"
+                class="
+                    flex items-center gap-3
+                    px-4 py-3
+                    rounded-xl
+                    text-sm font-medium
+                    transition
+                    {{ request()->routeIs('reports.*')
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white' }}
                 "
             >
 
                 <span class="text-lg">📊</span>
 
                 <span>Analysen</span>
-
-                <span class="ml-auto text-[10px] text-slate-600">
-                    BALD
-                </span>
 
             </a>
 
@@ -533,6 +554,7 @@
 
         <header
             class="
+                print:hidden
                 h-20
                 flex-shrink-0
                 bg-white
@@ -920,6 +942,7 @@
 
         <div
             class="
+                print:hidden
                 lg:hidden
                 flex-shrink-0
                 bg-white
@@ -1028,6 +1051,38 @@
                     "
                 >
                     💳 Kredite
+                </a>
+
+
+                <a
+                    href="{{ route('credit-cards.index') }}"
+                    class="
+                        whitespace-nowrap
+                        px-4 py-2
+                        rounded-xl
+                        text-sm font-medium
+                        {{ request()->routeIs('credit-cards.*')
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
+                    "
+                >
+                    🪪 Kreditkarten
+                </a>
+
+
+                <a
+                    href="{{ route('reports.index') }}"
+                    class="
+                        whitespace-nowrap
+                        px-4 py-2
+                        rounded-xl
+                        text-sm font-medium
+                        {{ request()->routeIs('reports.*')
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' }}
+                    "
+                >
+                    📊 Analysen
                 </a>
 
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardSettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\CreditCardController;
+use App\Http\Controllers\ReportController;
 
 
 /*
@@ -160,6 +161,17 @@ Route::delete('/credit-cards/{creditCard}', [
         DashboardController::class,
         'index',
     ])->name('dashboard');
+
+
+    Route::get('/reports', [
+        ReportController::class,
+        'index',
+    ])->name('reports.index');
+
+    Route::get('/reports/export', [
+        ReportController::class,
+        'export',
+    ])->name('reports.export');
 
 
       Route::get('/settings/data-export', [
