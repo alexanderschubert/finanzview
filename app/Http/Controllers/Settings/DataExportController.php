@@ -135,7 +135,13 @@ class DataExportController extends Controller
     {
         $user = $request->user();
 
+        /*
+         * Gelöschte (soft-deleted) Konten werden mit exportiert,
+         * da ihre Transaktionen erhalten bleiben und sonst beim
+         * Restore auf ein unbekanntes Konto verweisen würden.
+         */
         $accounts = $user->accounts()
+            ->withTrashed()
             ->get()
             ->map(fn ($item) => $item->only([
                 'id',
@@ -153,6 +159,7 @@ class DataExportController extends Controller
                 'notes',
                 'include_in_total',
                 'is_active',
+                'deleted_at',
             ]));
 
         $categories = $user->categories()
@@ -183,6 +190,8 @@ class DataExportController extends Controller
                     $item->only([
                         'id',
                         'account_id',
+                        'transfer_account_id',
+                        'credit_card_id',
                         'category_id',
                         'type',
                         'amount',
@@ -643,6 +652,14 @@ class DataExportController extends Controller
         $loanMap = [];
 
         /*
+         * Bereits in diesem Restore verwendete Transaktions-IDs
+         * (als Schlüssel) sowie neu angelegte Transaktionen
+         * (Backup-ID => neue ID).
+         */
+        $matchedTransactionIds = [];
+        $newTransactionIds = [];
+
+        /*
          * =========================================================
          * HELPERS
          * =========================================================
@@ -738,6 +755,13 @@ class DataExportController extends Controller
                 'include_in_total' =>
                     $item['include_in_total'] ?? true,
                 'is_active' => $item['is_active'] ?? true,
+                /*
+                 * Gelöschte Konten bleiben gelöscht.
+                 * Ältere Backups enthalten kein deleted_at.
+                 */
+                'deleted_at' => $isFilled($item['deleted_at'] ?? null)
+                    ? \Illuminate\Support\Carbon::parse($item['deleted_at'])
+                    : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -900,6 +924,23 @@ class DataExportController extends Controller
                 );
             }
 
+            /*
+             * Zielkonto bei Transfers.
+             * Ältere Backups enthalten transfer_account_id nicht.
+             */
+            $transferAccountId = null;
+
+            if ($isFilled($item['transfer_account_id'] ?? null)) {
+                $transferAccountId =
+                    $accountMap[$item['transfer_account_id']] ?? null;
+
+                if (!$transferAccountId) {
+                    throw new \RuntimeException(
+                        'Eine Transaktion verweist auf ein unbekanntes Zielkonto.'
+                    );
+                }
+            }
+
             $query = DB::table('transactions')
                 ->where('user_id', $user->id)
                 ->where('account_id', $accountId)
@@ -926,10 +967,33 @@ class DataExportController extends Controller
                 $query->whereNull('reference');
             }
 
-            $existing = $query->first();
+            if ($transferAccountId) {
+                $query->where(
+                    'transfer_account_id',
+                    $transferAccountId
+                );
+            } else {
+                $query->whereNull('transfer_account_id');
+            }
+
+            /*
+             * Bereits in diesem Restore zugeordnete Transaktionen
+             * ausschließen, damit identische Buchungen (z. B. zwei
+             * gleiche Kaffees am selben Tag) nicht zu einer
+             * einzigen zusammenfallen.
+             */
+            if (!empty($matchedTransactionIds)) {
+                $query->whereNotIn(
+                    'id',
+                    array_keys($matchedTransactionIds)
+                );
+            }
+
+            $existing = $query->orderBy('id')->first();
 
             if ($existing) {
                 $transactionMap[$item['id']] = $existing->id;
+                $matchedTransactionIds[$existing->id] = true;
                 continue;
             }
 
@@ -948,11 +1012,14 @@ class DataExportController extends Controller
                 'is_pending' => $item['is_pending'] ?? false,
                 'is_recurring' => $item['is_recurring'] ?? false,
                 'recurring_transaction_id' => $recurringId,
+                'transfer_account_id' => $transferAccountId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
             $transactionMap[$item['id']] = $newId;
+            $matchedTransactionIds[$newId] = true;
+            $newTransactionIds[$item['id']] = $newId;
             $result['transactions']++;
         }
 
@@ -1181,6 +1248,46 @@ class DataExportController extends Controller
                     $result['credit_card_statements']++;
                 }
             }
+        }
+
+        /*
+         * =========================================================
+         * TRANSACTION CREDIT CARDS
+         * =========================================================
+         *
+         * Kreditkarten werden erst nach den Transaktionen
+         * wiederhergestellt. Daher wird credit_card_id für neu
+         * angelegte Transaktionen hier nachgetragen.
+         */
+
+        foreach ($payload['transactions'] as $item) {
+            if (!is_array($item) || empty($item['id'])) {
+                continue;
+            }
+
+            $transactionId =
+                $newTransactionIds[$item['id']] ?? null;
+
+            if (!$transactionId) {
+                continue;
+            }
+
+            if (!$isFilled($item['credit_card_id'] ?? null)) {
+                continue;
+            }
+
+            $creditCardId =
+                $creditCardMap[$item['credit_card_id']] ?? null;
+
+            if (!$creditCardId) {
+                continue;
+            }
+
+            DB::table('transactions')
+                ->where('id', $transactionId)
+                ->update([
+                    'credit_card_id' => $creditCardId,
+                ]);
         }
 
         /*
