@@ -22,9 +22,24 @@ chown -R www-data:www-data \
 # APP_KEY
 # ---------------------------------------------------------
 
+# Ohne APP_KEY wird ein Key erzeugt und im Storage-Volume
+# gespeichert, damit er Neustarts überlebt. Besser ist es,
+# APP_KEY fest in der Container-Konfiguration zu setzen.
+
 if [ -z "${APP_KEY:-}" ]; then
-    echo "APP_KEY fehlt – generiere neuen Application Key"
-    php artisan key:generate --force
+    KEY_FILE=storage/app/.app_key
+
+    if [ ! -s "$KEY_FILE" ]; then
+        echo "APP_KEY fehlt – erzeuge neuen Key in $KEY_FILE"
+        mkdir -p storage/app
+        php -r 'echo "base64:" . base64_encode(random_bytes(32));' > "$KEY_FILE"
+        chmod 600 "$KEY_FILE"
+    else
+        echo "APP_KEY fehlt – verwende gespeicherten Key aus $KEY_FILE"
+    fi
+
+    APP_KEY="$(cat "$KEY_FILE")"
+    export APP_KEY
 else
     echo "APP_KEY vorhanden – verwende bestehenden Key"
 fi
@@ -81,6 +96,18 @@ php artisan view:clear
 if [ ! -L public/storage ]; then
     php artisan storage:link || true
 fi
+
+# ---------------------------------------------------------
+# Berechtigungen
+# ---------------------------------------------------------
+
+# Artisan lief oben als root. Dateien, die dabei entstanden
+# sind (z. B. storage/logs/laravel.log), gehören sonst root
+# und der Webserver (www-data) kann nicht mehr hineinschreiben.
+
+chown -R www-data:www-data \
+    storage \
+    bootstrap/cache
 
 # ---------------------------------------------------------
 # Start
