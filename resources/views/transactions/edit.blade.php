@@ -685,6 +685,84 @@
 
                 </div>
 
+                {{-- ================================================= --}}
+                {{-- KREDITKARTE (optional, nicht bei Umbuchungen) --}}
+                {{-- ================================================= --}}
+
+                @if ($creditCards->isNotEmpty())
+
+                <div
+                    id="credit-card-card"
+                    class="
+                        w-full
+                        min-w-0
+                        box-border
+                        bg-white dark:bg-slate-900
+                        rounded-3xl
+                        shadow-sm
+                        border border-slate-100 dark:border-slate-800
+                        p-6
+                    "
+                >
+
+                    <h3 class="font-semibold text-slate-900 dark:text-white">
+                        Kreditkarte
+                    </h3>
+
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Optional: Mit welcher Kreditkarte wurde bezahlt?
+                        Die Buchung fließt dann in die Kreditkartenabrechnung ein.
+                    </p>
+
+                    <select
+                        name="credit_card_id"
+                        id="credit_card_id"
+                        class="
+                            box-border
+                            w-full
+                            min-w-0
+                            rounded-xl
+                            border border-slate-200 dark:border-slate-700
+                            bg-white dark:bg-slate-800
+                            text-slate-900 dark:text-white
+                            px-4 py-3
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500/20
+                            focus:border-blue-500
+                        "
+                    >
+
+                        <option value="">
+                            Keine Kreditkarte
+                        </option>
+
+                        @foreach ($creditCards as $creditCard)
+
+                            <option
+                                value="{{ $creditCard->id }}"
+                                @selected(
+                                    old(
+                                        'credit_card_id',
+                                        $transaction->credit_card_id
+                                    ) == $creditCard->id
+                                )
+                            >
+                                💳
+                                {{ $creditCard->name }}@if ($creditCard->last_four) (•••• {{ $creditCard->last_four }})@endif
+                                @unless ($creditCard->is_active)
+                                    (inaktiv)
+                                @endunless
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                @endif
+
 <div
                         id="category-card"
                     class="
@@ -1026,6 +1104,16 @@ document.addEventListener('DOMContentLoaded', function () {
             'transfer_account_id'
         );
 
+    const creditCardCard =
+        document.getElementById(
+            'credit-card-card'
+        );
+
+    const creditCardSelect =
+        document.getElementById(
+            'credit_card_id'
+        );
+
 
     if (!typeInputs.length) {
         return;
@@ -1110,6 +1198,24 @@ document.addEventListener('DOMContentLoaded', function () {
         if (categorySelect && isTransfer) {
 
             categorySelect.value = '';
+
+        }
+
+
+        // Kreditkarte nur bei Einnahmen/Ausgaben
+        if (creditCardCard) {
+
+            creditCardCard.classList.toggle(
+                'hidden',
+                isTransfer
+            );
+
+        }
+
+
+        if (creditCardSelect && isTransfer) {
+
+            creditCardSelect.value = '';
 
         }
 

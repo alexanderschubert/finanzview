@@ -919,6 +919,84 @@
 
 
                     {{-- ============================================= --}}
+                    {{-- KREDITKARTE (optional, nicht bei Umbuchungen) --}}
+                    {{-- ============================================= --}}
+
+                    @if ($creditCards->isNotEmpty())
+
+                    <div
+                        id="credit-card-card"
+                        class="
+                            rounded-3xl
+                            border
+                            border-slate-700
+                            bg-slate-900/70
+                            shadow-sm
+                            p-6
+                        "
+                    >
+
+                        <h3 class="font-semibold text-slate-100">
+                            Kreditkarte
+                        </h3>
+
+                        <p class="text-sm text-slate-400 mt-1 mb-4">
+                            Optional: Mit welcher Kreditkarte wurde bezahlt?
+                            Die Buchung fließt dann in die Kreditkartenabrechnung ein.
+                        </p>
+
+                        <select
+                            name="credit_card_id"
+                            id="credit_card_id"
+                            class="
+                                w-full
+                                rounded-xl
+                                border
+                                border-slate-700
+                                bg-slate-950/60
+                                px-4
+                                py-3
+                                text-sm
+                                text-slate-100
+                                focus:outline-none
+                                focus:border-slate-500
+                                focus:ring-2
+                                focus:ring-slate-500/30
+                                transition
+                            "
+                        >
+
+                            <option
+                                value=""
+                                class="bg-slate-900 text-slate-400"
+                            >
+                                Keine Kreditkarte
+                            </option>
+
+                            @foreach ($creditCards as $creditCard)
+
+                                <option
+                                    value="{{ $creditCard->id }}"
+                                    @selected(
+                                        old('credit_card_id') == $creditCard->id
+                                    )
+                                    class="bg-slate-900 text-slate-100"
+                                >
+                                    💳
+                                    {{ $creditCard->name }}@if ($creditCard->last_four) (•••• {{ $creditCard->last_four }})@endif
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+                    @endif
+
+
+
+                    {{-- ============================================= --}}
                     {{-- DATUM --}}
                     {{-- ============================================= --}}
 
@@ -1147,6 +1225,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const sourceAccountSelect =
         document.getElementById('account_id');
 
+    const creditCardCard =
+        document.getElementById('credit-card-card');
+
+    const creditCardSelect =
+        document.getElementById('credit_card_id');
+
 
     if (!typeInputs.length) {
         return;
@@ -1242,6 +1326,24 @@ document.addEventListener('DOMContentLoaded', function () {
         if (sourceAccountSelect) {
 
             sourceAccountSelect.required = true;
+
+        }
+
+
+        // Kreditkarte nur bei Einnahmen/Ausgaben
+        if (creditCardCard) {
+
+            creditCardCard.classList.toggle(
+                'hidden',
+                isTransfer
+            );
+
+        }
+
+
+        if (creditCardSelect && isTransfer) {
+
+            creditCardSelect.value = '';
 
         }
 

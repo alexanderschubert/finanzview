@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\CreditCard;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class TransactionController extends Controller
 {
@@ -179,9 +181,12 @@ class TransactionController extends Controller
             ->orderBy('name')
             ->get();
 
+        $creditCards = $this->creditCardsFor($user->id);
+
         return view('transactions.create', compact(
             'accounts',
-            'categories'
+            'categories',
+            'creditCards'
         ));
     }
 
@@ -256,6 +261,17 @@ class TransactionController extends Controller
             'is_pending' => [
                 'nullable',
                 'boolean',
+            ],
+
+            // Optionale Kreditkarte: muss dem Benutzer gehören
+            // und aktiv sein.
+            'credit_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('credit_cards', 'id')
+                    ->where('user_id', $user->id)
+                    ->where('is_active', true)
+                    ->whereNull('deleted_at'),
             ],
 
         ]);
@@ -402,6 +418,12 @@ class TransactionController extends Controller
         $transaction->notes = $validated['notes'] ?? null;
         $transaction->is_pending = $request->boolean('is_pending');
 
+        // Kreditkarte nur bei Einnahmen/Ausgaben, nie bei Umbuchungen.
+        $transaction->credit_card_id =
+            $validated['type'] === 'transfer'
+                ? null
+                : ($validated['credit_card_id'] ?? null);
+
         $transaction->save();
 
 
@@ -439,10 +461,18 @@ class TransactionController extends Controller
             ->get();
 
 
+        // Aktive Kreditkarten plus ggf. die aktuell verknüpfte
+        // (auch wenn diese inzwischen deaktiviert wurde).
+        $creditCards = $this->creditCardsFor(
+            $user->id,
+            $transaction->credit_card_id
+        );
+
         return view('transactions.edit', compact(
             'transaction',
             'accounts',
-            'categories'
+            'categories',
+            'creditCards'
         ));
     }
 
@@ -517,6 +547,27 @@ class TransactionController extends Controller
             'is_pending' => [
                 'nullable',
                 'boolean',
+            ],
+
+            // Optionale Kreditkarte: muss dem Benutzer gehören.
+            // Inaktive Karten sind nur erlaubt, wenn sie bereits
+            // mit dieser Buchung verknüpft sind.
+            'credit_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('credit_cards', 'id')
+                    ->where('user_id', $user->id)
+                    ->whereNull('deleted_at')
+                    ->where(function ($query) use ($transaction) {
+                        $query->where('is_active', true);
+
+                        if ($transaction->credit_card_id !== null) {
+                            $query->orWhere(
+                                'id',
+                                $transaction->credit_card_id
+                            );
+                        }
+                    }),
             ],
 
         ]);
@@ -653,12 +704,40 @@ class TransactionController extends Controller
         $transaction->notes = $validated['notes'] ?? null;
         $transaction->is_pending = $request->boolean('is_pending');
 
+        // Kreditkarte nur bei Einnahmen/Ausgaben, nie bei Umbuchungen.
+        $transaction->credit_card_id =
+            $validated['type'] === 'transfer'
+                ? null
+                : ($validated['credit_card_id'] ?? null);
+
         $transaction->save();
 
 
         return redirect()
             ->route('transactions.index')
             ->with('success', 'Buchung wurde aktualisiert.');
+    }
+
+
+    /**
+     * Kreditkarten des Benutzers für die Formulare.
+     *
+     * Liefert alle aktiven Karten und optional zusätzlich
+     * eine bestimmte (z. B. inaktive, aber bereits verknüpfte) Karte.
+     */
+    private function creditCardsFor(int $userId, ?int $includeId = null)
+    {
+        return CreditCard::query()
+            ->where('user_id', $userId)
+            ->where(function ($query) use ($includeId) {
+                $query->where('is_active', true);
+
+                if ($includeId !== null) {
+                    $query->orWhere('id', $includeId);
+                }
+            })
+            ->orderBy('name')
+            ->get();
     }
 
 
