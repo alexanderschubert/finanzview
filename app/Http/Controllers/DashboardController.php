@@ -51,7 +51,7 @@ class DashboardController extends Controller
         try {
 
             $month = Carbon::createFromFormat(
-                'Y-m',
+                '!Y-m',
                 $selectedMonth
             )->startOfMonth();
 

@@ -286,7 +286,7 @@ Route::get('/settings/dashboard', [
      * =========================================================
      */
 
-    Route::resource('accounts', AccountController::class);
+    Route::resource('accounts', AccountController::class)->except('show');
 
 
     /*
@@ -295,7 +295,7 @@ Route::get('/settings/dashboard', [
      * =========================================================
      */
 
-    Route::resource('transactions', TransactionController::class);
+    Route::resource('transactions', TransactionController::class)->except('show');
 
 
     /*
@@ -315,7 +315,7 @@ Route::get('/settings/dashboard', [
      * =========================================================
      */
 
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', CategoryController::class)->except('show');
 
 
     /*

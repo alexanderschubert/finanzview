@@ -34,7 +34,7 @@ class BudgetController extends Controller
 
         try {
             $month = Carbon::createFromFormat(
-                'Y-m',
+                '!Y-m',
                 $selectedMonth
             )->startOfMonth();
         } catch (\Exception $e) {
@@ -339,7 +339,7 @@ class BudgetController extends Controller
         try {
 
             $month = Carbon::createFromFormat(
-                'Y-m',
+                '!Y-m',
                 $selectedMonth
             )->startOfMonth();
 
