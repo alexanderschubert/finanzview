@@ -16,6 +16,18 @@
         'other' => 'Sonstiges',
     ];
 
+    // Kartenfarbe je Kontotyp, falls weder Konto noch Anbieter eine Farbe haben.
+    $typeColors = [
+        'checking' => '#0b7155',
+        'savings' => '#1f5fa8',
+        'credit_card' => '#3f3f45',
+        'paypal' => '#123a86',
+        'cash' => '#8a6516',
+        'investment' => '#5b3fa8',
+        'loan' => '#9f2d2d',
+        'other' => '#3f3f45',
+    ];
+
     $groups = [
         'Aktive Konten' => $accounts->where('is_active', true),
         'Inaktive Konten' => $accounts->where('is_active', false),
@@ -31,7 +43,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Konten" subtitle="Bankkonten, Bargeld und weitere Vermögenswerte.">
         <a href="{{ route('accounts.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
@@ -77,31 +89,40 @@
             <section>
                 <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{{ $group }}</h3>
 
-                <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     @foreach ($groupAccounts as $account)
-                        <li>
-                            <a href="{{ route('accounts.edit', $account) }}" class="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-white/5 transition {{ $account->is_active ? '' : 'opacity-60' }}">
-                                <x-financial-provider :provider="$account->provider" :fallback-icon="$account->icon ?: '🏦'" size="sm" />
+                        @php
+                            $iban = preg_replace('/\s+/', '', (string) $account->iban);
+                            $number = $iban !== ''
+                                ? '•••• ' . substr($iban, -4)
+                                : ($account->account_number ? '•••• ' . substr((string) $account->account_number, -4) : null);
+                        @endphp
 
-                                <div class="flex-1 min-w-0">
-                                    <p class="font-medium text-slate-900 dark:text-white truncate">{{ $account->name }}</p>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                        {{ $account->institution ?: ($typeLabels[$account->type] ?? 'Sonstiges') }}
-                                        @unless ($account->include_in_total)
-                                            · nicht im Gesamtvermögen
-                                        @endunless
-                                    </p>
-                                </div>
+                        <a href="{{ route('accounts.edit', $account) }}" class="group block {{ $account->is_active ? '' : 'opacity-60' }}">
+                            <x-wallet-card
+                                :color="$account->color"
+                                :fallback-color="$account->provider?->color ?: ($typeColors[$account->type] ?? '#3f3f45')"
+                                :title="$account->name"
+                                :subtitle="$account->institution ?: ($typeLabels[$account->type] ?? 'Sonstiges')"
+                                amount-label="Kontostand"
+                                :amount="number_format($balances[$account->id], 2, ',', '.') . ' ' . ($account->currency === 'EUR' ? '€' : $account->currency)"
+                                :number="$number"
+                                :badge="$account->is_active ? null : 'Inaktiv'"
+                                :provider="$account->provider"
+                                class="transition group-hover:-translate-y-0.5 group-hover:shadow-xl"
+                            />
 
-                                <p class="font-semibold tabular-nums whitespace-nowrap {{ $balances[$account->id] < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white' }}">
-                                    {{ number_format($balances[$account->id], 2, ',', '.') }} {{ $account->currency === 'EUR' ? '€' : $account->currency }}
-                                </p>
-
-                                <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
-                            </a>
-                        </li>
+                            <div class="mt-2 px-1 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                                <span>{{ $typeLabels[$account->type] ?? 'Sonstiges' }}</span>
+                                @if ($account->include_in_total)
+                                    <span class="inline-flex items-center gap-1"><x-icon name="check-circle" class="w-3.5 h-3.5 text-emerald-500" /> im Gesamtvermögen</span>
+                                @else
+                                    <span>nicht im Gesamtvermögen</span>
+                                @endif
+                            </div>
+                        </a>
                     @endforeach
-                </ul>
+                </div>
             </section>
         @endforeach
 
