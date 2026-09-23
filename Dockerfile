@@ -1,8 +1,25 @@
+# syntax=docker/dockerfile:1
+
 # =========================================================
-# Stage 1: Frontend bauen
+# FinanzView – Docker Image
+# =========================================================
+#
+# Stufen:
+#   frontend  CSS/JS mit Vite bauen
+#   base      PHP-FPM + Nginx + Supervisor auf Alpine
+#   vendor    PHP-Pakete ohne Entwicklungswerkzeuge
+#   test      Image für die Tests in der CI (mit PHPUnit)
+#   app       Fertiges Image für den Betrieb (Standard)
+#
+# Bauen:  docker build -t finanzview .
+# Tests:  docker build --target test -t finanzview-test .
+
+
+# =========================================================
+# Frontend bauen
 # =========================================================
 
-FROM node:22-bookworm AS frontend
+FROM node:22-alpine AS frontend
 
 WORKDIR /var/www/html
 
@@ -18,139 +35,113 @@ RUN npm run build
 
 
 # =========================================================
-# Stage 2: PHP + Nginx
+# Basis: PHP + Nginx + Supervisor
 # =========================================================
 
-FROM php:8.4-fpm-bookworm
+FROM php:8.4-fpm-alpine AS base
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-
-# ---------------------------------------------------------
-# Pakete installieren
-# ---------------------------------------------------------
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+# Laufzeitbibliotheken bleiben, Build-Werkzeuge werden nach dem
+# Kompilieren der PHP-Erweiterungen wieder entfernt.
+RUN apk add --no-cache \
         nginx \
-        git \
-        unzip \
-        libpq-dev \
-        libzip-dev \
-        libonig-dev \
         supervisor \
+        tzdata \
+        libpq \
+        libzip \
+        oniguruma \
+    && apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        postgresql-dev \
+        libzip-dev \
+        oniguruma-dev \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_pgsql \
         mbstring \
         bcmath \
         zip \
         opcache \
-    && rm -rf /var/lib/apt/lists/*
-
-
-# ---------------------------------------------------------
-# Composer
-# ---------------------------------------------------------
+    && apk del .build-deps \
+    && rm -rf /tmp/* /usr/src/php*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-
-# ---------------------------------------------------------
-# Laravel
-# ---------------------------------------------------------
 
 WORKDIR /var/www/html
 
 
-# Composer-Dateien zuerst kopieren
-# Dadurch kann Docker den Composer-Layer cachen.
+# =========================================================
+# PHP-Pakete für den Betrieb
+# =========================================================
+#
+# --prefer-dist lädt fertige Pakete statt kompletter
+# Git-Repositories (das hat das Image früher auf ~7 GB
+# aufgebläht). --no-dev lässt PHPUnit & Co. weg.
+
+FROM base AS vendor
 
 COPY composer.json composer.lock ./
 
-
-# Composer-Abhängigkeiten installieren.
-#
-# --no-scripts:
-# Laravel Artisan ist zu diesem Zeitpunkt noch nicht
-# vorhanden. Deshalb werden Composer-Scripts zunächst
-# deaktiviert.
-#
-# --prefer-source:
-# Vermeidet Probleme mit GitHub-ZIP-Downloads.
-
-RUN composer install \
-    --no-interaction \
-    --prefer-source \
-    --no-progress \
-    --no-scripts \
-    --optimize-autoloader
+RUN --mount=type=cache,target=/root/.composer/cache \
+    composer install \
+        --no-dev \
+        --prefer-dist \
+        --no-scripts \
+        --no-autoloader \
+        --no-interaction \
+        --no-progress
 
 
-# ---------------------------------------------------------
-# Laravel-Projekt
-# ---------------------------------------------------------
+# =========================================================
+# Test-Image (nur für die CI)
+# =========================================================
+
+FROM base AS test
+
+COPY composer.json composer.lock ./
+
+RUN --mount=type=cache,target=/root/.composer/cache \
+    composer install \
+        --prefer-dist \
+        --no-scripts \
+        --no-autoloader \
+        --no-interaction \
+        --no-progress
 
 COPY . .
-
-
-# ---------------------------------------------------------
-# Composer Autoloader
-# ---------------------------------------------------------
-
-# Jetzt ist artisan vorhanden.
-# Deshalb können die Laravel Composer-Scripts ausgeführt
-# werden.
+COPY --from=frontend /var/www/html/public/build ./public/build
 
 RUN composer dump-autoload --optimize --no-scripts
 
-# ---------------------------------------------------------
-# Frontend Assets
-# ---------------------------------------------------------
 
+# =========================================================
+# Fertiges Image
+# =========================================================
+
+FROM base AS app
+
+COPY --from=vendor /var/www/html/vendor ./vendor
+
+COPY . .
 COPY --from=frontend /var/www/html/public/build ./public/build
 
+RUN composer dump-autoload --optimize --no-dev --no-scripts \
+    && rm -rf tests
+
 
 # ---------------------------------------------------------
-# PHP Konfiguration
+# Konfiguration
 # ---------------------------------------------------------
 
 COPY docker/php/php.ini \
     /usr/local/etc/php/conf.d/99-finanzview.ini
 
-
-# ---------------------------------------------------------
-# Nginx Standard-Konfiguration entfernen
-# ---------------------------------------------------------
-
-# Debian installiert standardmäßig eine eigene Nginx-
-# Konfiguration. Diese würde mit unserer Laravel-
-# Konfiguration kollidieren und die Nginx-Willkommensseite
-# anzeigen.
-
-RUN rm -f \
-        /etc/nginx/conf.d/default.conf \
-        /etc/nginx/sites-enabled/default
-
-
-# ---------------------------------------------------------
-# Nginx Konfiguration
-# ---------------------------------------------------------
+# Alpine liefert eine eigene Nginx-Standardseite mit.
+RUN rm -f /etc/nginx/http.d/default.conf
 
 COPY docker/nginx/default.conf \
-    /etc/nginx/conf.d/finanzview.conf
-
-
-# ---------------------------------------------------------
-# Supervisor
-# ---------------------------------------------------------
+    /etc/nginx/http.d/finanzview.conf
 
 COPY docker/supervisord.conf \
     /etc/supervisor/conf.d/supervisord.conf
-
-
-# ---------------------------------------------------------
-# Entrypoint
-# ---------------------------------------------------------
 
 COPY docker/entrypoint.sh \
     /usr/local/bin/finanzview-entrypoint
@@ -161,6 +152,7 @@ COPY docker/entrypoint.sh \
 # ---------------------------------------------------------
 
 RUN chmod +x /usr/local/bin/finanzview-entrypoint \
+    && mkdir -p /run/nginx \
     && mkdir -p \
         storage/framework/cache \
         storage/framework/sessions \
@@ -172,16 +164,7 @@ RUN chmod +x /usr/local/bin/finanzview-entrypoint \
         bootstrap/cache
 
 
-# ---------------------------------------------------------
-# Port
-# ---------------------------------------------------------
-
 EXPOSE 80
-
-
-# ---------------------------------------------------------
-# Start
-# ---------------------------------------------------------
 
 ENTRYPOINT ["finanzview-entrypoint"]
 

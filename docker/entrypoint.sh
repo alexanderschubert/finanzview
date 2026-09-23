@@ -71,6 +71,21 @@ done
 echo "PostgreSQL ist erreichbar."
 
 # ---------------------------------------------------------
+# Paket-Cache neu aufbauen
+# ---------------------------------------------------------
+
+# bootstrap/cache liegt oft in einem Volume und kann eine
+# Paketliste aus einem älteren Image enthalten (z. B. mit
+# Entwicklungspaketen, die es im Image nicht mehr gibt).
+# Laravel würde dann beim Start abstürzen.
+
+rm -f \
+    bootstrap/cache/packages.php \
+    bootstrap/cache/services.php
+
+php artisan package:discover --ansi
+
+# ---------------------------------------------------------
 # Migrationen
 # ---------------------------------------------------------
 

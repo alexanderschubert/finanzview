@@ -23,18 +23,74 @@ jobs:
         run: |
           echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
-      - name: Docker Image bauen
+      - name: Test-Image bauen
         run: |
           docker build \
-            -t finanzview-test \
+            --target test \
+            -t finanzview-tests \
             .
 
       - name: PHPUnit Tests
         run: |
           docker run --rm \
             --entrypoint sh \
-            finanzview-test \
+            finanzview-tests \
             -c 'touch .env && php artisan test --display-warnings'
+
+      - name: App-Image bauen
+        run: |
+          docker build \
+            --target app \
+            -t finanzview-test \
+            .
+
+          echo "### Image-Größe" >> "$GITHUB_STEP_SUMMARY"
+          docker image ls finanzview-test --format '{{.Size}}' >> "$GITHUB_STEP_SUMMARY"
+
+      # Startet das fertige Image mit einer echten Datenbank und prüft,
+      # ob Nginx, PHP-FPM, Migrationen und Anmeldeseite funktionieren.
+      - name: Starttest mit PostgreSQL
+        run: |
+          docker network create fv-smoke
+
+          docker run -d --name fv-db --network fv-smoke \
+            -e POSTGRES_DB=finanzview \
+            -e POSTGRES_USER=finanzview \
+            -e POSTGRES_PASSWORD=smoke \
+            postgres:17-alpine
+
+          docker run -d --name fv-app --network fv-smoke -p 8080:80 \
+            -e APP_ENV=production \
+            -e APP_DEBUG=false \
+            -e APP_URL=http://localhost:8080 \
+            -e DB_CONNECTION=pgsql \
+            -e DB_HOST=fv-db \
+            -e DB_PORT=5432 \
+            -e DB_DATABASE=finanzview \
+            -e DB_USERNAME=finanzview \
+            -e DB_PASSWORD=smoke \
+            finanzview-test
+
+          for i in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://localhost:8080/up; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl -fsS -o /dev/null -w "/up: %{http_code}\n" http://localhost:8080/up
+          curl -fsS -o /dev/null -w "/login: %{http_code}\n" http://localhost:8080/login
+          curl -fsS http://localhost:8080/login | grep -q "Willkommen bei FinanzView"
+          curl -fsS -o /dev/null -w "/finanzview.svg: %{http_code}\n" http://localhost:8080/finanzview.svg
+
+          CSS=$(curl -fsS http://localhost:8080/login | grep -o '/build/assets/app-[^"]*\.css' | head -1)
+          curl -fsS -o /dev/null -w "$CSS: %{http_code}\n" "http://localhost:8080$CSS"
+
+      - name: Container-Logs bei Fehler
+        if: failure()
+        run: |
+          docker logs fv-app || true
+          docker logs fv-db | tail -20 || true
 
       # main -> :latest und :sha-xxxxxxx
       # Pull Request -> :pr-<Nummer> (Vorschau zum Testen vor dem Mergen).
