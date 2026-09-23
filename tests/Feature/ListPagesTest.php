@@ -111,6 +111,7 @@ class ListPagesTest extends TestCase
             'name' => 'Essen',
             'amount' => 400,
             'start_date' => now()->startOfMonth()->toDateString(),
+            'end_date' => now()->endOfMonth()->toDateString(),
             'period' => 'monthly',
             'is_active' => true,
             'icon' => '🛒',
