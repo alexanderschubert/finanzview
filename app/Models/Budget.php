@@ -60,6 +60,6 @@ class Budget extends Model
 
         return $this->is_active
             && $this->start_date->toDateString() <= $today
-            && $this->end_date->toDateString() >= $today;
+            && ($this->end_date === null || $this->end_date->toDateString() >= $today);
     }
 }
