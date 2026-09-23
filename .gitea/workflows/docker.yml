@@ -40,9 +40,9 @@ jobs:
         run: |
           docker tag \
             finanzview-test \
-            gitea.alxserver.de/alexander/finanzblick:latest
+            gitea.alxserver.de/alexander/finanzview:latest
 
       - name: Image zu Gitea pushen
         run: |
           docker push \
-            gitea.alxserver.de/alexander/finanzblick:latest
+            gitea.alxserver.de/alexander/finanzview:latest

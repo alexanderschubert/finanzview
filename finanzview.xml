@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>FinanzView</Name>
-  <Repository>gitea.alxserver.de/alexander/finanzblick:latest</Repository>
+  <Repository>gitea.alxserver.de/alexander/finanzview:latest</Repository>
   <Registry>https://gitea.alxserver.de</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
 
-  <Support>https://gitea.alxserver.de/alexander/finanzblick</Support>
+  <Support>https://gitea.alxserver.de/alexander/finanzview</Support>
 
   <Project>FinanzView</Project>
   <Overview>
@@ -22,9 +22,9 @@
 
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
 
-  <TemplateURL>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/finanzview.xml</TemplateURL>
+  <TemplateURL>https://gitea.alxserver.de/alexander/finanzview/raw/branch/main/finanzview.xml</TemplateURL>
 
-  <Icon>https://gitea.alxserver.de/alexander/finanzblick/raw/branch/main/public/favicon.ico</Icon>
+  <Icon>https://gitea.alxserver.de/alexander/finanzview/raw/branch/main/public/favicon.ico</Icon>
 
   <Config Name="WebUI Port"
           Target="80"
