@@ -11,6 +11,11 @@
         'md' => 'w-10 h-10 text-lg rounded-xl',
         'lg' => 'w-12 h-12 text-xl rounded-2xl',
     ];
+
+    // Nur echte Hex-Farben übernehmen; das helle Standardgrau ignorieren.
+    $color = is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) && strtolower($color) !== '#f1f5f9'
+        ? $color
+        : null;
 @endphp
 
 {{-- Einheitliche Kachel für frei wählbare Emojis (Kategorien, Budgets). --}}
