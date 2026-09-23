@@ -168,6 +168,35 @@ class RecurringTransactionService
 
 
     /**
+     * Die nächsten Ausführungstermine (für die Vorschau), mit
+     * derselben Berechnung wie bei der tatsächlichen Buchung.
+     * Ein Enddatum wird berücksichtigt.
+     *
+     * @return array<int, Carbon>
+     */
+    public function upcomingDates(RecurringTransaction $recurring, int $count = 3): array
+    {
+        if (! $recurring->is_active || ! $recurring->next_date) {
+            return [];
+        }
+
+        $dates = [];
+        $date = Carbon::parse($recurring->next_date)->startOfDay();
+
+        while (count($dates) < $count) {
+            if ($recurring->end_date && $date->gt(Carbon::parse($recurring->end_date)->endOfDay())) {
+                break;
+            }
+
+            $dates[] = $date->copy();
+
+            $date = $this->calculateNextDate($date, $recurring->frequency, $recurring->anchor_day);
+        }
+
+        return $dates;
+    }
+
+    /**
      * Berechnet das nächste Ausführungsdatum.
      *
      * Monatliche, quartalsweise und jährliche Termine werden über

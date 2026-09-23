@@ -1,226 +1,139 @@
 @extends('layouts.app')
 
-@section('title', $creditCard->name)
+@section('title', $creditCard->name . ' – Kreditkarte – FinanzView')
+@section('eyebrow', 'Kreditkarten')
+@section('page_title', $creditCard->name)
+
+@php
+    $limit = (float) $creditCard->credit_limit;
+    $balance = (float) $creditCard->current_balance;
+    $available = $limit > 0 ? max(0, $limit - $balance) : null;
+    $utilization = $limit > 0 ? min(100, max(0, ($balance / $limit) * 100)) : null;
+
+    $statusLabels = [
+        'open' => ['Offen', 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300'],
+        'issued' => ['Abgerechnet', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'],
+        'paid' => ['Bezahlt', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'],
+        'overdue' => ['Überfällig', 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'],
+    ];
+
+    $details = [
+        'Herausgeber' => $creditCard->issuer,
+        'Anbieter' => $creditCard->provider?->name,
+        'Abbuchung vom Konto' => $creditCard->account?->name,
+        'Abrechnungstag' => $creditCard->billing_day ? $creditCard->billing_day . '. des Monats' : null,
+        'Fällig am' => $creditCard->payment_due_day ? $creditCard->payment_due_day . '. des Monats' : null,
+    ];
+@endphp
 
 @section('content')
-<div class="mx-auto max-w-6xl space-y-6">
 
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Kreditkarten
-            </p>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-                {{ $creditCard->name }}
-            </h1>
-        </div>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-        <div class="flex gap-3">
-            <a
-                href="{{ route('credit-cards.index') }}"
-                class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-                Zur Übersicht
-            </a>
+    <x-page-header :title="$creditCard->name" :subtitle="$creditCard->is_active ? 'Kreditkarte' : 'Kreditkarte · inaktiv'">
+        <a href="{{ route('credit-cards.edit', $creditCard) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
+            <x-icon name="pencil" class="w-4 h-4" />
+            Bearbeiten
+        </a>
+    </x-page-header>
 
-            <a
-                href="{{ route('credit-cards.edit', $creditCard) }}"
-                class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
-            >
-                Bearbeiten
-            </a>
-        </div>
-    </div>
+    <x-flash />
 
-    @if (session('success'))
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @php
-        $limit = (float) $creditCard->credit_limit;
-        $balance = (float) $creditCard->current_balance;
-        $available = $limit > 0 ? max(0, $limit - $balance) : null;
-        $utilization = $limit > 0 ? min(100, max(0, ($balance / $limit) * 100)) : null;
-    @endphp
+    {{-- KARTE UND AUSLASTUNG --}}
 
-    <div class="grid gap-4 md:grid-cols-3">
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-sm text-slate-500 dark:text-slate-400">Aktueller Saldo</p>
-            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                {{ number_format($balance, 2, ',', '.') }} €
-            </p>
-        </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+        <x-wallet-card
+            :color="$creditCard->color"
+            :fallback-color="$creditCard->provider?->color ?: '#3f3f45'"
+            :title="$creditCard->name"
+            :subtitle="$creditCard->issuer ?: ($creditCard->provider?->name ?: 'Kreditkarte')"
+            amount-label="Aktueller Saldo"
+            :amount="number_format($balance, 2, ',', '.') . ' €'"
+            :number="'•••• ' . ($creditCard->last_four ?: '····')"
+            :badge="$creditCard->is_active ? null : 'Inaktiv'"
+            :provider="$creditCard->provider"
+        />
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-sm text-slate-500 dark:text-slate-400">Kreditlimit</p>
-            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                @if ($limit > 0)
-                    {{ number_format($limit, 2, ',', '.') }} €
-                @else
-                    Kein Limit
-                @endif
-            </p>
-        </div>
+        @if ($utilization !== null)
+            <div class="flex flex-col items-center gap-4">
+                <x-progress-ring :value="$utilization" :tone="$utilization >= 90 ? 'negative' : ($utilization >= 70 ? 'warning' : 'positive')" :size="160" :stroke="14">
+                    <p class="text-2xl font-semibold tabular-nums text-slate-900 dark:text-white">{{ number_format($utilization, 0, ',', '.') }} %</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ausgelastet</p>
+                </x-progress-ring>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <p class="text-sm text-slate-500 dark:text-slate-400">Verfügbar</p>
-            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                @if ($available !== null)
-                    {{ number_format($available, 2, ',', '.') }} €
-                @else
-                    –
-                @endif
-            </p>
-        </div>
-    </div>
-
-    <div class="grid gap-6 lg:grid-cols-3">
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Karteninformationen
-                    </h2>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Details zu deiner Kreditkarte.
-                    </p>
-                </div>
-
-                <span class="rounded-full px-3 py-1 text-xs font-semibold
-                    {{ $creditCard->is_active
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
-                    {{ $creditCard->is_active ? 'Aktiv' : 'Inaktiv' }}
-                </span>
+                <p class="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ number_format($available, 2, ',', '.') }} €</span>
+                    von {{ number_format($limit, 2, ',', '.') }} € verfügbar
+                </p>
             </div>
-
-            <dl class="mt-6 grid gap-5 sm:grid-cols-2">
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Herausgeber
-                    </dt>
-                    <dd class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->issuer ?: '–' }}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Letzte 4 Ziffern
-                    </dt>
-                    <dd class="mt-1 font-mono text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->last_four ? '•••• '.$creditCard->last_four : '–' }}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Anbieter
-                    </dt>
-                    <dd class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->provider?->name ?: '–' }}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Verknüpftes Konto
-                    </dt>
-                    <dd class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->account?->name ?: '–' }}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Abrechnungstag
-                    </dt>
-                    <dd class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->billing_day ? 'Tag '.$creditCard->billing_day : '–' }}
-                    </dd>
-                </div>
-
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                        Fälligkeit
-                    </dt>
-                    <dd class="mt-1 text-sm font-medium text-slate-900 dark:text-white">
-                        {{ $creditCard->payment_due_day ? 'Tag '.$creditCard->payment_due_day : '–' }}
-                    </dd>
-                </div>
-
-            </dl>
-
-            @if ($utilization !== null)
-                <div class="mt-8">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="font-medium text-slate-700 dark:text-slate-300">
-                            Kreditkartenauslastung
-                        </span>
-                        <span class="font-semibold text-slate-900 dark:text-white">
-                            {{ number_format($utilization, 1, ',', '.') }} %
-                        </span>
-                    </div>
-
-                    <div class="mt-2 h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                        <div
-                            class="h-full rounded-full
-                                {{ $utilization >= 80
-                                    ? 'bg-red-500'
-                                    : ($utilization >= 50 ? 'bg-amber-500' : 'bg-emerald-500') }}"
-                            style="width: {{ $utilization }}%"
-                        ></div>
-                    </div>
-                </div>
-            @endif
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                Abrechnungen
-            </h2>
-
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Abrechnungen werden hier angezeigt, sobald sie vorhanden sind.
-            </p>
-
-            @if ($creditCard->statements->isEmpty())
-                <div class="mt-8 rounded-xl border border-dashed border-slate-300 p-5 text-center dark:border-slate-700">
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Noch keine Abrechnungen vorhanden.
-                    </p>
-                </div>
-            @else
-                <div class="mt-5 space-y-3">
-                    @foreach ($creditCard->statements->take(5) as $statement)
-                        <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                                        {{ number_format((float) $statement->amount, 2, ',', '.') }} €
-                                    </p>
-                                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                                        {{ $statement->period_start?->format('d.m.Y') }}
-                                        –
-                                        {{ $statement->period_end?->format('d.m.Y') }}
-                                    </p>
-                                </div>
-
-                                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                    {{ ucfirst($statement->status) }}
-                                </span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
+        @else
+            <div class="fv-card p-5 text-sm text-slate-500 dark:text-slate-400">
+                Kein Kreditlimit hinterlegt. <a href="{{ route('credit-cards.edit', $creditCard) }}" class="fv-link">Limit eintragen</a>
+            </div>
+        @endif
     </div>
+
+
+    {{-- DETAILS --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Details</h3>
+
+        <dl class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5 text-sm">
+            @foreach ($details as $label => $detail)
+                <div class="flex items-center justify-between gap-4 px-4 py-3">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ $label }}</dt>
+                    <dd class="font-medium text-right text-slate-900 dark:text-white">{{ $detail ?: '–' }}</dd>
+                </div>
+            @endforeach
+        </dl>
+    </section>
+
+
+    {{-- ABRECHNUNGEN --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Abrechnungen</h3>
+
+        @if ($creditCard->statements->isEmpty())
+            <div class="fv-card">
+                <x-empty-state icon="calendar" title="Noch keine Abrechnungen">
+                    FinanzView erstellt die monatliche Abrechnung automatisch am Abrechnungstag aus den Buchungen dieser Karte.
+                </x-empty-state>
+            </div>
+        @else
+            <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($creditCard->statements->take(12) as $statement)
+                    @php
+                        [$statusLabel, $statusClass] = $statusLabels[$statement->status] ?? [ucfirst($statement->status), $statusLabels['open'][1]];
+                    @endphp
+
+                    <li class="flex items-center gap-3 px-4 py-3">
+                        <x-emoji-tile fallback="calendar" />
+
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-slate-900 dark:text-white">
+                                {{ $statement->period_end?->translatedFormat('F Y') }}
+                            </p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                                {{ $statement->period_start?->format('d.m.') }} – {{ $statement->period_end?->format('d.m.Y') }}
+                                @if ($statement->due_date)
+                                    · fällig {{ $statement->due_date->format('d.m.Y') }}
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="text-right shrink-0">
+                            <p class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ number_format((float) $statement->amount, 2, ',', '.') }} €</p>
+                            <span class="inline-block mt-0.5 rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
 
 </div>
+
 @endsection
