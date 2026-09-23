@@ -88,6 +88,32 @@ class ListPagesTest extends TestCase
             ->assertSee('1 von 2 Konten eingerechnet');
     }
 
+    public function test_accounts_are_shown_as_wallet_cards(): void
+    {
+        $this->giro->update(['iban' => 'DE89 3704 0044 0532 0130 00']);
+
+        Account::create([
+            'user_id' => $this->user->id,
+            'name' => 'Haushaltskasse',
+            'type' => 'cash',
+            'currency' => 'EUR',
+            'opening_balance' => 80,
+            'color' => '#fde68a',
+            'include_in_total' => true,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('accounts.index'))
+            ->assertOk()
+            ->assertSee('•••• 3000')
+            // Girokonto ohne eigene Farbe: Farbe je Kontotyp
+            ->assertSee('#0b7155', false)
+            // Helle Kontofarbe: dunkle Schrift
+            ->assertSee('#fde68a', false)
+            ->assertSee('shadow-slate-900/20 text-slate-900 transition', false);
+    }
+
     public function test_categories_index_groups_by_type(): void
     {
         Category::create([

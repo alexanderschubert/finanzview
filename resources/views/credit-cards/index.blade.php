@@ -61,43 +61,22 @@
                     $available = max(0, $limit - $balance);
                     $utilization = $limit > 0 ? min(100, max(0, ($balance / $limit) * 100)) : 0;
 
-                    $cardColor = is_string($creditCard->color) && preg_match('/^#[0-9a-fA-F]{6}$/', $creditCard->color)
-                        ? $creditCard->color
-                        : '#3f3f45';
                 @endphp
 
                 <a href="{{ route('credit-cards.show', $creditCard) }}" class="group block {{ $creditCard->is_active ? '' : 'opacity-60' }}">
 
-                    {{-- Kartenoptik (Seitenverhältnis einer echten Karte) --}}
-                    <div
-                        class="relative aspect-[1.586] overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-slate-900/20 transition group-hover:-translate-y-0.5 group-hover:shadow-xl"
-                        style="background: linear-gradient(135deg, {{ $cardColor }}, color-mix(in srgb, {{ $cardColor }} 55%, black));"
-                    >
-                        <div aria-hidden="true" class="absolute -right-12 -bottom-16 w-52 h-52 rounded-full bg-white/10"></div>
-                        <div aria-hidden="true" class="absolute -right-2 -bottom-24 w-52 h-52 rounded-full bg-white/5"></div>
-
-                        <div class="relative flex h-full flex-col justify-between">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <p class="font-semibold truncate">{{ $creditCard->name }}</p>
-                                    <p class="text-xs text-white/70 truncate">{{ $creditCard->issuer ?: $creditCard->provider?->name ?: 'Kreditkarte' }}</p>
-                                </div>
-
-                                @unless ($creditCard->is_active)
-                                    <span class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium">Inaktiv</span>
-                                @endunless
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-white/70">Aktueller Saldo</p>
-                                <p class="text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($balance, 2, ',', '.') }} €</p>
-                            </div>
-
-                            <p class="font-mono text-sm tracking-[0.2em] text-white/80">
-                                •••• {{ $creditCard->last_four ?: '····' }}
-                            </p>
-                        </div>
-                    </div>
+                    <x-wallet-card
+                        :color="$creditCard->color"
+                        :fallback-color="$creditCard->provider?->color ?: '#3f3f45'"
+                        :title="$creditCard->name"
+                        :subtitle="$creditCard->issuer ?: ($creditCard->provider?->name ?: 'Kreditkarte')"
+                        amount-label="Aktueller Saldo"
+                        :amount="number_format($balance, 2, ',', '.') . ' €'"
+                        :number="'•••• ' . ($creditCard->last_four ?: '····')"
+                        :badge="$creditCard->is_active ? null : 'Inaktiv'"
+                        :provider="$creditCard->provider"
+                        class="transition group-hover:-translate-y-0.5 group-hover:shadow-xl"
+                    />
 
                     {{-- Auslastung --}}
                     <div class="mt-3 px-1">
