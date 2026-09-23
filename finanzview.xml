@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>Finanzblick</Name>
+  <Name>FinanzView</Name>
   <Repository>gitea.alxserver.de/alexander/finanzblick:latest</Repository>
   <Registry>https://gitea.alxserver.de</Registry>
   <Network>bridge</Network>
@@ -40,7 +40,7 @@
           Target="APP_URL"
           Default="http://[IP]:[PORT:8080]"
           Mode=""
-          Description="Öffentliche URL von FinanzView. Bei Verwendung eines Reverse Proxy z.B. https://finanzblick.alxserver.de"
+          Description="Öffentliche URL von FinanzView. Bei Verwendung eines Reverse Proxy z.B. https://finanzview.example.com"
           Type="Variable"
           Display="always"
           Required="true"

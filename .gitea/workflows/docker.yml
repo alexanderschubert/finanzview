@@ -19,14 +19,14 @@ jobs:
       - name: Docker Image bauen
         run: |
           docker build \
-            -t finanzblick-test \
+            -t finanzview-test \
             .
 
       - name: PHPUnit Tests
         run: |
           docker run --rm \
             --entrypoint sh \
-            finanzblick-test \
+            finanzview-test \
             -c 'touch .env && php artisan test --display-warnings'
 
       - name: Bei Gitea Container Registry anmelden
@@ -39,7 +39,7 @@ jobs:
       - name: Image für Gitea Registry taggen
         run: |
           docker tag \
-            finanzblick-test \
+            finanzview-test \
             gitea.alxserver.de/alexander/finanzblick:latest
 
       - name: Image zu Gitea pushen

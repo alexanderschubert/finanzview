@@ -2,7 +2,7 @@ services:
 
   app:
     image: gitea.alxserver.de/alexander/finanzblick:latest
-    container_name: finanzblick-app
+    container_name: finanzview-app
     restart: unless-stopped
 
     env_file:

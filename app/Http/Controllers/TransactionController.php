@@ -44,12 +44,17 @@ class TransactionController extends Controller
 
         if ($request->filled('search')) {
 
-            $search = trim($request->input('search'));
+            $search = mb_strtolower(trim($request->input('search')));
 
+            /*
+             * LOWER() + LIKE statt ILIKE, damit die Suche
+             * sowohl mit PostgreSQL als auch mit SQLite (Tests)
+             * ohne Groß-/Kleinschreibung funktioniert.
+             */
             $query->where(function ($q) use ($search) {
 
-                $q->where('description', 'ILIKE', "%{$search}%")
-                    ->orWhere('merchant', 'ILIKE', "%{$search}%");
+                $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(merchant) LIKE ?', ["%{$search}%"]);
 
             });
 
