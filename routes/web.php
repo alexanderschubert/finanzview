@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Auth\OidcController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
@@ -24,6 +25,23 @@ use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
+});
+
+
+/*
+ * Single Sign-On über OpenID Connect
+ */
+
+Route::middleware(['guest', 'throttle:20,1'])->group(function () {
+    Route::get('/auth/oidc/redirect', [
+        OidcController::class,
+        'redirect',
+    ])->name('oidc.redirect');
+
+    Route::get('/auth/oidc/callback', [
+        OidcController::class,
+        'callback',
+    ])->name('oidc.callback');
 });
 
 

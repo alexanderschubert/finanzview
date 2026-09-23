@@ -35,4 +35,30 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | OpenID Connect (Single Sign-On)
+    |--------------------------------------------------------------------------
+    |
+    | Anmeldung über einen externen Identity Provider (z. B. Authentik).
+    | OIDC_ISSUER ist die Issuer-URL des Providers, bei Authentik z. B.
+    | https://auth.example.com/application/o/finanzview/
+    |
+    | OIDC_TRUST_EMAIL erlaubt die Verknüpfung bestehender Konten über die
+    | E-Mail-Adresse auch dann, wenn der Provider email_verified nicht
+    | auf true setzt. Nur aktivieren, wenn der Provider E-Mail-Adressen
+    | selbst verwaltet und Benutzer sie nicht frei ändern können.
+    |
+    */
+
+    'oidc' => [
+        'enabled' => (bool) env('OIDC_ENABLED', false),
+        'issuer' => env('OIDC_ISSUER'),
+        'client_id' => env('OIDC_CLIENT_ID'),
+        'client_secret' => env('OIDC_CLIENT_SECRET'),
+        'scopes' => env('OIDC_SCOPES', 'openid profile email'),
+        'button_label' => env('OIDC_BUTTON_LABEL', 'Mit SSO anmelden'),
+        'trust_email' => (bool) env('OIDC_TRUST_EMAIL', false),
+    ],
+
 ];

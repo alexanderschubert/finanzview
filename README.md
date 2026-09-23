@@ -66,6 +66,36 @@ Die Berechnung der Budgets erfolgt zentral über den `BudgetService`, damit Dash
 
 Umbuchungen zwischen eigenen Konten zählen nicht als Einnahme oder Ausgabe. Die Berechnung erfolgt im `ReportService`.
 
+### 🔐 Anmeldung & Sicherheit
+
+- Login mit E-Mail und Passwort
+- Zwei-Faktor-Authentifizierung (TOTP) mit Authenticator-App und Wiederherstellungscodes – einrichten unter *Einstellungen → Sicherheit*
+- Single Sign-On über OpenID Connect (z. B. Authentik)
+
+#### OIDC mit Authentik einrichten
+
+1. In Authentik einen **OAuth2/OpenID Provider** anlegen:
+   - Client type: *Confidential*
+   - Redirect URI: `https://<deine-finanzview-url>/auth/oidc/callback`
+   - Scopes: `openid`, `profile`, `email`
+2. Eine **Application** (z. B. Slug `finanzview`) mit diesem Provider anlegen.
+3. In FinanzView (Unraid-Template bzw. `.env`) setzen:
+
+```env
+OIDC_ENABLED=true
+OIDC_ISSUER=https://auth.example.com/application/o/finanzview/
+OIDC_CLIENT_ID=<Client ID>
+OIDC_CLIENT_SECRET=<Client Secret>
+OIDC_BUTTON_LABEL="Mit Authentik anmelden"
+```
+
+Verhalten:
+
+- Bestehende Konten werden beim ersten SSO-Login über die E-Mail-Adresse verknüpft, sofern der Provider sie als bestätigt meldet (`email_verified`). Liefert Authentik `email_verified: false`, kann `OIDC_TRUST_EMAIL=true` gesetzt werden.
+- Neue Konten werden nur angelegt, wenn im Admin-Bereich die Registrierung aktiviert ist.
+- Der Passwort-Login bleibt zusätzlich verfügbar.
+- Bei SSO-Logins übernimmt der Provider die Zwei-Faktor-Abfrage.
+
 ### 📊 Dashboard
 
 Das Dashboard soll einen schnellen Überblick über die persönliche finanzielle Situation ermöglichen.

@@ -146,4 +146,64 @@
           Required="true"
           Mask="false">/mnt/user/appdata/finanzblick/bootstrap-cache</Config>
 
+  <Config Name="OIDC aktivieren"
+          Target="OIDC_ENABLED"
+          Default="false"
+          Mode=""
+          Description="Anmeldung über OpenID Connect (z. B. Authentik) aktivieren. Redirect-URI im Provider: APP_URL/auth/oidc/callback"
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false">false</Config>
+
+  <Config Name="OIDC Issuer"
+          Target="OIDC_ISSUER"
+          Default=""
+          Mode=""
+          Description="Issuer-URL des Providers. Authentik: https://auth.example.com/application/o/finanzview/"
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false"></Config>
+
+  <Config Name="OIDC Client ID"
+          Target="OIDC_CLIENT_ID"
+          Default=""
+          Mode=""
+          Description="Client ID aus dem OAuth2/OpenID-Provider."
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false"></Config>
+
+  <Config Name="OIDC Client Secret"
+          Target="OIDC_CLIENT_SECRET"
+          Default=""
+          Mode=""
+          Description="Client Secret aus dem OAuth2/OpenID-Provider."
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="true"></Config>
+
+  <Config Name="OIDC Button-Text"
+          Target="OIDC_BUTTON_LABEL"
+          Default="Mit SSO anmelden"
+          Mode=""
+          Description="Beschriftung des SSO-Buttons auf der Login-Seite."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="false">Mit SSO anmelden</Config>
+
+  <Config Name="OIDC E-Mail vertrauen"
+          Target="OIDC_TRUST_EMAIL"
+          Default="false"
+          Mode=""
+          Description="Bestehende Konten auch dann per E-Mail verknüpfen, wenn der Provider email_verified nicht auf true setzt. Nur aktivieren, wenn Benutzer ihre E-Mail im Provider nicht selbst ändern können."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="false">false</Config>
+
 </Container>

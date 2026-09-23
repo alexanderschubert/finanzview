@@ -46,7 +46,11 @@ class CreateNewUser implements CreatesNewUsers
         return $user;
     }
 
-    private function createDefaultCategories(User $user): void
+    /**
+     * Legt die Standardkategorien für einen neuen Benutzer an.
+     * Wird auch bei der Registrierung über OIDC verwendet.
+     */
+    public function createDefaultCategories(User $user): void
     {
         $categories = [
             ['name' => 'Wohnen', 'type' => 'expense', 'icon' => '🏠'],

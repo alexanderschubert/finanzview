@@ -666,6 +666,43 @@
                             </div>
 
 
+                            {{-- SINGLE SIGN-ON --}}
+
+                            @php($oidc = app(\App\Services\OidcService::class))
+
+                            @if ($oidc->enabled())
+
+                                <a
+                                    href="{{ route('oidc.redirect') }}"
+                                    class="
+                                        mb-6
+                                        w-full
+                                        inline-flex
+                                        items-center
+                                        justify-center
+                                        gap-2
+                                        rounded-xl
+                                        border border-slate-200 dark:border-slate-700
+                                        bg-white dark:bg-slate-800
+                                        px-5 py-3.5
+                                        text-sm
+                                        font-medium
+                                        text-slate-700 dark:text-slate-200
+                                        hover:bg-slate-100
+                                        dark:hover:bg-slate-700
+                                        focus:outline-none
+                                        focus:ring-2
+                                        focus:ring-emerald-500/30
+                                        transition
+                                    "
+                                >
+                                    <span aria-hidden="true">🔑</span>
+                                    {{ $oidc->buttonLabel() }}
+                                </a>
+
+                            @endif
+
+
                             <div class="text-center">
 
                                 @if (\App\Models\ApplicationSetting::get('registration_enabled', true))
