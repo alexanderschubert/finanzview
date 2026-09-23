@@ -16,20 +16,58 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /*
+     * Systemschrift im Apple-Stil: SF Pro auf Apple-Geräten,
+     * Segoe UI unter Windows, Roboto unter Android.
+     */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
 
-    --color-finanz-50: #f0fdf4;
-    --color-finanz-100: #dcfce7;
-    --color-finanz-200: #bbf7d0;
-    --color-finanz-300: #86efac;
-    --color-finanz-400: #4ade80;
-    --color-finanz-500: #22c55e;
-    --color-finanz-600: #16a34a;
-    --color-finanz-700: #15803d;
-    --color-finanz-800: #166534;
-    --color-finanz-900: #14532d;
-    --color-finanz-950: #052e16;
+    /*
+     * Neutrale Grautöne nach den Apple-Systemfarben
+     * (statt des bläulichen Tailwind-"slate").
+     * Alle Seiten verwenden slate-* und werden so einheitlich.
+     */
+    --color-slate-50: #f9f9fb;
+    --color-slate-100: #f2f2f7;
+    --color-slate-200: #e5e5ea;
+    --color-slate-300: #d1d1d6;
+    --color-slate-400: #98989f;
+    --color-slate-500: #7c7c82;
+    --color-slate-600: #5c5c62;
+    --color-slate-700: #3f3f45;
+    --color-slate-800: #2c2c2e;
+    --color-slate-900: #1c1c1e;
+    --color-slate-950: #0b0b0c;
+
+    /*
+     * Markenfarbe (aus dem Logo). Ersetzt das Tailwind-"emerald",
+     * das überall als Akzentfarbe verwendet wird.
+     */
+    --color-emerald-50: #eafbf4;
+    --color-emerald-100: #cff5e6;
+    --color-emerald-200: #a7ebd2;
+    --color-emerald-300: #6fdab5;
+    --color-emerald-400: #34c396;
+    --color-emerald-500: #16a57a;
+    --color-emerald-600: #0e8c67;
+    --color-emerald-700: #0b7155;
+    --color-emerald-800: #0b5e49;
+    --color-emerald-900: #0a4b3b;
+    --color-emerald-950: #042a21;
+
+    --color-finanz-50: var(--color-emerald-50);
+    --color-finanz-100: var(--color-emerald-100);
+    --color-finanz-200: var(--color-emerald-200);
+    --color-finanz-300: var(--color-emerald-300);
+    --color-finanz-400: var(--color-emerald-400);
+    --color-finanz-500: var(--color-emerald-500);
+    --color-finanz-600: var(--color-emerald-600);
+    --color-finanz-700: var(--color-emerald-700);
+    --color-finanz-800: var(--color-emerald-800);
+    --color-finanz-900: var(--color-emerald-900);
+    --color-finanz-950: var(--color-emerald-950);
 }
 
 
@@ -37,9 +75,6 @@
 |--------------------------------------------------------------------------
 | FinanzView – Globales Dokument-Layout
 |--------------------------------------------------------------------------
-|
-| Verhindert weiße/helle Bereiche am Rand des Dokuments.
-|
 */
 
 @layer base {
@@ -52,16 +87,25 @@
     }
 
     html {
-        background-color: #f1f5f9;
+        background-color: var(--color-slate-100);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        -webkit-tap-highlight-color: transparent;
     }
 
     body {
-        background-color: #f1f5f9;
+        background-color: var(--color-slate-100);
     }
 
     .dark,
     .dark body {
-        background-color: #020617;
+        background-color: var(--color-slate-950);
+        color-scheme: dark;
+    }
+
+    h1, h2, h3 {
+        letter-spacing: -0.015em;
     }
 
 
@@ -71,25 +115,30 @@
     |--------------------------------------------------------------------------
     */
 
-    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--color-emerald-500);
+        outline: none;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-emerald-500) 18%, transparent);
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
     .dark select,
     .dark textarea {
-        background-color: #1e293b;
-        color: #f8fafc;
-        border-color: #334155;
+        background-color: var(--color-slate-800);
+        color: var(--color-slate-50);
+        border-color: var(--color-slate-700);
     }
 
     .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"])::placeholder,
     .dark textarea::placeholder {
-        color: #64748b;
+        color: var(--color-slate-500);
     }
 
-    .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
-    .dark select:focus,
-    .dark textarea:focus {
-        border-color: #10b981;
-        outline: none;
-        box-shadow: 0 0 0 2px rgb(16 185 129 / 0.15);
+    input[type="checkbox"],
+    input[type="radio"] {
+        accent-color: var(--color-emerald-600);
     }
 
 
@@ -100,8 +149,8 @@
     */
 
     .dark select option {
-        background-color: #1e293b;
-        color: #f8fafc;
+        background-color: var(--color-slate-800);
+        color: var(--color-slate-50);
     }
 
 
@@ -113,8 +162,8 @@
 
     .dark input[type="checkbox"],
     .dark input[type="radio"] {
-        background-color: #1e293b;
-        border-color: #475569;
+        background-color: var(--color-slate-800);
+        border-color: var(--color-slate-600);
     }
 
 
@@ -125,7 +174,7 @@
     */
 
     .dark .bg-white {
-        background-color: #0f172a;
+        background-color: var(--color-slate-900);
     }
 
 
@@ -136,11 +185,11 @@
     */
 
     .dark .border-slate-100 {
-        border-color: #1e293b;
+        border-color: var(--color-slate-800);
     }
 
     .dark .border-slate-200 {
-        border-color: #334155;
+        border-color: var(--color-slate-800);
     }
 
 
@@ -151,19 +200,19 @@
     */
 
     .dark .text-slate-900 {
-        color: #f8fafc;
+        color: var(--color-slate-50);
     }
 
     .dark .text-slate-800 {
-        color: #f1f5f9;
+        color: var(--color-slate-100);
     }
 
     .dark .text-slate-700 {
-        color: #cbd5e1;
+        color: var(--color-slate-300);
     }
 
     .dark .text-slate-600 {
-        color: #94a3b8;
+        color: var(--color-slate-400);
     }
 
 
@@ -174,11 +223,11 @@
     */
 
     .dark .bg-slate-50 {
-        background-color: #0f172a;
+        background-color: var(--color-slate-900);
     }
 
     .dark .bg-slate-100 {
-        background-color: #020617;
+        background-color: var(--color-slate-950);
     }
 
 
@@ -189,13 +238,80 @@
     */
 
     .dark .hover\:bg-slate-50:hover {
-        background-color: #1e293b;
+        background-color: var(--color-slate-800);
     }
 
     .dark .hover\:bg-slate-100:hover {
-        background-color: #1e293b;
+        background-color: var(--color-slate-800);
     }
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| FinanzView – Layout-Bausteine
+|--------------------------------------------------------------------------
+*/
+
+@layer components {
+
+    /*
+     * Glas-Effekt für Seitenleiste, Kopfzeile und Tab-Leiste.
+     */
+    .fv-glass {
+        background-color: color-mix(in srgb, white 72%, transparent);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        backdrop-filter: saturate(180%) blur(20px);
+    }
+
+    .dark .fv-glass {
+        background-color: color-mix(in srgb, var(--color-slate-900) 72%, transparent);
+    }
+
+    /*
+     * Abstand für die Home-Leiste am iPhone.
+     */
+    .fv-safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .fv-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-radius: 0.625rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-slate-600);
+        transition: background-color 150ms, color 150ms;
+    }
+
+    .fv-nav-link:hover {
+        background-color: color-mix(in srgb, var(--color-slate-900) 5%, transparent);
+        color: var(--color-slate-900);
+    }
+
+    .fv-nav-link[aria-current="page"] {
+        background-color: color-mix(in srgb, var(--color-emerald-500) 12%, transparent);
+        color: var(--color-emerald-700);
+    }
+
+    .dark .fv-nav-link {
+        color: var(--color-slate-400);
+    }
+
+    .dark .fv-nav-link:hover {
+        background-color: color-mix(in srgb, white 6%, transparent);
+        color: white;
+    }
+
+    .dark .fv-nav-link[aria-current="page"] {
+        background-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+        color: var(--color-emerald-300);
+    }
+}
+
 
 /*
 |--------------------------------------------------------------------------

@@ -36,10 +36,11 @@ jobs:
             finanzview-test \
             -c 'touch .env && php artisan test --display-warnings'
 
-      # Veröffentlicht wird nur bei einem Push auf main,
-      # nicht bei Pull Requests.
+      # main -> :latest und :sha-xxxxxxx
+      # Pull Request -> :pr-<Nummer> (Vorschau zum Testen vor dem Mergen).
+      # PRs aus Forks haben keine Schreibrechte und werden nur getestet.
       - name: Bei GitHub Container Registry anmelden
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
           docker login ghcr.io \
@@ -47,9 +48,15 @@ jobs:
             --password-stdin
 
       - name: Image taggen und pushen
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          docker tag finanzview-test "$IMAGE:latest"
-          docker tag finanzview-test "$IMAGE:sha-${GITHUB_SHA::7}"
-          docker push "$IMAGE:latest"
-          docker push "$IMAGE:sha-${GITHUB_SHA::7}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAGS="latest sha-${GITHUB_SHA::7}"
+          else
+            TAGS="pr-${{ github.event.pull_request.number }}"
+          fi
+
+          for TAG in $TAGS; do
+            docker tag finanzview-test "$IMAGE:$TAG"
+            docker push "$IMAGE:$TAG"
+          done
