@@ -1,590 +1,105 @@
 @extends('layouts.app')
 
 @section('title', 'Einstellungen – FinanzView')
-
 @section('eyebrow', 'System')
-
 @section('page_title', 'Einstellungen')
+
+@php
+    $user = auth()->user();
+
+    $initials = collect(preg_split('/\s+/', trim($user->name)))
+        ->filter()
+        ->take(2)
+        ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+        ->join('');
+
+    /*
+     * Gruppen im Stil der iOS-Einstellungen:
+     * [Route, Icon, Icon-Farbe, Titel, Beschreibung]
+     */
+    $groups = [
+        'Konto' => [
+            ['settings.profile', 'user', 'bg-sky-500', 'Profil', 'Name und E-Mail-Adresse'],
+            ['settings.security', 'lock', 'bg-slate-500', 'Sicherheit', $user->hasEnabledTwoFactorAuthentication() ? 'Passwort · Zwei-Faktor aktiv' : 'Passwort und Zwei-Faktor-Authentifizierung'],
+        ],
+        'App' => [
+            ['settings.appearance', 'sun', 'bg-violet-500', 'Erscheinungsbild', 'Hell, Dunkel oder automatisch'],
+            ['settings.dashboard', 'layout', 'bg-orange-500', 'Dashboard', 'Widgets, Reihenfolge und Darstellung'],
+            ['settings.financial', 'wallet', 'bg-emerald-600', 'Finanzen', 'Währung, Standardkonto und Grundeinstellungen'],
+        ],
+        'Daten' => [
+            ['settings.data-export', 'download', 'bg-blue-500', 'Daten & Export', 'Exportieren, Sichern und Wiederherstellen'],
+        ],
+    ];
+
+    if ($user->isAdmin()) {
+        $groups['Verwaltung'] = [
+            ['admin.index', 'shield', 'bg-red-500', 'Administration', 'Benutzer, Registrierung und Anbieter'],
+        ];
+    }
+@endphp
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- ========================================================= --}}
-    {{-- HEADER --}}
-    {{-- ========================================================= --}}
+    <x-page-header title="Einstellungen" />
 
-    <div class="mb-8">
 
-        <p class="text-sm text-slate-500 dark:text-slate-400">
-            System
-        </p>
+    {{-- PROFILKARTE --}}
 
-        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
-            Einstellungen
-        </h2>
-
-        <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Verwalte dein Profil, deine Finanzen, Sicherheit und das Erscheinungsbild von FinanzView.
-        </p>
-
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- EINSTELLUNGEN --}}
-    {{-- ========================================================= --}}
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-
-        {{-- ===================================================== --}}
-        {{-- PROFIL --}}
-        {{-- ===================================================== --}}
-
-        <a
-            href="{{ route('settings.profile') }}"
-            class="
-                group
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                hover:shadow-md
-                hover:-translate-y-0.5
-                transition
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-blue-50
-                        dark:bg-blue-500/10
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    👤
-                </div>
-
-                <span class="text-slate-400 group-hover:translate-x-1 transition-transform">
-                    →
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Profil
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Verwalte deinen Namen und deine persönlichen Kontodaten.
-            </p>
-
-        </a>
-
-
-        {{-- ===================================================== --}}
-        {{-- SICHERHEIT --}}
-        {{-- ===================================================== --}}
-
-        <a
-            href="{{ route('settings.security') }}"
-            class="
-                group
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                hover:shadow-md
-                hover:-translate-y-0.5
-                transition
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-red-50
-                        dark:bg-red-500/10
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    🔐
-                </div>
-
-                <span class="text-slate-400 group-hover:translate-x-1 transition-transform">
-                    →
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Sicherheit
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Ändere dein Passwort und verwalte deine Sicherheitsoptionen.
-            </p>
-
-        </a>
-
-
-        {{-- ===================================================== --}}
-        {{-- ERSCHEINUNGSBILD --}}
-        {{-- ===================================================== --}}
-
-        <a
-            href="{{ route('settings.appearance') }}"
-            class="
-                group
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                hover:shadow-md
-                hover:-translate-y-0.5
-                transition
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-violet-50
-                        dark:bg-violet-500/10
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    🎨
-                </div>
-
-                <span class="text-slate-400 group-hover:translate-x-1 transition-transform">
-                    →
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Erscheinungsbild
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Passe Darstellung, Farbschema und Theme von FinanzView an.
-            </p>
-
-        </a>
-
-            <a
-                href="{{ route('settings.dashboard') }}"
-                class="group flex items-start gap-4 rounded-2xl border border-slate-200
-                       bg-white p-5 transition hover:border-indigo-300 hover:shadow-sm
-                       dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700"
-            >
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
-                            bg-indigo-50 text-xl dark:bg-indigo-950/40">
-                    🧩
-                </div>
-
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <h3 class="font-semibold text-slate-900 dark:text-white">
-                                Dashboard
-                            </h3>
-                            <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
-                                Wähle Dashboard-Inhalte und den kompakten Darstellungsmodus.
-                            </p>
-                        </div>
-
-                        <span class="text-slate-400 transition group-hover:translate-x-0.5
-                                     dark:text-slate-500">
-                            →
-                        </span>
-                    </div>
-                </div>
-            </a>
-
-
-
-        {{-- ===================================================== --}}
-        {{-- FINANZEN --}}
-        {{-- ===================================================== --}}
-
-        <a
-            href="{{ route('settings.financial') }}"
-            class="
-                group
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                hover:shadow-md
-                hover:-translate-y-0.5
-                transition
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-emerald-50
-                        dark:bg-emerald-500/10
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    💶
-                </div>
-
-                <span class="text-slate-400 group-hover:translate-x-1 transition-transform">
-                    →
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Finanzen
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Währung, Standardkonto und weitere finanzielle Grundeinstellungen.
-            </p>
-
-        </a>
-
-
-        {{-- ===================================================== --}}
-        {{-- DATEN --}}
-        {{-- ===================================================== --}}
-
-        <div
-            class="
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                opacity-60
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-slate-100
-                        dark:bg-slate-800
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    💾
-                </div>
-
-                <span
-                    class="
-                        rounded-full
-                        bg-slate-100
-                        dark:bg-slate-800
-                        px-2.5
-                        py-1
-                        text-xs
-                        font-medium
-                        text-slate-500
-                        dark:text-slate-400
-                    "
-                >
-                    Bald
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                {{-- ===================================================== --}}
-                {{-- DATEN & EXPORT --}}
-                {{-- ===================================================== --}}
-
-                <a
-                    href="{{ route('settings.data-export') }}"
-                    class="
-                        block
-                        bg-white
-                        dark:bg-slate-900
-                        rounded-3xl
-                        border
-                        border-slate-200
-                        dark:border-slate-800
-                        p-6
-                        shadow-sm
-                        hover:border-slate-300
-                        dark:hover:border-slate-700
-                        hover:shadow-md
-                        transition
-                    "
-                >
-
-                    <div class="flex items-center justify-between gap-4">
-
-                        <div class="flex items-center gap-4">
-
-                            <div
-                                class="
-                                    w-12
-                                    h-12
-                                    rounded-2xl
-                                    bg-emerald-100
-                                    dark:bg-emerald-950/40
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-xl
-                                "
-                            >
-                                📁
-                            </div>
-
-                            <div>
-
-                                <h3 class="font-semibold text-slate-900 dark:text-white">
-                                    Daten & Export
-                                </h3>
-
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                    Deine Finanzdaten exportieren, importieren und verwalten.
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <span class="text-xl text-slate-400 dark:text-slate-500">
-                            →
-                        </span>
-
-                    </div>
-
-                </a>
-
-        {{-- BENACHRICHTIGUNGEN --}}
-        {{-- ===================================================== --}}
-
-        <div
-            class="
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                shadow-sm
-                opacity-60
-            "
-        >
-
-            <div class="flex items-start justify-between gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-                        rounded-2xl
-                        bg-amber-50
-                        dark:bg-amber-500/10
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                    "
-                >
-                    🔔
-                </div>
-
-                <span
-                    class="
-                        rounded-full
-                        bg-slate-100
-                        dark:bg-slate-800
-                        px-2.5
-                        py-1
-                        text-xs
-                        font-medium
-                        text-slate-500
-                        dark:text-slate-400
-                    "
-                >
-                    Bald
-                </span>
-
-            </div>
-
-            <h3 class="font-semibold text-slate-900 dark:text-white mt-5">
-                Benachrichtigungen
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                Einstellungen für Hinweise und Benachrichtigungen.
-            </p>
-
+    <a href="{{ route('settings.profile') }}" class="fv-card flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition">
+        <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold">
+            {{ $initials ?: '?' }}
         </div>
 
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- KONTOINFORMATIONEN --}}
-    {{-- ========================================================= --}}
-
-    <div class="mt-8">
-
-        <div
-            class="
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-6
-                sm:p-8
-            "
-        >
-
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-
-
-                {{-- KONTO --}}
-
-                <div>
-
-                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Konto
-                    </p>
-
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                        {{ auth()->user()->name }}
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        {{ auth()->user()->email }}
-                    </p>
-
-                </div>
-
-
-                {{-- STATUS + LOGOUT --}}
-
-                <div class="flex items-center gap-3">
-
-                    <span
-                        class="
-                            rounded-full
-                            bg-emerald-50
-                            dark:bg-emerald-500/10
-                            px-3
-                            py-1
-                            text-xs
-                            font-medium
-                            text-emerald-600
-                            dark:text-emerald-400
-                        "
-                    >
-                        Konto aktiv
-                    </span>
-
-
-                    <form
-                        method="POST"
-                        action="{{ route('logout') }}"
-                    >
-
-                        @csrf
-
-                        <button
-                            type="submit"
-                            class="
-                                inline-flex
-                                items-center
-                                justify-center
-                                rounded-xl
-                                border
-                                border-red-200
-                                dark:border-red-900
-                                px-4
-                                py-2.5
-                                text-sm
-                                font-medium
-                                text-red-600
-                                dark:text-red-400
-                                hover:bg-red-50
-                                dark:hover:bg-red-950/30
-                                transition
-                            "
-                        >
-                            Abmelden
-                        </button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
+        <div class="flex-1 min-w-0">
+            <p class="text-[17px] font-semibold text-slate-900 dark:text-white truncate">{{ $user->name }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 truncate">{{ $user->email }}</p>
         </div>
 
-    </div>
+        <x-icon name="chevron-right" class="w-5 h-5 text-slate-300 dark:text-slate-600" />
+    </a>
+
+
+    {{-- GRUPPEN --}}
+
+    @foreach ($groups as $group => $items)
+        <section>
+            <h3 class="px-4 pb-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">{{ $group }}</h3>
+
+            <ul class="fv-card overflow-hidden">
+                @foreach ($items as [$route, $icon, $color, $title, $description])
+                    <li>
+                        <a href="{{ route($route) }}" class="group flex items-center gap-3.5 pl-4 hover:bg-slate-50 dark:hover:bg-white/5 transition">
+                            <span class="w-8 h-8 rounded-[9px] {{ $color }} text-white flex items-center justify-center shrink-0">
+                                <x-icon :name="$icon" class="w-[18px] h-[18px]" />
+                            </span>
+
+                            <div class="flex-1 min-w-0 flex items-center gap-3 py-3 pr-4 {{ ! $loop->last ? 'border-b border-slate-100 dark:border-white/5' : '' }}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-slate-900 dark:text-white">{{ $title }}</p>
+                                    <p class="text-[13px] text-slate-500 dark:text-slate-400 truncate">{{ $description }}</p>
+                                </div>
+
+                                <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                            </div>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endforeach
+
+
+    {{-- ABMELDEN --}}
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="fv-card w-full py-3.5 text-center font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+            Abmelden
+        </button>
+    </form>
 
 </div>
 

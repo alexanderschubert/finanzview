@@ -1,462 +1,118 @@
 @extends('layouts.app')
 
-@section('title', 'Wiederkehrend – FinanzView')
-
-@section('eyebrow', 'Finanzen')
-
+@section('title', 'Wiederkehrende Buchungen – FinanzView')
+@section('eyebrow', 'Finanzplanung')
 @section('page_title', 'Wiederkehrend')
+
+@php
+    $frequencyLabels = [
+        'weekly' => 'Wöchentlich',
+        'monthly' => 'Monatlich',
+        'quarterly' => 'Vierteljährlich',
+        'yearly' => 'Jährlich',
+    ];
+
+    // Umrechnung auf einen Monat, um Verträge vergleichbar zu machen.
+    $perMonth = [
+        'weekly' => 52 / 12,
+        'monthly' => 1,
+        'quarterly' => 1 / 3,
+        'yearly' => 1 / 12,
+    ];
+
+    $active = $recurringTransactions->where('is_active', true);
+
+    $monthlyExpense = $active->where('type', 'expense')
+        ->sum(fn ($item) => (float) $item->amount * ($perMonth[$item->frequency] ?? 1));
+
+    $monthlyIncome = $active->where('type', 'income')
+        ->sum(fn ($item) => (float) $item->amount * ($perMonth[$item->frequency] ?? 1));
+
+    $groups = [
+        'Aktiv' => $active,
+        'Pausiert' => $recurringTransactions->where('is_active', false),
+    ];
+@endphp
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- ========================================================= --}}
-    {{-- HEADER --}}
-    {{-- ========================================================= --}}
+    <x-page-header title="Wiederkehrend" subtitle="Daueraufträge, Abos und regelmäßige Einnahmen.">
+        <a href="{{ route('recurring-transactions.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
+            <x-icon name="plus" class="w-4 h-4" />
+            Neu
+        </a>
+    </x-page-header>
 
-    <div class="mb-8">
+    <x-flash />
 
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+    @if ($recurringTransactions->isEmpty())
 
-            <div>
-
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Automatische Buchungen
-                </p>
-
-                <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
-                    Wiederkehrend
-                </h2>
-
-                <p class="text-slate-500 dark:text-slate-400 mt-2">
-                    Verwalte regelmäßige Einnahmen und Ausgaben.
-                </p>
-
-            </div>
-
-            <a
-                href="{{ route('recurring-transactions.create') }}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    bg-slate-950
-                    dark:bg-white
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-white
-                    dark:text-slate-950
-                    hover:bg-slate-800
-                    dark:hover:bg-slate-200
-                    transition
-                "
-            >
-                <span class="text-lg leading-none">+</span>
-                Neue wiederkehrende Buchung
-            </a>
-
+        <div class="fv-card">
+            <x-empty-state icon="repeat" title="Noch nichts Wiederkehrendes" :href="route('recurring-transactions.create')" action="Wiederkehrende Buchung anlegen">
+                Miete, Gehalt oder Streaming-Abo – FinanzView bucht sie automatisch zum Fälligkeitstag.
+            </x-empty-state>
         </div>
-
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- ERFOLG --}}
-    {{-- ========================================================= --}}
-
-    @if(session('success'))
-
-        <div
-            class="
-                mb-6
-                rounded-2xl
-                border
-                border-emerald-200
-                dark:border-emerald-900
-                bg-emerald-50
-                dark:bg-emerald-950/30
-                px-5
-                py-4
-            "
-        >
-
-            <div class="flex items-center gap-3">
-
-                <span class="text-lg text-emerald-600 dark:text-emerald-400">
-                    ✓
-                </span>
-
-                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                    {{ session('success') }}
-                </p>
-
-            </div>
-
-        </div>
-
-    @endif
-
-
-    {{-- ========================================================= --}}
-    {{-- LEER --}}
-    {{-- ========================================================= --}}
-
-    @if($recurringTransactions->isEmpty())
-
-        <section
-            class="
-                rounded-3xl
-                bg-white
-                dark:bg-slate-900
-                border
-                border-slate-200
-                dark:border-slate-800
-                p-8
-                sm:p-12
-                text-center
-            "
-        >
-
-            <div
-                class="
-                    mx-auto
-                    w-16
-                    h-16
-                    rounded-2xl
-                    bg-slate-100
-                    dark:bg-slate-800
-                    flex
-                    items-center
-                    justify-center
-                    text-3xl
-                "
-            >
-                🔄
-            </div>
-
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-5">
-                Noch keine wiederkehrenden Buchungen
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto">
-                Lege deine regelmäßigen Einnahmen und Ausgaben an,
-                damit du sie nicht jedes Mal manuell erfassen musst.
-            </p>
-
-            <div class="mt-6">
-
-                <a
-                    href="{{ route('recurring-transactions.create') }}"
-                    class="
-                        inline-flex
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-xl
-                        bg-slate-950
-                        dark:bg-white
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        text-white
-                        dark:text-slate-950
-                        hover:bg-slate-800
-                        dark:hover:bg-slate-200
-                        transition
-                    "
-                >
-                    <span class="text-lg leading-none">+</span>
-                    Erste Buchung erstellen
-                </a>
-
-            </div>
-
-        </section>
 
     @else
 
+        {{-- ÜBERSICHT PRO MONAT --}}
 
-        {{-- ===================================================== --}}
-        {{-- ÜBERSICHT --}}
-        {{-- ===================================================== --}}
+        <div class="grid grid-cols-2 gap-3">
+            <x-stat label="Fixkosten pro Monat" icon="trending-down" tone="negative" hint="Aktive Ausgaben, umgerechnet">
+                {{ number_format($monthlyExpense, 2, ',', '.') }} €
+            </x-stat>
 
-        <div class="space-y-4">
-
-            @foreach($recurringTransactions as $recurring)
-
-                <section
-                    class="
-                        rounded-3xl
-                        bg-white
-                        dark:bg-slate-900
-                        border
-                        border-slate-200
-                        dark:border-slate-800
-                        overflow-hidden
-                    "
-                >
-
-                    <div class="p-5 sm:p-6">
-
-                        <div class="flex flex-col lg:flex-row lg:items-center gap-5">
-
-                            {{-- ================================= --}}
-                            {{-- ICON --}}
-                            {{-- ================================= --}}
-
-                            <div
-                                class="
-                                    w-12
-                                    h-12
-                                    shrink-0
-                                    rounded-2xl
-                                    flex
-                                    items-center
-                                    justify-center
-                                    text-xl
-                                    {{ $recurring->type === 'income'
-                                        ? 'bg-emerald-50 dark:bg-emerald-500/10'
-                                        : 'bg-red-50 dark:bg-red-500/10' }}
-                                "
-                            >
-                                {{ $recurring->type === 'income' ? '↗️' : '↘️' }}
-                            </div>
+            <x-stat label="Regelmäßige Einnahmen" icon="trending-up" tone="positive" hint="Pro Monat, umgerechnet">
+                {{ number_format($monthlyIncome, 2, ',', '.') }} €
+            </x-stat>
+        </div>
 
 
-                            {{-- ================================= --}}
-                            {{-- BESCHREIBUNG --}}
-                            {{-- ================================= --}}
+        {{-- LISTEN --}}
 
-                            <div class="min-w-0 flex-1">
+        @foreach ($groups as $group => $items)
+            @continue($items->isEmpty())
 
-                                <div class="flex flex-wrap items-center gap-2">
+            <section>
+                <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{{ $group }}</h3>
 
-                                    <h3 class="font-semibold text-slate-900 dark:text-white truncate">
-                                        {{ $recurring->description }}
-                                    </h3>
+                <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                    @foreach ($items as $recurring)
+                        @php
+                            $isIncome = $recurring->type === 'income';
+                            $nextDate = $recurring->next_date;
+                        @endphp
 
-                                    @if($recurring->is_active)
+                        <li>
+                            <a href="{{ route('recurring-transactions.show', $recurring) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition {{ $recurring->is_active ? '' : 'opacity-60' }}">
+                                <x-emoji-tile :emoji="$recurring->category?->icon" fallback="repeat" />
 
-                                        <span
-                                            class="
-                                                inline-flex
-                                                items-center
-                                                rounded-full
-                                                bg-emerald-50
-                                                dark:bg-emerald-500/10
-                                                px-2.5
-                                                py-1
-                                                text-xs
-                                                font-medium
-                                                text-emerald-700
-                                                dark:text-emerald-400
-                                            "
-                                        >
-                                            Aktiv
-                                        </span>
-
-                                    @else
-
-                                        <span
-                                            class="
-                                                inline-flex
-                                                items-center
-                                                rounded-full
-                                                bg-slate-100
-                                                dark:bg-slate-800
-                                                px-2.5
-                                                py-1
-                                                text-xs
-                                                font-medium
-                                                text-slate-500
-                                                dark:text-slate-400
-                                            "
-                                        >
-                                            Inaktiv
-                                        </span>
-
-                                    @endif
-
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-slate-900 dark:text-white truncate">{{ $recurring->description }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                        {{ $frequencyLabels[$recurring->frequency] ?? $recurring->frequency }}
+                                        @if ($recurring->is_active && $nextDate)
+                                            · nächste {{ $nextDate->isToday() ? 'heute' : ($nextDate->isTomorrow() ? 'morgen' : 'am ' . $nextDate->format('d.m.Y')) }}
+                                        @endif
+                                        @if ($recurring->account)
+                                            · {{ $recurring->account->name }}
+                                        @endif
+                                    </p>
                                 </div>
 
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-
-                                    {{ $recurring->account->name }}
-
-                                    @if($recurring->category)
-                                        · {{ $recurring->category->name }}
-                                    @endif
-
+                                <p class="font-semibold tabular-nums whitespace-nowrap {{ $isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
+                                    {{ $isIncome ? '+' : '−' }}{{ number_format((float) $recurring->amount, 2, ',', '.') }} €
                                 </p>
 
-                            </div>
-
-
-                            {{-- ================================= --}}
-                            {{-- BETRAG --}}
-                            {{-- ================================= --}}
-
-                            <div class="lg:text-right">
-
-                                <p
-                                    class="
-                                        text-lg
-                                        font-semibold
-                                        {{ $recurring->type === 'income'
-                                            ? 'text-emerald-600 dark:text-emerald-400'
-                                            : 'text-red-600 dark:text-red-400' }}
-                                    "
-                                >
-
-                                    {{ $recurring->type === 'income' ? '+' : '-' }}
-                                    {{ number_format((float) $recurring->amount, 2, ',', '.') }}
-                                    €
-
-                                </p>
-
-                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                                    {{ match($recurring->frequency) {
-                                        'weekly' => 'Wöchentlich',
-                                        'monthly' => 'Monatlich',
-                                        'quarterly' => 'Vierteljährlich',
-                                        'yearly' => 'Jährlich',
-                                        default => $recurring->frequency,
-                                    } }}
-                                </p>
-
-                            </div>
-
-
-                            {{-- ================================= --}}
-                            {{-- NÄCHSTE AUSFÜHRUNG --}}
-                            {{-- ================================= --}}
-
-                            <div class="lg:min-w-32">
-
-                                <p class="text-xs text-slate-400 dark:text-slate-500">
-                                    Nächste Ausführung
-                                </p>
-
-                                <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">
-                                    {{ $recurring->next_date?->format('d.m.Y') }}
-                                </p>
-
-                            </div>
-
-
-                            {{-- ================================= --}}
-                            {{-- AKTIONEN --}}
-                            {{-- ================================= --}}
-
-                            <div class="flex items-center gap-2">
-
-                                <a
-                                    href="{{ route('recurring-transactions.show', $recurring) }}"
-                                    class="
-                                        inline-flex
-                                        items-center
-                                        justify-center
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        dark:border-slate-700
-                                        bg-white
-                                        dark:bg-slate-800
-                                        px-4
-                                        py-2.5
-                                        text-sm
-                                        font-medium
-                                        text-slate-700
-                                        dark:text-slate-200
-                                        hover:bg-slate-100
-                                        dark:hover:bg-slate-700
-                                        transition
-                                    "
-                                >
-                                    Anzeigen
-                                </a>
-
-                                <a
-                                    href="{{ route('recurring-transactions.edit', $recurring) }}"
-                                    class="
-                                        inline-flex
-                                        items-center
-                                        justify-center
-                                        rounded-xl
-                                        bg-slate-950
-                                        dark:bg-white
-                                        px-4
-                                        py-2.5
-                                        text-sm
-                                        font-medium
-                                        text-white
-                                        dark:text-slate-950
-                                        hover:bg-slate-800
-                                        dark:hover:bg-slate-200
-                                        transition
-                                    "
-                                >
-                                    Bearbeiten
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-            @endforeach
-
-        </div>
-
-
-        {{-- ===================================================== --}}
-        {{-- ZUSATZINFO --}}
-        {{-- ===================================================== --}}
-
-        <div
-            class="
-                mt-6
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                bg-slate-50
-                dark:bg-slate-900/50
-                p-5
-                sm:p-6
-            "
-        >
-
-            <div class="flex items-start gap-4">
-
-                <div class="text-xl">
-                    ℹ️
-                </div>
-
-                <div>
-
-                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Wiederkehrende Buchungen
-                    </p>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Diese Übersicht verwaltet deine regelmäßigen Einnahmen und Ausgaben.
-                        Die nächste Ausführung kannst du jederzeit bearbeiten.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
+                                <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endforeach
 
     @endif
 
