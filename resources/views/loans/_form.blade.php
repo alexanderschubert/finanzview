@@ -117,7 +117,12 @@
             </x-field>
         </div>
 
-        <div class="hidden rounded-xl bg-slate-50 dark:bg-white/5 px-4 py-3 text-sm text-slate-600 dark:text-slate-300" data-calc-result aria-live="polite"></div>
+        <div class="hidden" data-calc-box>
+            <div class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 dark:bg-white/5 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                <span data-calc-result aria-live="polite"></span>
+                <button type="button" class="fv-link shrink-0 text-sm" data-calc-apply>Übernehmen</button>
+            </div>
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
             <x-field label="Bereits getilgt" for="paid_amount" error="paid_amount" hint="Vor FinanzView gezahlt.">
@@ -143,7 +148,7 @@
                 <input id="start_date" name="start_date" type="date" value="{{ $startDate }}" class="fv-input" data-calc>
             </x-field>
 
-            <x-field label="Anzahl Raten" for="total_installments" error="total_installments">
+            <x-field label="Anzahl Raten" for="total_installments" error="total_installments" hint="Nötig für den Tilgungsplan.">
                 <input id="total_installments" name="total_installments" type="number" step="1" min="1" inputmode="numeric"
                     value="{{ $value('total_installments') }}" placeholder="Optional" class="fv-input tabular-nums">
             </x-field>
@@ -228,7 +233,11 @@
         const iconInput = document.getElementById('creditor_icon');
         const colorPicker = form.querySelector('[data-color-picker]');
         const colorValue = form.querySelector('[data-color-value]');
+        const box = form.querySelector('[data-calc-box]');
         const result = form.querySelector('[data-calc-result]');
+        const applyButton = form.querySelector('[data-calc-apply]');
+        const endDate = document.getElementById('end_date');
+        let suggestion = null;
 
         const principal = document.getElementById('principal_amount');
         const rate = document.getElementById('interest_rate');
@@ -251,8 +260,11 @@
             const A = parseFloat(installment.value);
             const r = (parseFloat(rate.value) || 0) / 100 / 12;
 
+            suggestion = null;
+            applyButton.classList.add('hidden');
+
             if (!(P > 0) || !(A > 0)) {
-                result.classList.add('hidden');
+                box.classList.add('hidden');
                 return;
             }
 
@@ -261,7 +273,7 @@
             if (r === 0) {
                 months = Math.ceil(P / A);
             } else if (A <= P * r) {
-                result.classList.remove('hidden');
+                box.classList.remove('hidden');
                 result.textContent = 'Die Rate deckt nicht einmal die Zinsen – der Kredit würde nie abbezahlt.';
                 return;
             } else {
@@ -271,9 +283,13 @@
             const totalPaid = r === 0 ? P : months * A;
             let text = `≈ ${months} Raten`;
 
+            let lastDate = null;
+
             if (start.value) {
                 const end = new Date(start.value);
+                end.setDate(1);
                 end.setMonth(end.getMonth() + months - 1);
+                lastDate = end;
                 text += ` · letzte Rate ca. ${String(end.getMonth() + 1).padStart(2, '0')}/${end.getFullYear()}`;
             }
 
@@ -282,10 +298,29 @@
             }
 
             result.textContent = text;
-            result.classList.remove('hidden');
+            box.classList.remove('hidden');
 
             totalInstallments.placeholder = `Vorschlag: ${months}`;
+
+            suggestion = { months, lastDate };
+            applyButton.classList.toggle('hidden', String(months) === totalInstallments.value);
         }
+
+        // Vorschlag in "Anzahl Raten" und "Ende" übernehmen.
+        applyButton.addEventListener('click', () => {
+            if (!suggestion) return;
+
+            totalInstallments.value = suggestion.months;
+
+            if (suggestion.lastDate) {
+                const end = new Date(suggestion.lastDate.getFullYear(), suggestion.lastDate.getMonth() + 1, 0);
+                endDate.value = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+            }
+
+            applyButton.classList.add('hidden');
+        });
+
+        totalInstallments.addEventListener('input', calculate);
 
         form.querySelectorAll('[data-calc]').forEach(input => input.addEventListener('input', calculate));
         calculate();

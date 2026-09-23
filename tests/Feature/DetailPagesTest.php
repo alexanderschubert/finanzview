@@ -199,6 +199,7 @@ class DetailPagesTest extends TestCase
                 'principal_amount' => '6000',
                 'interest_rate' => '3',
                 'installment_amount' => '500',
+                'total_installments' => '13',
                 'start_date' => now()->addMonth()->startOfMonth()->toDateString(),
                 'is_active' => '1',
             ])
