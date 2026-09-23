@@ -1,309 +1,123 @@
 @extends('layouts.app')
 
-@section('title', 'Kreditkarten')
+@section('title', 'Kreditkarten – FinanzView')
+@section('eyebrow', 'Finanzplanung')
+@section('page_title', 'Kreditkarten')
+
+@php
+    $totalLimit = $creditCards->sum(fn ($card) => (float) ($card->credit_limit ?? 0));
+    $totalBalance = $creditCards->sum(fn ($card) => (float) ($card->current_balance ?? 0));
+    $totalAvailable = max(0, $totalLimit - $totalBalance);
+    $overallUtilization = $totalLimit > 0 ? min(100, max(0, ($totalBalance / $totalLimit) * 100)) : 0;
+@endphp
 
 @section('content')
-<div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                Kreditkarten
-            </h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Übersicht deiner Kreditkarten und deren Auslastung.
-            </p>
-        </div>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-        <a
-            href="{{ route('credit-cards.create') }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-        >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 5v14M5 12h14"/>
-            </svg>
-            Kreditkarte hinzufügen
+    <x-page-header title="Kreditkarten" subtitle="Saldo, Limit und Abrechnungen deiner Karten.">
+        <a href="{{ route('credit-cards.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
+            <x-icon name="plus" class="w-4 h-4" />
+            Neue Karte
         </a>
-    </div>
+    </x-page-header>
 
+    <x-flash />
 
-    {{-- Empty state --}}
-    @if($creditCards->isEmpty())
-        <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center dark:border-slate-700 dark:bg-slate-900">
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                    <rect x="3" y="5" width="18" height="14" rx="2"/>
-                    <path d="M3 10h18"/>
-                    <path d="M7 15h4"/>
-                </svg>
-            </div>
+    @if ($creditCards->isEmpty())
 
-            <h2 class="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Noch keine Kreditkarten
-            </h2>
-
-            <p class="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-                Lege deine erste Kreditkarte an, um Kreditlimit, Saldo,
-                Auslastung und Abrechnungen in FinanzView zu verwalten.
-            </p>
+        <div class="fv-card">
+            <x-empty-state icon="card" title="Noch keine Kreditkarten" :href="route('credit-cards.create')" action="Kreditkarte anlegen">
+                Verwalte Limit, Saldo und monatliche Abrechnungen deiner Kreditkarten.
+            </x-empty-state>
         </div>
+
     @else
 
-        {{-- Summary --}}
-        @php
-            $totalLimit = $creditCards->sum(fn ($card) => (float) ($card->credit_limit ?? 0));
-            $totalBalance = $creditCards->sum(fn ($card) => (float) ($card->current_balance ?? 0));
-            $totalAvailable = max(0, $totalLimit - $totalBalance);
-            $overallUtilization = $totalLimit > 0
-                ? min(100, max(0, ($totalBalance / $totalLimit) * 100))
-                : 0;
-            $activeCards = $creditCards->where('is_active', true)->count();
-        @endphp
+        {{-- ÜBERSICHT --}}
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <x-stat label="Saldo">
+                {{ number_format($totalBalance, 2, ',', '.') }} €
+            </x-stat>
 
-            {{-- Cards --}}
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500 dark:text-slate-400">Kreditkarten</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    {{ $activeCards }}
-                </p>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    aktiv
-                </p>
-            </div>
+            <x-stat label="Verfügbar" tone="positive">
+                {{ number_format($totalAvailable, 2, ',', '.') }} €
+            </x-stat>
 
-            {{-- Limit --}}
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500 dark:text-slate-400">Kreditlimit</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    {{ number_format($totalLimit, 2, ',', '.') }} €
-                </p>
-            </div>
-
-            {{-- Balance --}}
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500 dark:text-slate-400">Aktueller Saldo</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    {{ number_format($totalBalance, 2, ',', '.') }} €
-                </p>
-            </div>
-
-            {{-- Available --}}
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500 dark:text-slate-400">Verfügbar</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    {{ number_format($totalAvailable, 2, ',', '.') }} €
-                </p>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    {{ number_format($overallUtilization, 1, ',', '.') }} % Auslastung
-                </p>
-            </div>
+            <x-stat label="Auslastung" :tone="$overallUtilization >= 70 ? 'negative' : 'neutral'" :hint="'Limit ' . number_format($totalLimit, 0, ',', '.') . ' €'">
+                {{ number_format($overallUtilization, 0, ',', '.') }} %
+            </x-stat>
         </div>
 
 
-        {{-- Credit card grid --}}
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {{-- KARTEN --}}
 
-            @foreach($creditCards as $creditCard)
-
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            @foreach ($creditCards as $creditCard)
                 @php
                     $limit = (float) ($creditCard->credit_limit ?? 0);
                     $balance = (float) ($creditCard->current_balance ?? 0);
                     $available = max(0, $limit - $balance);
-                    $utilization = $limit > 0
-                        ? min(100, max(0, ($balance / $limit) * 100))
-                        : 0;
+                    $utilization = $limit > 0 ? min(100, max(0, ($balance / $limit) * 100)) : 0;
 
-                    $cardColor = $creditCard->color ?: '#334155';
-
-                    $utilizationLabel =
-                        $utilization >= 90 ? 'Sehr hoch' :
-                        ($utilization >= 70 ? 'Hoch' :
-                        ($utilization >= 40 ? 'Mittel' : 'Niedrig'));
-
-                    $utilizationClass =
-                        $utilization >= 90
-                            ? 'text-red-600 dark:text-red-400'
-                            : ($utilization >= 70
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : 'text-emerald-600 dark:text-emerald-400');
+                    $cardColor = is_string($creditCard->color) && preg_match('/^#[0-9a-fA-F]{6}$/', $creditCard->color)
+                        ? $creditCard->color
+                        : '#3f3f45';
                 @endphp
 
-                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <a href="{{ route('credit-cards.show', $creditCard) }}" class="group block {{ $creditCard->is_active ? '' : 'opacity-60' }}">
 
-                    {{-- Card header --}}
-                    <div class="p-5">
+                    {{-- Kartenoptik (Seitenverhältnis einer echten Karte) --}}
+                    <div
+                        class="relative aspect-[1.586] overflow-hidden rounded-2xl p-5 text-white shadow-lg shadow-slate-900/20 transition group-hover:-translate-y-0.5 group-hover:shadow-xl"
+                        style="background: linear-gradient(135deg, {{ $cardColor }}, color-mix(in srgb, {{ $cardColor }} 55%, black));"
+                    >
+                        <div aria-hidden="true" class="absolute -right-12 -bottom-16 w-52 h-52 rounded-full bg-white/10"></div>
+                        <div aria-hidden="true" class="absolute -right-2 -bottom-24 w-52 h-52 rounded-full bg-white/5"></div>
 
-                        <div class="flex items-start justify-between gap-4">
-
-                            <div class="flex min-w-0 items-center gap-3">
-
-                                <div
-                                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
-                                    style="background-color: {{ $cardColor }}"
-                                >
-                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                                        <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                        <path d="M3 10h18"/>
-                                        <path d="M7 15h4"/>
-                                    </svg>
-                                </div>
-
+                        <div class="relative flex h-full flex-col justify-between">
+                            <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <h2 class="truncate font-semibold text-slate-900 dark:text-slate-100">
-                                            {{ $creditCard->name }}
-                                        </h2>
-
-                                        @if(!$creditCard->is_active)
-                                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                                Inaktiv
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                                        @if($creditCard->issuer)
-                                            {{ $creditCard->issuer }}
-                                        @endif
-
-                                        @if($creditCard->last_four)
-                                            @if($creditCard->issuer) · @endif
-                                            •••• {{ $creditCard->last_four }}
-                                        @endif
-                                    </p>
+                                    <p class="font-semibold truncate">{{ $creditCard->name }}</p>
+                                    <p class="text-xs text-white/70 truncate">{{ $creditCard->issuer ?: $creditCard->provider?->name ?: 'Kreditkarte' }}</p>
                                 </div>
+
+                                @unless ($creditCard->is_active)
+                                    <span class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium">Inaktiv</span>
+                                @endunless
                             </div>
 
-                            @if($creditCard->provider)
-                                <span class="shrink-0 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                    {{ $creditCard->provider->name }}
-                                </span>
-                            @endif
+                            <div>
+                                <p class="text-xs text-white/70">Aktueller Saldo</p>
+                                <p class="text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($balance, 2, ',', '.') }} €</p>
+                            </div>
 
+                            <p class="font-mono text-sm tracking-[0.2em] text-white/80">
+                                •••• {{ $creditCard->last_four ?: '····' }}
+                            </p>
                         </div>
-
-
-                        {{-- Main values --}}
-                        <div class="mt-6 grid grid-cols-3 gap-3">
-
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    Saldo
-                                </p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-slate-100">
-                                    {{ number_format($balance, 2, ',', '.') }} €
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    Limit
-                                </p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-slate-100">
-                                    {{ $limit > 0 ? number_format($limit, 2, ',', '.') . ' €' : '–' }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    Verfügbar
-                                </p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-slate-100">
-                                    {{ $limit > 0 ? number_format($available, 2, ',', '.') . ' €' : '–' }}
-                                </p>
-                            </div>
-
-                        </div>
-
-
-                        {{-- Utilization --}}
-                        <div class="mt-5">
-
-                            <div class="mb-2 flex items-center justify-between text-xs">
-                                <span class="text-slate-500 dark:text-slate-400">
-                                    Kredit-Auslastung
-                                </span>
-
-                                <span class="font-medium {{ $utilizationClass }}">
-                                    {{ number_format($utilization, 1, ',', '.') }} %
-                                    · {{ $utilizationLabel }}
-                                </span>
-                            </div>
-
-                            <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                <div
-                                    class="h-full rounded-full transition-all
-                                        {{ $utilization >= 90
-                                            ? 'bg-red-500'
-                                            : ($utilization >= 70
-                                                ? 'bg-amber-500'
-                                                : 'bg-emerald-500') }}"
-                                    style="width: {{ $utilization }}%"
-                                ></div>
-                            </div>
-
-                        </div>
-
-
-                        {{-- Dates --}}
-                        <div class="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    Abrechnungstag
-                                </p>
-                                <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    {{ $creditCard->billing_day ? 'Tag ' . $creditCard->billing_day : 'Nicht hinterlegt' }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">
-                                    Zahlungsziel
-                                </p>
-                                <p class="mt-1 text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    {{ $creditCard->payment_due_day ? 'Tag ' . $creditCard->payment_due_day : 'Nicht hinterlegt' }}
-                                </p>
-                            </div>
-
-                        </div>
-
                     </div>
 
-
-                    {{-- Footer --}}
-                    <div class="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-950/50">
-
-                        @if($creditCard->account)
-                            <span class="truncate text-xs text-slate-500 dark:text-slate-400">
-                                Konto: {{ $creditCard->account->name }}
-                            </span>
+                    {{-- Auslastung --}}
+                    <div class="mt-3 px-1">
+                        @if ($limit > 0)
+                            <x-progress :value="$utilization" :tone="$utilization >= 90 ? 'negative' : ($utilization >= 70 ? 'warning' : 'positive')" class="h-1.5" />
+                            <div class="mt-1.5 flex justify-between text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                                <span>{{ number_format($available, 2, ',', '.') }} € verfügbar</span>
+                                <span>{{ number_format($utilization, 0, ',', '.') }} % von {{ number_format($limit, 0, ',', '.') }} €</span>
+                            </div>
                         @else
-                            <span class="text-xs text-slate-400 dark:text-slate-500">
-                                Kein Konto verknüpft
-                            </span>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Kein Limit hinterlegt</p>
                         @endif
-
-                        <a
-                            href="{{ route('credit-cards.show', $creditCard) }}"
-                            class="text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                        >
-                            Details
-                            <span aria-hidden="true">→</span>
-                        </a>
-
                     </div>
 
-                </div>
-
+                </a>
             @endforeach
-
         </div>
 
     @endif
 
 </div>
+
 @endsection

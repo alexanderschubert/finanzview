@@ -26,7 +26,7 @@
 
         return $good
             ? 'text-emerald-600 dark:text-emerald-400'
-            : 'text-rose-600 dark:text-rose-400';
+            : 'text-red-600 dark:text-red-400';
     };
 
     $isHex = fn ($color) => is_string($color) && preg_match('/^#[0-9a-fA-F]{3,8}$/', $color);
@@ -44,60 +44,26 @@
     $periodLabel = $report['start']->format('d.m.Y') . ' – ' . $report['end']->format('d.m.Y');
     $previousLabel = $report['previous_start']->format('d.m.Y') . ' – ' . $report['previous_end']->format('d.m.Y');
 
-    $card = 'bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm break-inside-avoid';
-    $field = 'rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500';
+    $card = 'fv-card break-inside-avoid print:shadow-none print:ring-1 print:ring-slate-200';
+    $field = 'fv-input text-sm py-2.5';
 @endphp
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:py-0 print:px-0">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 print:py-0 print:px-0">
 
-    {{-- ========================================================= --}}
-    {{-- HEADER --}}
-    {{-- ========================================================= --}}
-
-    <div class="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
-
-        <div class="min-w-0">
-
-            <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    Auswertungen
-                </p>
-            </div>
-
-            <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-2">
-                Analysen
-            </h2>
-
-            <p class="text-slate-500 dark:text-slate-400 mt-2">
-                {{ $periodLabel }}
-                <span class="text-slate-400 dark:text-slate-500">· verglichen mit {{ $previousLabel }}</span>
-            </p>
-
-        </div>
-
-        <div class="flex flex-wrap gap-3 print:hidden">
-
-            <a
-                href="{{ route('reports.export', array_filter($filters)) }}"
-                class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-            >
-                ⬇️ CSV exportieren
+    <x-page-header title="Analysen" :subtitle="$periodLabel . ' · verglichen mit ' . $previousLabel">
+        <div class="flex flex-wrap gap-2 print:hidden">
+            <a href="{{ route('reports.export', array_filter($filters)) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
+                <x-icon name="download" class="w-4 h-4" />
+                CSV
             </a>
 
-            <button
-                type="button"
-                onclick="window.print()"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white hover:bg-emerald-700 transition"
-            >
-                🖨️ Drucken / PDF
+            <button type="button" onclick="window.print()" class="fv-btn fv-btn-primary text-sm py-2.5">
+                Drucken / PDF
             </button>
-
         </div>
-
-    </div>
+    </x-page-header>
 
 
     {{-- ========================================================= --}}
@@ -175,12 +141,10 @@
         {{-- LEERZUSTAND --}}
         {{-- ========================================================= --}}
 
-        <div class="{{ $card }} mt-6 p-10 text-center">
-            <div class="text-4xl mb-3">📊</div>
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Keine Buchungen in diesem Zeitraum</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <div class="{{ $card }} mt-6">
+            <x-empty-state icon="chart" title="Keine Buchungen in diesem Zeitraum">
                 Wähle einen anderen Zeitraum oder ein anderes Konto. Umbuchungen zwischen Konten zählen nicht als Einnahme oder Ausgabe.
-            </p>
+            </x-empty-state>
         </div>
 
     @else
@@ -193,8 +157,8 @@
 
         @foreach ([
             ['label' => 'Einnahmen', 'value' => $money($totals['income']), 'previous' => $money($previousTotals['income']), 'change' => $changes['income'], 'better' => true, 'accent' => 'text-emerald-600 dark:text-emerald-400'],
-            ['label' => 'Ausgaben', 'value' => $money($totals['expense']), 'previous' => $money($previousTotals['expense']), 'change' => $changes['expense'], 'better' => false, 'accent' => 'text-rose-600 dark:text-rose-400'],
-            ['label' => 'Saldo', 'value' => $money($totals['balance']), 'previous' => $money($previousTotals['balance']), 'change' => $changes['balance'], 'better' => true, 'accent' => $totals['balance'] >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'],
+            ['label' => 'Ausgaben', 'value' => $money($totals['expense']), 'previous' => $money($previousTotals['expense']), 'change' => $changes['expense'], 'better' => false, 'accent' => 'text-red-600 dark:text-red-400'],
+            ['label' => 'Saldo', 'value' => $money($totals['balance']), 'previous' => $money($previousTotals['balance']), 'change' => $changes['balance'], 'better' => true, 'accent' => $totals['balance'] >= 0 ? 'text-slate-900 dark:text-white' : 'text-red-600 dark:text-red-400'],
         ] as $kpi)
             <div class="{{ $card }} p-5">
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ $kpi['label'] }}</p>
@@ -227,12 +191,11 @@
 
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Verlauf</p>
-                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">Einnahmen & Ausgaben pro Monat</h3>
+                <h3 class="text-[17px] font-semibold text-slate-900 dark:text-white">Einnahmen & Ausgaben pro Monat</h3>
             </div>
             <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                 <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Einnahmen</div>
-                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Ausgaben</div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>Ausgaben</div>
             </div>
         </div>
 
@@ -247,7 +210,7 @@
                                 title="Einnahmen {{ $month['label'] }}: {{ $money($month['income']) }}"
                             ></div>
                             <div
-                                class="w-1/2 max-w-[22px] rounded-t-md bg-rose-500"
+                                class="w-1/2 max-w-[22px] rounded-t-md bg-red-400"
                                 style="height: {{ round($month['expense'] / $monthlyMax * 100, 2) }}%"
                                 title="Ausgaben {{ $month['label'] }}: {{ $money($month['expense']) }}"
                             ></div>
@@ -259,7 +222,7 @@
                 @foreach ($report['monthly'] as $month)
                     <div class="flex-1 min-w-[44px] text-center">
                         <p class="text-xs text-slate-500 dark:text-slate-400">{{ $month['short_label'] }}</p>
-                        <p class="text-[11px] tabular-nums font-medium {{ $month['balance'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                        <p class="text-[11px] tabular-nums font-medium {{ $month['balance'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                             {{ $month['balance'] >= 0 ? '+' : '−' }}{{ number_format(abs($month['balance']), 0, ',', '.') }}
                         </p>
                     </div>
@@ -279,14 +242,12 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5 print:grid-cols-1">
 
         @foreach ([
-            ['title' => 'Ausgaben nach Kategorie', 'eyebrow' => 'Wofür', 'items' => $report['expense_categories'], 'bar' => 'bg-rose-500', 'better' => false],
+            ['title' => 'Ausgaben nach Kategorie', 'eyebrow' => 'Wofür', 'items' => $report['expense_categories'], 'bar' => 'bg-red-400', 'better' => false],
             ['title' => 'Einnahmen nach Kategorie', 'eyebrow' => 'Woher', 'items' => $report['income_categories'], 'bar' => 'bg-emerald-500', 'better' => true],
         ] as $section)
 
             <div class="{{ $card }} p-6 sm:p-8">
-
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{{ $section['eyebrow'] }}</p>
-                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">{{ $section['title'] }}</h3>
+                <h3 class="text-[17px] font-semibold text-slate-900 dark:text-white">{{ $section['title'] }}</h3>
 
                 @if ($section['items']->isEmpty())
                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-6">Keine Buchungen.</p>
@@ -335,9 +296,7 @@
         @php $matrixMax = max(0.01, $report['category_matrix']['max']); @endphp
 
         <div class="{{ $card }} mt-5 p-6 sm:p-8">
-
-            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Muster</p>
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">Ausgaben je Kategorie und Monat</h3>
+            <h3 class="text-[17px] font-semibold text-slate-900 dark:text-white">Ausgaben je Kategorie und Monat</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Je dunkler das Feld, desto höher die Ausgabe.</p>
 
             <div class="mt-6 overflow-x-auto">
@@ -386,9 +345,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5 print:grid-cols-1">
 
         <div class="{{ $card }} p-6 sm:p-8">
-
-            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Wo</p>
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">Top-Händler</h3>
+            <h3 class="text-[17px] font-semibold text-slate-900 dark:text-white">Top-Händler</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Nach Händler, sonst nach Beschreibung gruppiert.</p>
 
             @if ($report['top_merchants']->isEmpty())
@@ -419,9 +376,7 @@
         </div>
 
         <div class="{{ $card }} p-6 sm:p-8">
-
-            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Einzelposten</p>
-            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">Größte Ausgaben</h3>
+            <h3 class="text-[17px] font-semibold text-slate-900 dark:text-white">Größte Ausgaben</h3>
 
             @if ($report['largest_expenses']->isEmpty())
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-6">Keine Ausgaben.</p>
@@ -433,7 +388,7 @@
                                 <p class="truncate text-slate-800 dark:text-slate-100">{{ $expense['description'] ?: ($expense['merchant'] ?: 'Ausgabe') }}</p>
                                 <p class="text-xs text-slate-400 dark:text-slate-500">{{ $expense['date']->format('d.m.Y') }} · {{ $expense['category'] }}</p>
                             </div>
-                            <span class="font-semibold tabular-nums text-rose-600 dark:text-rose-400 flex-shrink-0">{{ $money($expense['amount']) }}</span>
+                            <span class="font-semibold tabular-nums text-red-600 dark:text-red-400 flex-shrink-0">{{ $money($expense['amount']) }}</span>
                         </li>
                     @endforeach
                 </ul>
