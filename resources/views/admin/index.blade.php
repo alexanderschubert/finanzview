@@ -1,430 +1,156 @@
 @extends('layouts.app')
 
+@section('title', 'Administration – FinanzView')
+@section('eyebrow', 'System')
+@section('page_title', 'Administration')
+
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    {{-- Flash-Meldungen --}}
-    @if (session('success'))
-        <div class="mb-6 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30 px-5 py-4 text-sm text-emerald-700 dark:text-emerald-300">
-            {{ session('success') }}
-        </div>
-    @endif
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    @if (session('error'))
-        <div class="mb-6 rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 px-5 py-4 text-sm text-rose-700 dark:text-rose-300">
-            {{ session('error') }}
-        </div>
-    @endif
-
-
-    {{-- Header --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-950/40 flex items-center justify-center text-2xl">
-                🛡️
-            </div>
-
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-                    Administration
-                </h1>
-
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Benutzer und Systemeinstellungen verwalten
-                </p>
-            </div>
-        </div>
-    </div>
-
-
-    {{-- Statistiken --}}
-
-    {{-- ========================================================= --}}
-    {{-- ANBIETER --}}
-    {{-- ========================================================= --}}
-
-    <div class="mb-6">
-
-        <a
-            href="{{ route('admin.providers.index') }}"
-            class="group flex items-center justify-between gap-4
-                   p-5 rounded-2xl
-                   bg-white dark:bg-slate-900
-                   border border-slate-200 dark:border-slate-800
-                   shadow-sm
-                   hover:border-violet-300 dark:hover:border-violet-700
-                   hover:shadow-md transition"
-        >
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="w-12 h-12 rounded-xl
-                           bg-violet-100 dark:bg-violet-950/40
-                           flex items-center justify-center
-                           text-2xl"
-                >
-                    🏦
-                </div>
-
-                <div>
-
-                    <div class="font-semibold text-slate-900 dark:text-white">
-                        Anbieter
-                    </div>
-
-                    <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Banken, Zahlungsanbieter, Kreditkarten und Kreditgeber verwalten
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div
-                class="text-slate-400 group-hover:text-violet-600
-                       dark:group-hover:text-violet-400
-                       text-xl transition"
-            >
-                →
-            </div>
-
+    <x-page-header title="Administration" subtitle="Benutzer, Registrierung und Finanzanbieter.">
+        <a href="{{ route('admin.providers.index') }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
+            <x-icon name="landmark" class="w-4 h-4" />
+            Finanzanbieter
         </a>
+    </x-page-header>
 
+    <x-flash />
+
+
+    {{-- KENNZAHLEN --}}
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <x-stat label="Benutzer">{{ $stats['total_users'] }}</x-stat>
+        <x-stat label="Aktiv" tone="positive">{{ $stats['active_users'] }}</x-stat>
+        <x-stat label="Deaktiviert" :tone="$stats['inactive_users'] > 0 ? 'negative' : 'neutral'">{{ $stats['inactive_users'] }}</x-stat>
+        <x-stat label="Administratoren">{{ $stats['admin_users'] }}</x-stat>
     </div>
 
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {{-- REGISTRIERUNG --}}
 
-        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Benutzer
-            </p>
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Registrierung</h3>
 
-            <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-                {{ $stats['total_users'] }}
-            </p>
-        </div>
+        <form method="POST" action="{{ route('admin.settings.registration') }}" class="fv-card flex items-center gap-4 p-4">
+            @csrf
+            @method('PATCH')
 
-        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Aktive Benutzer
-            </p>
-
-            <p class="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                {{ $stats['active_users'] }}
-            </p>
-        </div>
-
-        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Deaktiviert
-            </p>
-
-            <p class="mt-2 text-3xl font-bold text-rose-600 dark:text-rose-400">
-                {{ $stats['inactive_users'] }}
-            </p>
-        </div>
-
-        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5">
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Administratoren
-            </p>
-
-            <p class="mt-2 text-3xl font-bold text-violet-600 dark:text-violet-400">
-                {{ $stats['admin_users'] }}
-            </p>
-        </div>
-
-    </div>
-
-
-    {{-- Systemeinstellungen --}}
-    <div class="mb-8">
-        <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
-
-            <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                    Systemeinstellungen
-                </h2>
-
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Globale Einstellungen für alle Benutzer verwalten.
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-slate-900 dark:text-white">Neue Benutzer dürfen sich registrieren</p>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400">
+                    {{ $registrationEnabled
+                        ? 'Jeder, der FinanzView erreicht, kann ein Konto anlegen – auch per SSO.'
+                        : 'Nur bestehende Benutzer können sich anmelden.' }}
                 </p>
             </div>
 
-            <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {{-- Schalter im iOS-Stil; ein Klick sendet das Formular --}}
+            <button
+                type="submit"
+                role="switch"
+                aria-checked="{{ $registrationEnabled ? 'true' : 'false' }}"
+                aria-label="{{ $registrationEnabled ? 'Registrierung deaktivieren' : 'Registrierung aktivieren' }}"
+                class="relative inline-flex h-[31px] w-[51px] shrink-0 items-center rounded-full transition {{ $registrationEnabled ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700' }}"
+            >
+                <span class="inline-block h-[27px] w-[27px] rounded-full bg-white shadow transition {{ $registrationEnabled ? 'translate-x-[22px]' : 'translate-x-[2px]' }}"></span>
+            </button>
+        </form>
+    </section>
 
-                <div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-medium text-slate-900 dark:text-white">
-                            Registrierung
-                        </span>
 
-                        @if ($registrationEnabled)
-                            <span class="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                                Aktiv
-                            </span>
-                        @else
-                            <span class="inline-flex items-center rounded-full bg-rose-100 dark:bg-rose-950/40 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-300">
-                                Deaktiviert
-                            </span>
-                        @endif
+    {{-- BENUTZER --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Benutzer</h3>
+
+        <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+            @forelse ($users as $user)
+                @php
+                    $isSelf = $user->id === auth()->id();
+                    $initials = collect(preg_split('/\s+/', trim($user->name)))
+                        ->filter()->take(2)
+                        ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+                        ->join('');
+                @endphp
+
+                <li class="flex flex-wrap items-center gap-3 px-4 py-3.5 {{ $user->is_active ? '' : 'opacity-60' }}">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold {{ $user->is_admin ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300' }}">
+                        {{ $initials ?: '?' }}
                     </div>
 
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        @if ($registrationEnabled)
-                            Neue Benutzer können sich aktuell registrieren.
-                        @else
-                            Die Registrierung neuer Benutzer ist aktuell deaktiviert.
-                        @endif
-                    </p>
-                </div>
+                    <div class="flex-1 min-w-[12rem]">
+                        <p class="font-medium text-slate-900 dark:text-white truncate">
+                            {{ $user->name }}
+                            @if ($isSelf)
+                                <span class="ml-1 text-xs font-normal text-slate-400">(du)</span>
+                            @endif
+                        </p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {{ $user->email }}
+                            · {{ $user->last_login_at ? 'zuletzt ' . $user->last_login_at->format('d.m.Y H:i') : 'noch nie angemeldet' }}
+                        </p>
 
-                <form
-                    method="POST"
-                    action="{{ route('admin.settings.registration') }}"
-                >
-                    @csrf
-                    @method('PATCH')
+                        <div class="mt-1.5 flex flex-wrap gap-1.5">
+                            @if ($user->is_admin)
+                                <span class="rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Admin</span>
+                            @endif
+                            @unless ($user->is_active)
+                                <span class="rounded-full bg-red-50 dark:bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:text-red-300">Deaktiviert</span>
+                            @endunless
+                            @if ($user->hasEnabledTwoFactorAuthentication())
+                                <span class="rounded-full bg-slate-100 dark:bg-white/10 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">2FA</span>
+                            @endif
+                            @if ($user->oidc_sub)
+                                <span class="rounded-full bg-slate-100 dark:bg-white/10 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-300">SSO</span>
+                            @endif
+                        </div>
+                    </div>
 
-                    <button
-                        type="submit"
-                        class="
-                            inline-flex items-center justify-center
-                            rounded-xl px-4 py-2.5
-                            text-sm font-medium
-                            transition
-                            focus:outline-none focus:ring-2 focus:ring-offset-2
-                            dark:focus:ring-offset-slate-800
-                            {{ $registrationEnabled
-                                ? 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500'
-                                : 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500'
-                            }}
-                        "
-                    >
-                        {{ $registrationEnabled ? 'Registrierung deaktivieren' : 'Registrierung aktivieren' }}
-                    </button>
-                </form>
+                    <div class="flex items-center gap-1">
+                        <a href="{{ route('admin.users.edit', $user) }}" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10 transition" title="Bearbeiten" aria-label="{{ $user->name }} bearbeiten">
+                            <x-icon name="pencil" class="w-4 h-4" />
+                        </a>
 
-            </div>
-        </div>
-    </div>
+                        @unless ($isSelf)
+                            <form method="POST" action="{{ route('admin.users.toggle-active', $user) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10 transition"
+                                    title="{{ $user->is_active ? 'Deaktivieren' : 'Aktivieren' }}" aria-label="{{ $user->is_active ? 'Benutzer deaktivieren' : 'Benutzer aktivieren' }}">
+                                    <x-icon :name="$user->is_active ? 'pause' : 'check-circle'" class="w-4 h-4" />
+                                </button>
+                            </form>
 
+                            <form method="POST" action="{{ route('admin.users.toggle-admin', $user) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center transition {{ $user->is_admin ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10' }}"
+                                    title="{{ $user->is_admin ? 'Adminrechte entfernen' : 'Zum Admin machen' }}" aria-label="{{ $user->is_admin ? 'Administratorrechte entfernen' : 'Administratorrechte vergeben' }}">
+                                    <x-icon name="shield" class="w-4 h-4" />
+                                </button>
+                            </form>
 
-    {{-- Benutzer --}}
-    <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden">
-
-        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                Benutzer
-            </h2>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Übersicht und Verwaltung aller registrierten Benutzer
-            </p>
-        </div>
-
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-
-                <thead class="bg-slate-50 dark:bg-slate-900/50">
-                    <tr>
-                        <th class="text-left px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Benutzer
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Status
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Rolle
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Letzter Login
-                        </th>
-
-                        <th class="text-left px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Registriert
-                        </th>
-
-                        <th class="text-right px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                            Aktionen
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-
-                    @forelse ($users as $user)
-
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-
-                            {{-- Benutzer --}}
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-900 dark:text-white">
-                                    {{ $user->name }}
-
-                                    @if ($user->id === auth()->id())
-                                        <span class="ml-1 text-xs text-violet-600 dark:text-violet-400">
-                                            (Du)
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <div class="text-slate-500 dark:text-slate-400">
-                                    {{ $user->email }}
-                                </div>
-                            </td>
-
-
-                            {{-- Status --}}
-                            <td class="px-6 py-4">
-
-                                @if ($user->is_active)
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                        Aktiv
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                        Deaktiviert
-                                    </span>
-                                @endif
-
-                            </td>
-
-
-                            {{-- Rolle --}}
-                            <td class="px-6 py-4">
-
-                                @if ($user->is_admin)
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300">
-                                        🛡️ Administrator
-                                    </span>
-                                @else
-                                    <span class="text-slate-500 dark:text-slate-400">
-                                        Benutzer
-                                    </span>
-                                @endif
-
-                            </td>
-
-
-                            {{-- Letzter Login --}}
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                {{ $user->last_login_at?->format('d.m.Y H:i') ?? 'Noch kein Login' }}
-                            </td>
-
-
-                            {{-- Registrierung --}}
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                {{ $user->created_at?->format('d.m.Y') }}
-                            </td>
-
-
-                            {{-- Aktionen --}}
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-end gap-2">
-
-                                    {{-- Bearbeiten --}}
-                                    <a
-                                        href="{{ route('admin.users.edit', $user) }}"
-                                        class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
-                                        title="Benutzer bearbeiten"
-                                    >
-                                        ✏️
-                                    </a>
-
-                                    @if ($user->id !== auth()->id())
-
-                                        {{-- Aktivieren / Deaktivieren --}}
-                                        <form
-                                            method="POST"
-                                            action="{{ route('admin.users.toggle-active', $user) }}"
-                                        >
-                                            @csrf
-                                            @method('PATCH')
-
-                                            <button
-                                                type="submit"
-                                                class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
-                                                title="{{ $user->is_active ? 'Benutzer deaktivieren' : 'Benutzer aktivieren' }}"
-                                            >
-                                                {{ $user->is_active ? '⏸️' : '▶️' }}
-                                            </button>
-                                        </form>
-
-
-                                        {{-- Admin-Rechte --}}
-                                        <form
-                                            method="POST"
-                                            action="{{ route('admin.users.toggle-admin', $user) }}"
-                                        >
-                                            @csrf
-                                            @method('PATCH')
-
-                                            <button
-                                                type="submit"
-                                                class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
-                                                title="{{ $user->is_admin ? 'Administratorrechte entfernen' : 'Administratorrechte vergeben' }}"
-                                            >
-                                                🛡️
-                                            </button>
-                                        </form>
-
-
-                                        {{-- Löschen --}}
-                                        <form
-                                            method="POST"
-                                            action="{{ route('admin.users.destroy', $user) }}"
-                                            onsubmit="return confirm('Möchtest du den Benutzer {{ addslashes($user->name) }} wirklich löschen? Alle zugehörigen Finanzdaten werden ebenfalls gelöscht.');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button
-                                                type="submit"
-                                                class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition"
-                                                title="Benutzer löschen"
-                                            >
-                                                🗑️
-                                            </button>
-                                        </form>
-
-                                    @else
-
-                                        <span class="text-xs text-slate-400 dark:text-slate-500">
-                                            Eigener Account
-                                        </span>
-
-                                    @endif
-
-                                </div>
-                            </td>
-
-                        </tr>
-
-                    @empty
-
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
-                                Keine Benutzer vorhanden.
-                            </td>
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
-        </div>
-
-    </div>
+                            <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                onsubmit="return confirm('Möchtest du {{ addslashes($user->name) }} wirklich löschen? Alle Finanzdaten dieses Benutzers werden ebenfalls gelöscht.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition" title="Löschen" aria-label="Benutzer löschen">
+                                    <x-icon name="trash" class="w-4 h-4" />
+                                </button>
+                            </form>
+                        @endunless
+                    </div>
+                </li>
+            @empty
+                <li>
+                    <x-empty-state icon="user" title="Keine Benutzer" />
+                </li>
+            @endforelse
+        </ul>
+    </section>
 
 </div>
+
 @endsection
