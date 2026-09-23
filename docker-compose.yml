@@ -1,7 +1,7 @@
 services:
 
   app:
-    image: gitea.alxserver.de/alexander/finanzview:latest
+    image: ghcr.io/alexanderschubert/finanzview:latest
     container_name: finanzview-app
     restart: unless-stopped
 

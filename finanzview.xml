@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>FinanzView</Name>
-  <Repository>gitea.alxserver.de/alexander/finanzview:latest</Repository>
-  <Registry>https://gitea.alxserver.de</Registry>
+  <Repository>ghcr.io/alexanderschubert/finanzview:latest</Repository>
+  <Registry>https://github.com/alexanderschubert/finanzview/pkgs/container/finanzview</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
 
-  <Support>https://gitea.alxserver.de/alexander/finanzview</Support>
+  <Support>https://github.com/alexanderschubert/finanzview/issues</Support>
 
   <Project>FinanzView</Project>
   <Overview>
     FinanzView – persönliche Finanzverwaltung auf Basis von Laravel.
 
     Dieses Template verwendet das fertige FinanzView Docker Image aus der
-    privaten Gitea Container Registry.
+    GitHub Container Registry (ghcr.io).
 
     PostgreSQL wird separat betrieben und über die DB_* Variablen konfiguriert.
   </Overview>
@@ -22,9 +22,9 @@
 
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
 
-  <TemplateURL>https://gitea.alxserver.de/alexander/finanzview/raw/branch/main/finanzview.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/alexanderschubert/finanzview/main/finanzview.xml</TemplateURL>
 
-  <Icon>https://gitea.alxserver.de/alexander/finanzview/raw/branch/main/public/favicon.ico</Icon>
+  <Icon>https://raw.githubusercontent.com/alexanderschubert/finanzview/main/public/favicon-512.png</Icon>
 
   <Config Name="WebUI Port"
           Target="80"
@@ -50,10 +50,10 @@
           Target="APP_KEY"
           Default=""
           Mode=""
-          Description="Laravel APP_KEY. Beispiel: base64:... Einmal erzeugen und anschließend dauerhaft beibehalten."
+          Description="Optional. Laravel APP_KEY (base64:...). Leer lassen: FinanzView erzeugt beim ersten Start einen Schlüssel und speichert ihn im Storage. Einmal gesetzt nicht mehr ändern."
           Type="Variable"
-          Display="always"
-          Required="true"
+          Display="advanced"
+          Required="false"
           Mask="false"></Config>
 
   <Config Name="Database Connection"
@@ -88,23 +88,23 @@
 
   <Config Name="Database Name"
           Target="DB_DATABASE"
-          Default="finanzblick"
+          Default="finanzview"
           Mode=""
           Description="Name der PostgreSQL-Datenbank."
           Type="Variable"
           Display="always"
           Required="true"
-          Mask="false">finanzblick</Config>
+          Mask="false">finanzview</Config>
 
   <Config Name="Database User"
           Target="DB_USERNAME"
-          Default="finanzblick"
+          Default="finanzview"
           Mode=""
           Description="PostgreSQL Benutzer."
           Type="Variable"
           Display="always"
           Required="true"
-          Mask="false">finanzblick</Config>
+          Mask="false">finanzview</Config>
 
   <Config Name="Database Password"
           Target="DB_PASSWORD"
@@ -128,23 +128,23 @@
 
   <Config Name="Storage"
           Target="/var/www/html/storage"
-          Default="/mnt/user/appdata/finanzblick/storage"
+          Default="/mnt/user/appdata/finanzview/storage"
           Mode="rw"
           Description="Persistenter Speicher für Laravel Storage."
           Type="Path"
           Display="always"
           Required="true"
-          Mask="false">/mnt/user/appdata/finanzblick/storage</Config>
+          Mask="false">/mnt/user/appdata/finanzview/storage</Config>
 
   <Config Name="App Data"
           Target="/var/www/html/bootstrap/cache"
-          Default="/mnt/user/appdata/finanzblick/bootstrap-cache"
+          Default="/mnt/user/appdata/finanzview/bootstrap-cache"
           Mode="rw"
           Description="Persistenter Laravel Bootstrap Cache."
           Type="Path"
           Display="advanced"
           Required="true"
-          Mask="false">/mnt/user/appdata/finanzblick/bootstrap-cache</Config>
+          Mask="false">/mnt/user/appdata/finanzview/bootstrap-cache</Config>
 
   <Config Name="OIDC aktivieren"
           Target="OIDC_ENABLED"
