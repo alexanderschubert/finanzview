@@ -1,328 +1,87 @@
-    @if($dashboardWidgets['wealth_chart'])
-
-
-    {{-- VERMÖGENSENTWICKLUNG --}}
-    {{-- ========================================================= --}}
+@if($dashboardWidgets['wealth_chart'])
 
     @php
+        $wealthValues = $wealthMonths->pluck('balance')->map(fn ($value) => (float) $value);
 
-        $wealthValues = $wealthMonths
-            ->pluck('balance')
-            ->map(fn ($value) => (float) $value);
+        $wealthMax = max(1, $wealthValues->max() ?? 0);
+        $wealthMin = min(0, $wealthValues->min() ?? 0);
+        $wealthRange = max(1, $wealthMax - $wealthMin);
 
-        $wealthMax = max(
-            1,
-            $wealthValues->max()
-        );
+        $svgWidth = 600;
+        $svgHeight = 200;
+        $padTop = 16;
+        $padBottom = 8;
+        $innerHeight = $svgHeight - $padTop - $padBottom;
+        $count = max($wealthMonths->count() - 1, 1);
 
-        $wealthMin = min(
-            0,
-            $wealthValues->min()
-        );
-
-        $wealthRange = $wealthMax - $wealthMin;
-
-        if ($wealthRange <= 0) {
-            $wealthRange = 1;
-        }
-
-        $svgWidth = 900;
-        $svgHeight = 320;
-
-        $paddingLeft = 10;
-        $paddingRight = 10;
-        $paddingTop = 25;
-        $paddingBottom = 50;
-
-        $innerWidth =
-            $svgWidth -
-            $paddingLeft -
-            $paddingRight;
-
-        $innerHeight =
-            $svgHeight -
-            $paddingTop -
-            $paddingBottom;
-
-        $wealthPoints = [];
-
-        foreach ($wealthMonths as $index => $wealthMonth) {
-
-            $count = max(
-                $wealthMonths->count() - 1,
-                1
-            );
-
-            $x =
-                $paddingLeft +
-                ($index / $count) *
-                $innerWidth;
-
-            $normalized =
-                (
-                    $wealthMonth['balance'] -
-                    $wealthMin
-                ) /
-                $wealthRange;
-
-            $y =
-                $paddingTop +
-                (1 - $normalized) *
-                $innerHeight;
-
-            $wealthPoints[] = [
-                'x' => $x,
-                'y' => $y,
-                'balance' => $wealthMonth['balance'],
+        $wealthPoints = $wealthMonths->values()->map(function ($wealthMonth, $index) use ($svgWidth, $count, $padTop, $innerHeight, $wealthMin, $wealthRange) {
+            return [
+                'x' => round(($index / $count) * $svgWidth, 2),
+                'y' => round($padTop + (1 - (($wealthMonth['balance'] - $wealthMin) / $wealthRange)) * $innerHeight, 2),
                 'label' => $wealthMonth['label'],
                 'full_label' => $wealthMonth['full_label'],
+                'balance' => (float) $wealthMonth['balance'],
             ];
-        }
+        });
 
-        $wealthLinePoints = collect($wealthPoints)
-            ->map(
-                fn ($point) =>
-                    $point['x'] . ',' . $point['y']
-            )
-            ->implode(' ');
+        $linePath = $wealthPoints->map(fn ($p, $i) => ($i === 0 ? 'M' : 'L') . $p['x'] . ' ' . $p['y'])->implode(' ');
+        $areaPath = $wealthPoints->isNotEmpty()
+            ? $linePath . ' L' . $svgWidth . ' ' . $svgHeight . ' L0 ' . $svgHeight . ' Z'
+            : '';
 
-        $wealthBottom =
-            $paddingTop + $innerHeight;
-
-        if (count($wealthPoints) > 0) {
-
-            $wealthAreaPoints =
-                $wealthLinePoints
-                . ' '
-                . $wealthPoints[count($wealthPoints) - 1]['x']
-                . ','
-                . $wealthBottom
-                . ' '
-                . $wealthPoints[0]['x']
-                . ','
-                . $wealthBottom;
-
-        } else {
-
-            $wealthAreaPoints = '';
-
-        }
-
+        $firstBalance = $wealthPoints->first()['balance'] ?? 0;
+        $change = $totalBalance - $firstBalance;
     @endphp
 
+    {{-- VERMÖGENSENTWICKLUNG --}}
 
-    <div
-        class="
-            bg-white
-            dark:bg-slate-900
-            rounded-3xl
-            border
-            border-slate-200
-            dark:border-slate-800
-            shadow-sm
-            mt-5
-            overflow-hidden
-        "
-    >
-
-        <div class="p-6 sm:p-8">
-
-            <div
-                class="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-start
-                    sm:justify-between
-                    gap-4
-                "
-            >
-
-                <div>
-
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        Vermögen
+    <x-section title="Vermögensentwicklung" subtitle="Letzte sechs Monate">
+        <x-slot:actions>
+            <div class="text-right shrink-0">
+                <p class="text-lg font-semibold tabular-nums text-slate-900 dark:text-white">
+                    {{ number_format($totalBalance, 2, ',', '.') }} €
+                </p>
+                @if ($wealthPoints->count() > 1)
+                    <p class="text-xs font-medium tabular-nums {{ $change < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                        {{ $change > 0 ? '+' : ($change < 0 ? '−' : '±') }}{{ number_format(abs($change), 2, ',', '.') }} €
                     </p>
-
-                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
-                        Vermögensentwicklung
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Entwicklung deines Gesamtvermögens über die letzten sechs Monate.
-                    </p>
-
-                </div>
-
-
-                <div class="sm:text-right">
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Aktuell
-                    </p>
-
-                    <p class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
-                        {{ number_format($totalBalance, 2, ',', '.') }} €
-                    </p>
-
-                </div>
-
+                @endif
             </div>
+        </x-slot:actions>
 
+        @if ($wealthPoints->isNotEmpty())
+            <svg viewBox="0 0 {{ $svgWidth }} {{ $svgHeight }}" class="w-full h-44 sm:h-52 overflow-visible" preserveAspectRatio="none" role="img" aria-label="Verlauf des Gesamtvermögens">
+                <defs>
+                    <linearGradient id="fv-wealth-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="var(--color-emerald-500)" stop-opacity="0.28" />
+                        <stop offset="1" stop-color="var(--color-emerald-500)" stop-opacity="0" />
+                    </linearGradient>
+                </defs>
 
-            @if ($wealthMonths->isNotEmpty())
+                @for ($i = 0; $i <= 3; $i++)
+                    <line x1="0" x2="{{ $svgWidth }}" y1="{{ $padTop + ($i / 3) * $innerHeight }}" y2="{{ $padTop + ($i / 3) * $innerHeight }}"
+                        stroke="currentColor" class="text-slate-100 dark:text-white/5" stroke-width="1" vector-effect="non-scaling-stroke" />
+                @endfor
 
-                <div class="mt-8 overflow-x-auto">
+                <path d="{{ $areaPath }}" fill="url(#fv-wealth-fill)" />
+                <path d="{{ $linePath }}" fill="none" stroke="var(--color-emerald-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+            </svg>
 
-                    <div class="min-w-[650px]">
-
-                        <svg
-                            viewBox="0 0 {{ $svgWidth }} {{ $svgHeight }}"
-                            class="w-full h-auto"
-                            preserveAspectRatio="none"
-                        >
-
-                            @for ($i = 0; $i <= 4; $i++)
-
-                                @php
-
-                                    $lineY =
-                                        $paddingTop +
-                                        ($i / 4) *
-                                        $innerHeight;
-
-                                @endphp
-
-                                <line
-                                    x1="{{ $paddingLeft }}"
-                                    y1="{{ $lineY }}"
-                                    x2="{{ $svgWidth - $paddingRight }}"
-                                    y2="{{ $lineY }}"
-                                    stroke="currentColor"
-                                    class="text-slate-200 dark:text-slate-700"
-                                    stroke-width="1"
-                                />
-
-                            @endfor
-
-
-                            <polygon
-                                points="{{ $wealthAreaPoints }}"
-                                fill="#10b981"
-                                opacity="0.08"
-                            />
-
-
-                            <polyline
-                                points="{{ $wealthLinePoints }}"
-                                fill="none"
-                                stroke="#10b981"
-                                stroke-width="4"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-
-
-                            @foreach ($wealthPoints as $point)
-
-                                <circle
-                                    cx="{{ $point['x'] }}"
-                                    cy="{{ $point['y'] }}"
-                                    r="6"
-                                    class="fill-white dark:fill-slate-900"
-                                    stroke="#10b981"
-                                    stroke-width="3"
-                                />
-
-                            @endforeach
-
-
-                            @foreach ($wealthPoints as $point)
-
-                                <text
-                                    x="{{ $point['x'] }}"
-                                    y="{{ $svgHeight - 15 }}"
-                                    text-anchor="middle"
-                                    font-size="13"
-                                    fill="currentColor"
-                                    class="text-slate-400 dark:text-slate-500"
-                                >
-                                    {{ $point['label'] }}
-                                </text>
-
-                            @endforeach
-
-                        </svg>
-
+            <div class="mt-3 grid text-center" style="grid-template-columns: repeat({{ $wealthPoints->count() }}, minmax(0, 1fr))">
+                @foreach ($wealthPoints as $point)
+                    <div title="{{ $point['full_label'] }}: {{ number_format($point['balance'], 2, ',', '.') }} €">
+                        <p class="text-xs text-slate-400 dark:text-slate-500">{{ $point['label'] }}</p>
+                        <p class="hidden sm:block mt-0.5 text-xs font-medium tabular-nums {{ $point['balance'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300' }}">
+                            {{ number_format($point['balance'], 0, ',', '.') }} €
+                        </p>
                     </div>
+                @endforeach
+            </div>
+        @else
+            <x-empty-state icon="chart" title="Noch keine Daten">
+                Sobald Buchungen vorhanden sind, siehst du hier den Verlauf.
+            </x-empty-state>
+        @endif
+    </x-section>
 
-                </div>
-
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6">
-
-                    @foreach ($wealthMonths as $wealthMonth)
-
-                        <div
-                            class="
-                                rounded-2xl
-                                bg-slate-50
-                                dark:bg-slate-800
-                                px-3
-                                py-3
-                            "
-                        >
-
-                            <p class="text-xs text-slate-400 dark:text-slate-500">
-                                {{ $wealthMonth['full_label'] }}
-                            </p>
-
-                            <p
-                                class="
-                                    text-sm
-                                    font-semibold
-                                    mt-1
-                                    {{ $wealthMonth['balance'] >= 0
-                                        ? 'text-slate-900 dark:text-white'
-                                        : 'text-red-600 dark:text-red-400' }}
-                                "
-                            >
-                                {{ number_format(
-                                    $wealthMonth['balance'],
-                                    2,
-                                    ',',
-                                    '.'
-                                ) }} €
-                            </p>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-            @else
-
-                <div
-                    class="
-                        mt-8
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800
-                        p-8
-                        text-center
-                    "
-                >
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Noch keine Vermögensdaten vorhanden.
-                    </p>
-
-                </div>
-
-            @endif
-
-        </div>
-
-    </div>
-    @endif
+@endif

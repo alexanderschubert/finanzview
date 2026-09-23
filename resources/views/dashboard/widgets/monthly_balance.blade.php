@@ -1,90 +1,32 @@
-        @if($dashboardWidgets['monthly_balance'])
+@if($dashboardWidgets['monthly_balance'])
 
-        {{-- MONATSSALDO --}}
+    @php
+        $positive = $monthlyBalance >= 0;
+        $flow = max($monthlyIncome, 0.01);
+        $spentShare = min(100, ($monthlyExpense / $flow) * 100);
+    @endphp
 
-        <div
-            class="
-                {{ $dashboardWidgets['monthly_balance'] && $dashboardWidgets['yearly']
-                    ? 'lg:col-span-2'
-                    : '' }}
-                rounded-3xl
-                border
-                p-6
-                shadow-sm
-                {{ $monthlyBalance >= 0
-                    ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900'
-                    : 'bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900' }}
-            "
-        >
+    {{-- MONATSSALDO --}}
 
-            <div
-                class="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    gap-5
-                "
-            >
+    <x-section title="Monatssaldo" :subtitle="$currentMonth">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <p class="text-[34px] leading-none font-semibold tracking-tight tabular-nums {{ $positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+                {{ $monthlyBalance > 0 ? '+' : ($monthlyBalance < 0 ? '−' : '') }}{{ number_format(abs($monthlyBalance), 2, ',', '.') }} €
+            </p>
 
-                <div>
-
-                    <p class="text-sm font-medium text-slate-600 dark:text-slate-300">
-                        Monatssaldo
-                    </p>
-
-                    <p
-                        class="
-                            text-3xl
-                            font-semibold
-                            tracking-tight
-                            mt-2
-                            {{ $monthlyBalance >= 0
-                                ? 'text-emerald-700 dark:text-emerald-400'
-                                : 'text-red-700 dark:text-red-400' }}
-                        "
-                    >
-
-                        {{ $monthlyBalance >= 0 ? '+' : '' }}
-
-                        {{ number_format(
-                            $monthlyBalance,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
-
-                    </p>
-
-                </div>
-
-
-                <div
-                    class="
-                        inline-flex
-                        items-center
-                        rounded-full
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        self-start
-                        {{ $monthlyBalance >= 0
-                            ? 'bg-white dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-white dark:bg-red-900/60 text-red-700 dark:text-red-300' }}
-                    "
-                >
-
-                    {{ $monthlyBalance >= 0
-                        ? 'Positiver Monat'
-                        : 'Mehr Ausgaben als Einnahmen' }}
-
-                </div>
-
-            </div>
-
+            <span class="rounded-full px-3 py-1 text-xs font-medium {{ $positive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300' }}">
+                {{ $positive ? 'Positiver Monat' : 'Mehr ausgegeben als eingenommen' }}
+            </span>
         </div>
 
-
+        @if ($monthlyIncome > 0)
+            <div class="mt-5">
+                <x-progress :value="$spentShare" :tone="$spentShare >= 100 ? 'negative' : ($spentShare >= 80 ? 'warning' : 'positive')" />
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    {{ number_format($spentShare, 0, ',', '.') }} % der Einnahmen ausgegeben
+                </p>
+            </div>
         @endif
+    </x-section>
+
+@endif

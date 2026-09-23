@@ -6,19 +6,21 @@
 
 @php
     $sizeClasses = match ($size) {
-        'sm' => 'w-10 h-10 text-lg',
-        'lg' => 'w-16 h-16 text-3xl',
-        default => 'w-14 h-14 text-2xl',
+        'sm' => 'w-10 h-10 text-lg rounded-xl',
+        'lg' => 'w-16 h-16 text-3xl rounded-[18px]',
+        default => 'w-14 h-14 text-2xl rounded-2xl',
     };
 
-    $backgroundColor = $provider?->color ?: '#f1f5f9';
+    // Ohne Anbieterfarbe: neutrale Kachel (hell/dunkel über Klassen).
+    $backgroundColor = $provider?->color;
 @endphp
 
 <div
     {{ $attributes->merge([
-        'class' => "$sizeClasses rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+        'class' => "$sizeClasses flex items-center justify-center flex-shrink-0 overflow-hidden"
+            . ($backgroundColor ? '' : ' bg-slate-100 dark:bg-white/5'),
     ]) }}
-    style="background-color: {{ $backgroundColor }}20;"
+    @if ($backgroundColor) style="background-color: {{ $backgroundColor }}26;" @endif
 >
     @if ($provider?->logo)
         <img
