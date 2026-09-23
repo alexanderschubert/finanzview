@@ -1,25 +1,31 @@
 @extends('layouts.guest')
 
 @section('title', 'Passwort vergessen')
-@section('heading', 'Passwort vergessen')
+@section('heading', 'Passwort vergessen?')
 @section('intro', 'Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen.')
 
 @section('content')
-    <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
         @csrf
 
         <div>
-            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">E-Mail</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email"
-                class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900">
+            <label for="email" class="fv-label">E-Mail-Adresse</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
+                placeholder="name@beispiel.de" class="fv-input">
         </div>
 
-        <button type="submit" class="w-full rounded-xl bg-slate-950 py-3.5 font-medium text-white hover:bg-slate-800 transition">
+        <button type="submit" class="fv-btn fv-btn-primary w-full mt-2">
+            <x-icon name="mail" class="w-[18px] h-[18px]" />
             Link senden
         </button>
     </form>
 
-    <div class="text-center mt-6">
-        <a href="{{ route('login') }}" class="text-sm font-medium text-slate-950 hover:underline">Zurück zur Anmeldung</a>
-    </div>
+@endsection
+
+@section('footer')
+    <a href="{{ route('login') }}" class="fv-link inline-flex items-center gap-1.5">
+        <x-icon name="arrow-left" class="w-4 h-4" />
+        Zurück zur Anmeldung
+    </a>
 @endsection

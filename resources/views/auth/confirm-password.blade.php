@@ -2,20 +2,29 @@
 
 @section('title', 'Passwort bestätigen')
 @section('heading', 'Passwort bestätigen')
-@section('intro', 'Bitte bestätige dein Passwort, bevor du fortfährst.')
+@section('intro', 'Dies ist ein geschützter Bereich. Bitte bestätige zuerst dein Passwort.')
 
 @section('content')
-    <form method="POST" action="{{ route('password.confirm.store') }}" class="space-y-5">
+
+    <form method="POST" action="{{ route('password.confirm.store') }}" class="space-y-4">
         @csrf
 
         <div>
-            <label for="password" class="block text-sm font-medium text-slate-700 mb-2">Passwort</label>
-            <input id="password" type="password" name="password" required autofocus autocomplete="current-password"
-                class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900">
+            <label for="password" class="fv-label">Passwort</label>
+            <x-password-input required autofocus />
         </div>
 
-        <button type="submit" class="w-full rounded-xl bg-slate-950 py-3.5 font-medium text-white hover:bg-slate-800 transition">
+        <button type="submit" class="fv-btn fv-btn-primary w-full mt-2">
+            <x-icon name="lock" class="w-[18px] h-[18px]" />
             Bestätigen
         </button>
     </form>
+
+@endsection
+
+@section('footer')
+    <a href="{{ url()->previous() }}" class="fv-link inline-flex items-center gap-1.5">
+        <x-icon name="arrow-left" class="w-4 h-4" />
+        Zurück
+    </a>
 @endsection
