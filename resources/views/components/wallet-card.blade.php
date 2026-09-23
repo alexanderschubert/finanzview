@@ -70,8 +70,9 @@
             <p class="text-2xl font-semibold tracking-tight tabular-nums">{{ $amount }}</p>
         </div>
 
-        @if ($number)
-            <p class="font-mono text-sm tracking-[0.2em] {{ $muted }}">{{ $number }}</p>
+        {{-- null = keine Zeile; leerer Text = Platz für die Live-Vorschau --}}
+        @if (! is_null($number))
+            <p class="font-mono text-sm tracking-[0.2em] min-h-5 {{ $muted }}">{{ $number }}</p>
         @endif
 
     </div>
