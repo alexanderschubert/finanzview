@@ -32,6 +32,14 @@
         'mail' => '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
         'arrow-left' => '<path d="M19 12H5M11 18l-6-6 6-6"/>',
         'alert' => '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16h.01"/>',
+        'wallet' => '<rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10.5h18"/><path d="M16 15h2"/><path d="M6.5 6V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v1"/>',
+        'trending-up' => '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+        'trending-down' => '<path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+        'percent' => '<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+        'calendar' => '<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+        'chevron-left' => '<path d="m15 6-6 6 6 6"/>',
+        'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+        'filter' => '<path d="M4 6h16M7 12h10M10 18h4"/>',
         'check-circle' => '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>',
     ];
 @endphp

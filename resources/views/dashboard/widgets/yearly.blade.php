@@ -1,92 +1,34 @@
-        @if($dashboardWidgets['yearly'])
+@if($dashboardWidgets['yearly'])
 
-        {{-- JAHRESWERTE --}}
+    @php
+        $yearlyBalance = $yearlyIncome - $yearlyExpense;
+    @endphp
 
-        <div
-            class="
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-200
-                dark:border-slate-800
-                shadow-sm
-                p-6
-            "
-        >
+    {{-- JAHRESWERTE --}}
 
-            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Dieses Jahr
-            </p>
-
-            <div class="mt-4 space-y-4">
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <span class="text-sm text-slate-500 dark:text-slate-400">
-                        Einnahmen
-                    </span>
-
-                    <span class="font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                        +{{ number_format($yearlyIncome, 2, ',', '.') }} €
-                    </span>
-
-                </div>
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <span class="text-sm text-slate-500 dark:text-slate-400">
-                        Ausgaben
-                    </span>
-
-                    <span class="font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
-                        -{{ number_format($yearlyExpense, 2, ',', '.') }} €
-                    </span>
-
-                </div>
-
-                <div
-                    class="
-                        pt-3
-                        border-t
-                        border-slate-100
-                        dark:border-slate-800
-                        flex
-                        items-center
-                        justify-between
-                        gap-4
-                    "
-                >
-
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Jahressaldo
-                    </span>
-
-                    <span
-                        class="
-                            font-semibold
-                            whitespace-nowrap
-                            {{ ($yearlyIncome - $yearlyExpense) >= 0
-                                ? 'text-slate-900 dark:text-white'
-                                : 'text-red-600 dark:text-red-400' }}
-                        "
-                    >
-
-                        {{ ($yearlyIncome - $yearlyExpense) >= 0 ? '+' : '' }}
-
-                        {{ number_format(
-                            $yearlyIncome - $yearlyExpense,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
-
-                    </span>
-
-                </div>
-
+    <x-section title="Dieses Jahr">
+        <dl class="divide-y divide-slate-100 dark:divide-white/5 text-sm">
+            <div class="flex items-center justify-between gap-4 pb-3">
+                <dt class="text-slate-500 dark:text-slate-400">Einnahmen</dt>
+                <dd class="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                    +{{ number_format($yearlyIncome, 2, ',', '.') }} €
+                </dd>
             </div>
 
-        </div>
+            <div class="flex items-center justify-between gap-4 py-3">
+                <dt class="text-slate-500 dark:text-slate-400">Ausgaben</dt>
+                <dd class="font-medium tabular-nums text-red-600 dark:text-red-400">
+                    −{{ number_format($yearlyExpense, 2, ',', '.') }} €
+                </dd>
+            </div>
 
-        @endif
+            <div class="flex items-center justify-between gap-4 pt-3">
+                <dt class="font-medium text-slate-900 dark:text-white">Saldo</dt>
+                <dd class="font-semibold tabular-nums {{ $yearlyBalance < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white' }}">
+                    {{ $yearlyBalance > 0 ? '+' : ($yearlyBalance < 0 ? '−' : '') }}{{ number_format(abs($yearlyBalance), 2, ',', '.') }} €
+                </dd>
+            </div>
+        </dl>
+    </x-section>
+
+@endif

@@ -88,9 +88,30 @@ class TransactionController extends Controller
 
         if ($request->filled('account_id')) {
 
-            $accountId = $request->input('account_id');
+            $accountId = (int) $request->input('account_id');
 
-            $query->where('account_id', $accountId);
+            /*
+             * Auch Umbuchungen auf das Konto anzeigen.
+             */
+            $query->where(function ($q) use ($accountId) {
+
+                $q->where('account_id', $accountId)
+                    ->orWhere('transfer_account_id', $accountId);
+
+            });
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kategorie
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('category_id')) {
+
+            $query->where('category_id', (int) $request->input('category_id'));
 
         }
 
@@ -119,6 +140,28 @@ class TransactionController extends Controller
             }
 
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Summen
+        |--------------------------------------------------------------------------
+        |
+        | Über alle gefilterten Buchungen (nicht nur die aktuelle Seite).
+        | Umbuchungen zählen weder als Einnahme noch als Ausgabe.
+        */
+
+        $totals = (clone $query)
+            ->setEagerLoads([])
+            ->reorder()
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income,
+                 COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense"
+            )
+            ->first();
+
+        $totalIncome = (float) $totals->income;
+        $totalExpense = (float) $totals->expense;
 
 
         /*
@@ -161,7 +204,9 @@ class TransactionController extends Controller
         return view('transactions.index', compact(
             'transactions',
             'accounts',
-            'categories'
+            'categories',
+            'totalIncome',
+            'totalExpense'
         ));
     }
 
