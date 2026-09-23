@@ -246,11 +246,12 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        if ($dashboardWidgets['monthly_balance']) {
-
-            $monthlyBalance =
-                $monthlyIncome - $monthlyExpense;
-        }
+        /*
+         * Immer berechnen: Die Sparquote baut darauf auf, auch wenn
+         * das Widget "Monatssaldo" ausgeblendet ist.
+         */
+        $monthlyBalance =
+            $monthlyIncome - $monthlyExpense;
 
 
         /*
