@@ -1,133 +1,44 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.guest')
 
-    <title>Registrieren – FinanzView</title>
+@section('title', 'Registrieren')
+@section('heading', 'Konto erstellen')
+@section('intro', 'Deine Finanzdaten bleiben privat und nur deinem Konto zugeordnet.')
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@section('content')
 
-<body class="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+        @csrf
 
-    <div class="w-full max-w-md">
-
-        <div class="text-center mb-8">
-            <div class="text-5xl mb-4">💰</div>
-
-            <h1 class="text-3xl font-semibold text-white">
-                FinanzView
-            </h1>
-
-            <p class="text-slate-400 mt-2">
-                Erstelle dein persönliches Finanzkonto.
-            </p>
+        <div>
+            <label for="name" class="fv-label">Name</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                placeholder="Max Mustermann" class="fv-input">
         </div>
 
-        <div class="bg-white rounded-3xl shadow-2xl p-8">
-
-            <h2 class="text-2xl font-semibold text-slate-900">
-                Konto erstellen
-            </h2>
-
-            <p class="text-slate-500 mt-1 mb-6">
-                Deine Finanzdaten bleiben deinem Benutzerkonto zugeordnet.
-            </p>
-
-            @if ($errors->any())
-                <div class="mb-5 rounded-xl bg-red-50 p-4 text-red-700">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST" action="/register" class="space-y-5">
-
-                @csrf
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="name"
-                        value="{{ old('name') }}"
-                        required
-                        class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
-                    >
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        E-Mail
-                    </label>
-
-                    <input
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required
-                        class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
-                    >
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Passwort
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
-                    >
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Passwort wiederholen
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password_confirmation"
-                        required
-                        class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900"
-                    >
-                </div>
-
-                <button
-                    type="submit"
-                    class="w-full rounded-xl bg-slate-950 py-3.5 font-medium text-white hover:bg-slate-800 transition"
-                >
-                    Konto erstellen
-                </button>
-
-            </form>
-
-            <div class="text-center mt-6">
-                <span class="text-sm text-slate-500">
-                    Bereits registriert?
-                </span>
-
-                <a
-                    href="/login"
-                    class="text-sm font-medium text-slate-950 hover:underline"
-                >
-                    Anmelden
-                </a>
-            </div>
-
+        <div>
+            <label for="email" class="fv-label">E-Mail-Adresse</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                placeholder="name@beispiel.de" class="fv-input">
         </div>
 
-    </div>
+        <div>
+            <label for="password" class="fv-label">Passwort</label>
+            <x-password-input autocomplete="new-password" required placeholder="Mindestens 8 Zeichen" />
+        </div>
 
-</body>
-</html>
+        <div>
+            <label for="password_confirmation" class="fv-label">Passwort wiederholen</label>
+            <x-password-input id="password_confirmation" name="password_confirmation" autocomplete="new-password" required />
+        </div>
+
+        <button type="submit" class="fv-btn fv-btn-primary w-full mt-2">
+            Konto erstellen
+        </button>
+    </form>
+
+@endsection
+
+@section('footer')
+    Bereits registriert?
+    <a href="{{ route('login') }}" class="fv-link ml-1">Anmelden</a>
+@endsection

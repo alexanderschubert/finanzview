@@ -5,36 +5,41 @@
 @section('intro', 'Gib den 6-stelligen Code aus deiner Authenticator-App ein.')
 
 @section('content')
-    <form method="POST" action="{{ url('/two-factor-challenge') }}" class="space-y-5">
+
+    <form method="POST" action="{{ url('/two-factor-challenge') }}" class="space-y-4">
         @csrf
 
         <div>
-            <label for="code" class="block text-sm font-medium text-slate-700 mb-2">Code</label>
+            <label for="code" class="fv-label">Code</label>
             <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9 ]*" autofocus autocomplete="one-time-code"
-                placeholder="123456"
-                class="w-full rounded-xl border border-slate-200 px-4 py-3 text-center text-lg tracking-[0.4em] outline-none focus:ring-2 focus:ring-slate-900">
+                placeholder="000000"
+                class="fv-input text-center text-2xl font-semibold tracking-[0.5em] tabular-nums">
         </div>
 
-        <details class="rounded-xl border border-slate-200 px-4 py-3">
-            <summary class="cursor-pointer text-sm font-medium text-slate-700">
-                Kein Zugriff auf die App? Wiederherstellungscode verwenden
+        <details class="group rounded-xl bg-slate-50 dark:bg-white/5 px-4 py-3">
+            <summary class="cursor-pointer list-none flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                Kein Zugriff auf die App?
+                <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
             </summary>
 
-            <div class="mt-4">
-                <label for="recovery_code" class="block text-sm font-medium text-slate-700 mb-2">Wiederherstellungscode</label>
+            <div class="mt-3">
+                <label for="recovery_code" class="fv-label">Wiederherstellungscode</label>
                 <input id="recovery_code" type="text" name="recovery_code" autocomplete="off"
-                    placeholder="abcdefghij-klmnopqrst"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-slate-900">
-                <p class="text-xs text-slate-500 mt-2">Jeder Wiederherstellungscode kann nur einmal verwendet werden.</p>
+                    placeholder="abcdefghij-klmnopqrst" class="fv-input font-mono text-sm">
+                <p class="mt-2 text-xs text-slate-500">Jeder Wiederherstellungscode funktioniert nur einmal.</p>
             </div>
         </details>
 
-        <button type="submit" class="w-full rounded-xl bg-slate-950 py-3.5 font-medium text-white hover:bg-slate-800 transition">
+        <button type="submit" class="fv-btn fv-btn-primary w-full mt-2">
             Anmelden
         </button>
     </form>
 
-    <div class="text-center mt-6">
-        <a href="{{ route('login') }}" class="text-sm font-medium text-slate-950 hover:underline">Zurück zur Anmeldung</a>
-    </div>
+@endsection
+
+@section('footer')
+    <a href="{{ route('login') }}" class="fv-link inline-flex items-center gap-1.5">
+        <x-icon name="arrow-left" class="w-4 h-4" />
+        Zurück zur Anmeldung
+    </a>
 @endsection
