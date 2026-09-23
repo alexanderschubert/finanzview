@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\RecurringTransaction;
+use App\Services\RecurringTransactionService;
 use Illuminate\Http\Request;
 
 class RecurringTransactionController extends Controller
@@ -227,8 +228,15 @@ class RecurringTransactionController extends Controller
             'category',
         ]);
 
+        $recentTransactions = $recurringTransaction->transactions()
+            ->orderByDesc('transaction_date')
+            ->limit(12)
+            ->get();
+
         return view('recurring_transactions.show', [
             'recurringTransaction' => $recurringTransaction,
+            'upcomingDates' => app(RecurringTransactionService::class)->upcomingDates($recurringTransaction, 3),
+            'recentTransactions' => $recentTransactions,
         ]);
     }
 

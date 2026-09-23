@@ -1,675 +1,163 @@
 @extends('layouts.app')
 
-@section('title', 'Wiederkehrende Buchung – FinanzView')
+@section('title', $recurringTransaction->description . ' – Wiederkehrend – FinanzView')
+@section('eyebrow', 'Wiederkehrend')
+@section('page_title', $recurringTransaction->description)
 
-@section('eyebrow', 'Finanzen')
+@php
+    $item = $recurringTransaction;
+    $isIncome = $item->type === 'income';
 
-@section('page_title', 'Wiederkehrend')
+    $frequencyLabels = [
+        'weekly' => 'Wöchentlich',
+        'monthly' => 'Monatlich',
+        'quarterly' => 'Vierteljährlich',
+        'yearly' => 'Jährlich',
+    ];
+
+    $perYear = ['weekly' => 52, 'monthly' => 12, 'quarterly' => 4, 'yearly' => 1][$item->frequency] ?? 12;
+    $yearlyAmount = (float) $item->amount * $perYear;
+
+    $relative = function ($date) {
+        if ($date->isToday()) {
+            return 'Heute';
+        }
+
+        if ($date->isTomorrow()) {
+            return 'Morgen';
+        }
+
+        if ($date->isPast()) {
+            return 'Überfällig – wird beim nächsten Lauf gebucht';
+        }
+
+        $days = (int) abs(now()->startOfDay()->diffInDays($date->copy()->startOfDay()));
+
+        return 'in ' . $days . ' Tagen';
+    };
+@endphp
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- ========================================================= --}}
-    {{-- HEADER --}}
-    {{-- ========================================================= --}}
+    <x-flash />
 
-    <div class="mb-8">
 
-        <a
-            href="{{ route('recurring-transactions.index') }}"
-            class="
-                inline-flex
-                items-center
-                gap-2
-                text-sm
-                text-slate-500
-                dark:text-slate-400
-                hover:text-slate-900
-                dark:hover:text-white
-                transition
-            "
-        >
-            ← Wiederkehrend
-        </a>
+    {{-- KOPF --}}
 
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-6">
-            Regelmäßige Buchung
+    <div class="fv-card p-6 flex flex-col items-center text-center {{ $item->is_active ? '' : 'opacity-80' }}">
+        <x-emoji-tile :emoji="$item->category?->icon" fallback="repeat" size="lg" />
+
+        <h2 class="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $item->description }}</h2>
+
+        <p class="mt-1 text-4xl font-semibold tracking-tight tabular-nums {{ $isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
+            {{ $isIncome ? '+' : '−' }}{{ number_format((float) $item->amount, 2, ',', '.') }} €
         </p>
 
-        <h2
-            class="
-                text-3xl
-                sm:text-4xl
-                font-semibold
-                tracking-tight
-                text-slate-900
-                dark:text-white
-                mt-1
-            "
-        >
-            {{ $recurringTransaction->description }}
-        </h2>
-
-        <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Details und Einstellungen dieser wiederkehrenden Buchung.
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {{ $frequencyLabels[$item->frequency] ?? $item->frequency }}
+            · {{ number_format($yearlyAmount, 2, ',', '.') }} € im Jahr
         </p>
 
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- ERFOLG --}}
-    {{-- ========================================================= --}}
-
-    @if(session('success'))
-
-        <div
-            class="
-                mb-6
-                rounded-2xl
-                border
-                border-emerald-200
-                dark:border-emerald-900
-                bg-emerald-50
-                dark:bg-emerald-950/30
-                px-5
-                py-4
-            "
-        >
-
-            <div class="flex items-center gap-3">
-
-                <span class="text-lg text-emerald-600 dark:text-emerald-400">
-                    ✓
-                </span>
-
-                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                    {{ session('success') }}
-                </p>
-
-            </div>
-
-        </div>
-
-    @endif
-
-
-    {{-- ========================================================= --}}
-    {{-- HAUPTKARTE --}}
-    {{-- ========================================================= --}}
-
-    <section
-        class="
-            rounded-3xl
-            bg-white
-            dark:bg-slate-900
-            border
-            border-slate-200
-            dark:border-slate-800
-            overflow-hidden
-        "
-    >
-
-        {{-- ===================================================== --}}
-        {{-- KARTENHEADER --}}
-        {{-- ===================================================== --}}
-
-        <div
-            class="
-                p-6
-                sm:p-8
-                border-b
-                border-slate-200
-                dark:border-slate-800
-            "
-        >
-
-            <div class="flex flex-col sm:flex-row sm:items-center gap-5">
-
-                {{-- ICON --}}
-
-                <div
-                    class="
-                        w-14
-                        h-14
-                        shrink-0
-                        rounded-2xl
-                        flex
-                        items-center
-                        justify-center
-                        text-2xl
-                        {{ $recurringTransaction->type === 'income'
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10'
-                            : 'bg-red-50 dark:bg-red-500/10' }}
-                    "
-                >
-                    {{ $recurringTransaction->type === 'income' ? '↗️' : '↘️' }}
-                </div>
-
-
-                {{-- TITEL + STATUS --}}
-
-                <div class="min-w-0 flex-1">
-
-                    <div class="flex flex-wrap items-center gap-2">
-
-                        <h3
-                            class="
-                                text-xl
-                                font-semibold
-                                text-slate-900
-                                dark:text-white
-                            "
-                        >
-                            {{ $recurringTransaction->description }}
-                        </h3>
-
-                        @if($recurringTransaction->is_active)
-
-                            <span
-                                class="
-                                    inline-flex
-                                    items-center
-                                    rounded-full
-                                    bg-emerald-50
-                                    dark:bg-emerald-500/10
-                                    px-2.5
-                                    py-1
-                                    text-xs
-                                    font-medium
-                                    text-emerald-700
-                                    dark:text-emerald-400
-                                "
-                            >
-                                Aktiv
-                            </span>
-
-                        @else
-
-                            <span
-                                class="
-                                    inline-flex
-                                    items-center
-                                    rounded-full
-                                    bg-slate-100
-                                    dark:bg-slate-800
-                                    px-2.5
-                                    py-1
-                                    text-xs
-                                    font-medium
-                                    text-slate-500
-                                    dark:text-slate-400
-                                "
-                            >
-                                Inaktiv
-                            </span>
-
-                        @endif
-
-                    </div>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-
-                        {{ $recurringTransaction->type === 'income'
-                            ? 'Regelmäßige Einnahme'
-                            : 'Regelmäßige Ausgabe' }}
-
-                    </p>
-
-                </div>
-
-
-                {{-- BETRAG --}}
-
-                <div class="sm:text-right">
-
-                    <p
-                        class="
-                            text-2xl
-                            font-semibold
-                            {{ $recurringTransaction->type === 'income'
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-red-600 dark:text-red-400' }}
-                        "
-                    >
-                        {{ $recurringTransaction->type === 'income' ? '+' : '-' }}
-                        {{ number_format((float) $recurringTransaction->amount, 2, ',', '.') }}
-                        €
-                    </p>
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                        {{ match($recurringTransaction->frequency) {
-                            'weekly' => 'Wöchentlich',
-                            'monthly' => 'Monatlich',
-                            'quarterly' => 'Vierteljährlich',
-                            'yearly' => 'Jährlich',
-                            default => $recurringTransaction->frequency,
-                        } }}
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- ===================================================== --}}
-        {{-- DETAILS --}}
-        {{-- ===================================================== --}}
-
-        <div class="p-6 sm:p-8">
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-
-
-                {{-- KONTO --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Konto
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            text-slate-900
-                            dark:text-white
-                            mt-2
-                        "
-                    >
-                        {{ $recurringTransaction->account?->icon ?: '🏦' }}
-                        {{ $recurringTransaction->account?->name ?? 'Kein Konto' }}
-                    </p>
-
-                </div>
-
-
-                {{-- KATEGORIE --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Kategorie
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            text-slate-900
-                            dark:text-white
-                            mt-2
-                        "
-                    >
-
-                        @if($recurringTransaction->category)
-
-                            {{ $recurringTransaction->category->icon ?: '📁' }}
-                            {{ $recurringTransaction->category->name }}
-
-                        @else
-
-                            <span class="text-slate-400 dark:text-slate-500">
-                                Keine Kategorie
-                            </span>
-
-                        @endif
-
-                    </p>
-
-                </div>
-
-
-                {{-- BUCHUNGSART --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Buchungsart
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            mt-2
-                            {{ $recurringTransaction->type === 'income'
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-red-600 dark:text-red-400' }}
-                        "
-                    >
-                        {{ $recurringTransaction->type === 'income'
-                            ? '↗ Einnahme'
-                            : '↘ Ausgabe' }}
-                    </p>
-
-                </div>
-
-
-                {{-- INTERVALL --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Intervall
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            text-slate-900
-                            dark:text-white
-                            mt-2
-                        "
-                    >
-                        {{ match($recurringTransaction->frequency) {
-                            'weekly' => 'Wöchentlich',
-                            'monthly' => 'Monatlich',
-                            'quarterly' => 'Vierteljährlich',
-                            'yearly' => 'Jährlich',
-                            default => $recurringTransaction->frequency,
-                        } }}
-                    </p>
-
-                </div>
-
-
-                {{-- NÄCHSTE AUSFÜHRUNG --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Nächste Ausführung
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            text-slate-900
-                            dark:text-white
-                            mt-2
-                        "
-                    >
-                        {{ $recurringTransaction->next_date?->format('d.m.Y') ?? '—' }}
-                    </p>
-
-                </div>
-
-
-                {{-- ENDDATUM --}}
-
-                <div
-                    class="
-                        rounded-2xl
-                        bg-slate-50
-                        dark:bg-slate-800/60
-                        border
-                        border-slate-100
-                        dark:border-slate-700
-                        p-5
-                    "
-                >
-
-                    <p class="text-xs text-slate-400 dark:text-slate-500">
-                        Enddatum
-                    </p>
-
-                    <p
-                        class="
-                            text-sm
-                            font-medium
-                            text-slate-900
-                            dark:text-white
-                            mt-2
-                        "
-                    >
-                        {{ $recurringTransaction->end_date?->format('d.m.Y') ?? 'Unbegrenzt' }}
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    {{-- ========================================================= --}}
-    {{-- INFO --}}
-    {{-- ========================================================= --}}
-
-    <div
-        class="
-            mt-5
-            rounded-3xl
-            border
-            border-slate-200
-            dark:border-slate-800
-            bg-slate-50
-            dark:bg-slate-900/50
-            p-5
-            sm:p-6
-        "
-    >
-
-        <div class="flex items-start gap-4">
-
-            <div class="text-xl">
-                ℹ️
-            </div>
-
-            <div>
-
-                <p
-                    class="
-                        text-sm
-                        font-medium
-                        text-slate-700
-                        dark:text-slate-300
-                    "
-                >
-                    Wiederkehrende Buchung
-                </p>
-
-                <p
-                    class="
-                        text-sm
-                        text-slate-500
-                        dark:text-slate-400
-                        mt-1
-                    "
-                >
-                    Diese Buchung wird entsprechend dem eingestellten
-                    Intervall berücksichtigt. Die nächste Ausführung ist
-                    für
-                    <span class="font-medium text-slate-700 dark:text-slate-300">
-                        {{ $recurringTransaction->next_date?->format('d.m.Y') ?? 'kein Datum' }}
-                    </span>
-                    vorgesehen.
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- AKTIONEN --}}
-    {{-- ========================================================= --}}
-
-    <div
-        class="
-            mt-5
-            flex
-            flex-col-reverse
-            sm:flex-row
-            sm:items-center
-            sm:justify-between
-            gap-3
-        "
-    >
-
-        {{-- ZURÜCK --}}
-
-        <a
-            href="{{ route('recurring-transactions.index') }}"
-            class="
-                inline-flex
-                items-center
-                justify-center
-                rounded-xl
-                border
-                border-slate-200
-                dark:border-slate-700
-                bg-white
-                dark:bg-slate-800
-                px-5
-                py-3
-                text-sm
-                font-medium
-                text-slate-700
-                dark:text-slate-200
-                hover:bg-slate-100
-                dark:hover:bg-slate-700
-                transition
-            "
-        >
-            ← Zurück
-        </a>
-
-
-        <div class="flex flex-col sm:flex-row gap-3">
-
-
-            {{-- LÖSCHEN --}}
-
-            <form
-                method="POST"
-                action="{{ route('recurring-transactions.destroy', $recurringTransaction) }}"
-                onsubmit="return confirm('Möchtest du diese wiederkehrende Buchung wirklich löschen?');"
-            >
-
-                @csrf
-                @method('DELETE')
-
-                <button
-                    type="submit"
-                    class="
-                        w-full
-                        sm:w-auto
-                        inline-flex
-                        items-center
-                        justify-center
-                        rounded-xl
-                        border
-                        border-red-200
-                        dark:border-red-900
-                        bg-white
-                        dark:bg-slate-900
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        text-red-600
-                        dark:text-red-400
-                        hover:bg-red-50
-                        dark:hover:bg-red-950/30
-                        transition
-                    "
-                >
-                    Löschen
-                </button>
-
-            </form>
-
-
-            {{-- BEARBEITEN --}}
-
-            <a
-                href="{{ route('recurring-transactions.edit', $recurringTransaction) }}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-slate-950
-                    dark:bg-white
-                    px-6
-                    py-3
-                    text-sm
-                    font-medium
-                    text-white
-                    dark:text-slate-950
-                    hover:bg-slate-800
-                    dark:hover:bg-slate-200
-                    transition
-                "
-            >
+        @unless ($item->is_active)
+            <span class="mt-3 rounded-full bg-slate-100 dark:bg-white/10 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">Pausiert</span>
+        @endunless
+
+        <div class="mt-5 flex gap-2">
+            <a href="{{ route('recurring-transactions.edit', $item) }}" class="fv-btn fv-btn-secondary text-sm py-2">
+                <x-icon name="pencil" class="w-4 h-4" />
                 Bearbeiten
             </a>
 
+            <form method="POST" action="{{ route('recurring-transactions.destroy', $item) }}"
+                onsubmit="return confirm('„{{ addslashes($item->description) }}“ löschen? Bereits erzeugte Buchungen bleiben erhalten.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="fv-btn text-sm py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">
+                    <x-icon name="trash" class="w-4 h-4" />
+                    Löschen
+                </button>
+            </form>
         </div>
-
     </div>
+
+
+    {{-- DETAILS --}}
+
+    <dl class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5 text-sm">
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Konto</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $item->account?->name ?? '–' }}</dd>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Kategorie</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $item->category ? $item->category->icon . ' ' . $item->category->name : '–' }}</dd>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Endet</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $item->end_date?->format('d.m.Y') ?? 'Nie' }}</dd>
+        </div>
+    </dl>
+
+
+    {{-- NÄCHSTE TERMINE --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Nächste Termine</h3>
+
+        @if (empty($upcomingDates))
+            <div class="fv-card px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
+                {{ $item->is_active ? 'Keine weiteren Termine – das Enddatum ist erreicht.' : 'Pausiert – es wird nichts gebucht.' }}
+            </div>
+        @else
+            <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($upcomingDates as $date)
+                    <li class="flex items-center gap-3 px-4 py-3">
+                        <div class="w-11 shrink-0 text-center">
+                            <p class="text-[11px] font-semibold uppercase text-red-500">{{ $date->translatedFormat('M') }}</p>
+                            <p class="text-lg font-semibold leading-tight tabular-nums text-slate-900 dark:text-white">{{ $date->format('j') }}</p>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-slate-900 dark:text-white">{{ $date->translatedFormat('l, j. F Y') }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ $relative($date) }}</p>
+                        </div>
+
+                        <p class="font-semibold tabular-nums {{ $isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
+                            {{ $isIncome ? '+' : '−' }}{{ number_format((float) $item->amount, 2, ',', '.') }} €
+                        </p>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
+
+    {{-- BISHERIGE BUCHUNGEN --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Bisher gebucht</h3>
+
+        @if ($recentTransactions->isEmpty())
+            <div class="fv-card px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
+                Noch keine Buchungen erzeugt. Die erste folgt am Fälligkeitstag.
+            </div>
+        @else
+            <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($recentTransactions as $transaction)
+                    <li>
+                        <a href="{{ route('transactions.edit', $transaction) }}" class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition">
+                            <span class="text-sm text-slate-700 dark:text-slate-200 tabular-nums">{{ $transaction->transaction_date?->format('d.m.Y') }}</span>
+                            <span class="font-medium tabular-nums {{ $transaction->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
+                                {{ $transaction->type === 'income' ? '+' : '−' }}{{ number_format((float) $transaction->amount, 2, ',', '.') }} €
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
 
 </div>
 

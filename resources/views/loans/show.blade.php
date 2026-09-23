@@ -1,1346 +1,289 @@
 @extends('layouts.app')
 
-@section('title', $loan->name . ' – FinanzView')
-
-@section('eyebrow', 'Finanzplanung')
-
+@section('title', $loan->name . ' – Kredit – FinanzView')
+@section('eyebrow', 'Kredite')
 @section('page_title', $loan->name)
+
+@php
+    $principal = (float) $loan->principal_amount;
+    $remaining = max(0, (float) $loan->remaining_amount);
+    $progress = (float) ($loan->progress ?? 0);
+
+    $typeLabels = [
+        'loan' => 'Ratenkredit',
+        'installment' => 'Finanzierung',
+        'paypal_installment' => 'PayPal Ratenzahlung',
+        'other' => 'Kredit',
+    ];
+
+    $statusLabels = [
+        'planned' => ['Geplant', 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300'],
+        'paid' => ['Bezahlt', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'],
+        'overdue' => ['Überfällig', 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'],
+        'cancelled' => ['Entfällt', 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500'],
+    ];
+
+    $upcoming = $regularPayments
+        ->whereIn('status', ['planned', 'overdue'])
+        ->sortBy('due_date')
+        ->take(6);
+
+    $plannedCount = $regularPayments->whereIn('status', ['planned', 'overdue'])->count();
+    $lastPlanned = $regularPayments->whereIn('status', ['planned', 'overdue'])->sortBy('due_date')->last();
+
+    $money = fn ($value) => number_format((float) $value, 2, ',', '.') . ' €';
+@endphp
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <div class="flex items-center gap-4">
+        <x-financial-provider :provider="$loan->provider" :fallback-icon="$loan->creditor_icon ?: '🏦'" size="md" />
 
-    {{-- ========================================================= --}}
-    {{-- HEADER --}}
-    {{-- ========================================================= --}}
-
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
-
-        <div class="min-w-0">
-
-            <div class="flex items-center gap-2">
-
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
-
-                <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    Finanzplanung
-                </p>
-
-            </div>
-
-            <div class="flex items-center gap-4 mt-3">
-
-                <x-financial-provider
-                    :provider="$loan->provider"
-                    :fallback-icon="$loan->creditor_icon ?: '💳'"
-                    size="md"
-                />
-
-                <div class="min-w-0">
-
-                    <h2
-                        class="
-                            text-3xl
-                            sm:text-4xl
-                            font-semibold
-                            tracking-tight
-                            text-slate-900
-                            dark:text-white
-                            truncate
-                        "
-                    >
-                        {{ $loan->name }}
-                    </h2>
-
-                    <p class="text-slate-500 dark:text-slate-400 mt-1">
-                        {{ $loan->creditor_name ?: 'Kredit' }}
-                    </p>
-
-                </div>
-
-            </div>
-
+        <div class="flex-1 min-w-0">
+            <h2 class="text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white truncate">{{ $loan->name }}</h2>
+            <p class="text-[15px] text-slate-500 dark:text-slate-400 truncate">
+                {{ $loan->creditor_name ?: ($typeLabels[$loan->type] ?? 'Kredit') }}
+                @unless ($loan->is_active) · abgeschlossen @endunless
+            </p>
         </div>
 
-
-        {{-- AKTIONEN --}}
-
-        <div class="flex items-center gap-3">
-
-            <a
-                href="{{ route('loans.index') }}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    rounded-xl
-                    border
-                    border-slate-200
-                    dark:border-slate-700
-                    bg-white
-                    dark:bg-slate-900
-                    px-4
-                    py-3
-                    text-sm
-                    font-medium
-                    text-slate-600
-                    dark:text-slate-300
-                    hover:bg-slate-50
-                    dark:hover:bg-slate-800
-                    transition
-                "
-            >
-                ←
-                <span class="hidden sm:inline ml-2">
-                    Kredite
-                </span>
-            </a>
-
-            <a
-                href="{{ route('loans.edit', $loan) }}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-emerald-600
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-white
-                    hover:bg-emerald-700
-                    transition
-                "
-            >
-                <span class="mr-2">
-                    ✏️
-                </span>
-
-                <span class="hidden sm:inline">
-                    Bearbeiten
-                </span>
-
-            </a>
-
-        </div>
-
+        <a href="{{ route('loans.edit', $loan) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
+            <x-icon name="pencil" class="w-4 h-4" />
+            <span class="hidden sm:inline">Bearbeiten</span>
+        </a>
     </div>
 
+    <x-flash />
 
-    {{-- ========================================================= --}}
-    {{-- ERFOLGSMELDUNG --}}
-    {{-- ========================================================= --}}
-
-    @if(session('success'))
-
-        <div
-            class="
-                mt-6
-                rounded-2xl
-                border
-                border-emerald-100
-                dark:border-emerald-900
-                bg-emerald-50
-                dark:bg-emerald-950/40
-                px-5
-                py-4
-                text-sm
-                text-emerald-700
-                dark:text-emerald-300
-            "
-        >
-            {{ session('success') }}
+    @if ($errors->any())
+        <div class="flex gap-3 rounded-2xl bg-red-50 dark:bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300" role="alert">
+            <x-icon name="alert" class="w-5 h-5" />
+            <div>
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
         </div>
-
     @endif
 
 
-    {{-- ========================================================= --}}
-    {{-- HAUPTKARTE --}}
-    {{-- ========================================================= --}}
+    {{-- RESTSCHULD --}}
 
-    <section
-        class="
-            mt-8
-            rounded-3xl
-            bg-white
-            dark:bg-slate-900
-            border
-            border-slate-100
-            dark:border-slate-800
-            shadow-sm
-            overflow-hidden
-        "
-    >
+    <div class="fv-card p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
 
-        <div class="p-6 sm:p-8">
+        <x-progress-ring :value="$progress" :size="170" :stroke="15">
+            <p class="text-xs text-slate-500 dark:text-slate-400">getilgt</p>
+            <p class="text-3xl font-semibold tabular-nums text-slate-900 dark:text-white">{{ number_format($progress, 0, ',', '.') }} %</p>
+        </x-progress-ring>
 
-            <div
-                class="
-                    flex
-                    flex-col
-                    lg:flex-row
-                    lg:items-start
-                    lg:justify-between
-                    gap-8
-                "
-            >
+        <div class="w-full flex-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Restschuld</p>
+            <p class="text-[34px] leading-tight font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">{{ $money($remaining) }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 tabular-nums">von {{ $money($principal) }}</p>
 
-                {{-- INFO --}}
-
+            <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
-
-                    <div class="flex flex-wrap items-center gap-2">
-
-                        <span
-                            class="
-                                rounded-full
-                                px-3
-                                py-1
-                                text-xs
-                                font-medium
-                                {{ $loan->is_active
-                                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400' }}
-                            "
-                        >
-                            {{ $loan->is_active ? 'Aktiv' : 'Inaktiv' }}
-                        </span>
-
-                    </div>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-4">
-                        Aktuelle Restschuld
-                    </p>
-
-                    <p
-                        class="
-                            text-4xl
-                            sm:text-5xl
-                            font-semibold
-                            tracking-tight
-                            text-slate-900
-                            dark:text-white
-                            mt-1
-                        "
-                    >
-                        {{ number_format(
-                            $loan->remaining_amount,
-                            2,
-                            ',',
-                            '.'
-                        ) }} €
-                    </p>
-
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Monatsrate</dt>
+                    <dd class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($loan->installment_amount) }}</dd>
                 </div>
+                <div>
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Zinssatz</dt>
+                    <dd class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ number_format((float) $loan->interest_rate, 2, ',', '.') }} %</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Offene Raten</dt>
+                    <dd class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ $plannedCount }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Letzte Rate</dt>
+                    <dd class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ $lastPlanned?->due_date?->format('m/Y') ?? ($loan->end_date?->format('m/Y') ?? '–') }}</dd>
+                </div>
+            </dl>
+        </div>
+
+    </div>
 
 
-                {{-- FORTSCHRITT --}}
+    {{-- NÄCHSTE RATEN --}}
 
-                <div class="w-full lg:max-w-md">
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Nächste Raten</h3>
 
-                    <div class="flex items-center justify-between gap-4 mb-3">
+        @if ($upcoming->isEmpty())
+            <div class="fv-card px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
+                Keine offenen Raten – dieser Kredit ist vollständig verplant oder abbezahlt.
+            </div>
+        @else
+            <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($upcoming as $payment)
+                    @php [$statusLabel, $statusClass] = $statusLabels[$payment->status] ?? $statusLabels['planned']; @endphp
 
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                Tilgungsfortschritt
-                            </p>
-
-                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-
-                                {{ number_format(
-                                    $loan->paid_amount,
-                                    2,
-                                    ',',
-                                    '.'
-                                ) }}
-
-                                € von
-
-                                {{ number_format(
-                                    $loan->principal_amount,
-                                    2,
-                                    ',',
-                                    '.'
-                                ) }}
-
-                                € getilgt
-
-                            </p>
-
+                    <li class="flex items-center gap-3 px-4 py-3">
+                        <div class="w-11 shrink-0 text-center">
+                            <p class="text-[11px] font-semibold uppercase text-red-500">{{ $payment->due_date?->translatedFormat('M') }}</p>
+                            <p class="text-lg font-semibold leading-tight tabular-nums text-slate-900 dark:text-white">{{ $payment->due_date?->format('j') }}</p>
                         </div>
 
-                        <span
-                            class="text-lg font-semibold"
-                            style="
-                                color:
-                                {{ $loan->creditor_color ?: '#10b981' }};
-                            "
-                        >
-                            {{ number_format(
-                                $loan->progress,
-                                1,
-                                ',',
-                                '.'
-                            ) }} %
-                        </span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-slate-900 dark:text-white">Rate {{ $payment->installment_number }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 tabular-nums truncate">
+                                Tilgung {{ $money($payment->principal_amount) }} · Zinsen {{ $money($payment->interest_amount) }}
+                            </p>
+                        </div>
 
-                    </div>
-
-
-                    <div
-                        class="
-                            h-4
-                            rounded-full
-                            bg-slate-100
-                            dark:bg-slate-800
-                            overflow-hidden
-                        "
-                    >
-
-                        <div
-                            class="h-full rounded-full transition-all duration-700"
-                            style="
-                                width:
-                                {{ min(
-                                    100,
-                                    max(
-                                        0,
-                                        $loan->progress
-                                    )
-                                ) }}%;
-
-                                background-color:
-                                {{ $loan->creditor_color ?: '#10b981' }};
-                            "
-                        ></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- KENNZAHLEN --}}
-
-        <div
-            class="
-                grid
-                grid-cols-2
-                lg:grid-cols-4
-                border-t
-                border-slate-100
-                dark:border-slate-800
-            "
-        >
-
-            <div class="p-5 sm:p-6">
-
-                <p class="text-xs text-slate-400 dark:text-slate-500">
-                    Ursprünglicher Betrag
-                </p>
-
-                <p class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                    {{ number_format(
-                        $loan->principal_amount,
-                        2,
-                        ',',
-                        '.'
-                    ) }} €
-                </p>
-
-            </div>
-
-
-            <div
-                class="
-                    p-5
-                    sm:p-6
-                    border-l
-                    border-slate-100
-                    dark:border-slate-800
-                "
-            >
-
-                <p class="text-xs text-slate-400 dark:text-slate-500">
-                    Monatliche Rate
-                </p>
-
-                <p class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                    {{ number_format(
-                        $loan->installment_amount,
-                        2,
-                        ',',
-                        '.'
-                    ) }} €
-                </p>
-
-            </div>
-
-
-            <div
-                class="
-                    p-5
-                    sm:p-6
-                    border-t
-                    lg:border-t-0
-                    lg:border-l
-                    border-slate-100
-                    dark:border-slate-800
-                "
-            >
-
-                <p class="text-xs text-slate-400 dark:text-slate-500">
-                    Noch offen
-                </p>
-
-                <p class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-
-                    @if($loan->remaining_installments !== null)
-
-                        {{ $loan->remaining_installments }} Raten
-
-                    @else
-
-                        –
-
-                    @endif
-
-                </p>
-
-            </div>
-
-
-            <div
-                class="
-                    p-5
-                    sm:p-6
-                    border-l
-                    border-t
-                    lg:border-t-0
-                    border-slate-100
-                    dark:border-slate-800
-                "
-            >
-
-                <p class="text-xs text-slate-400 dark:text-slate-500">
-                    Zinssatz
-                </p>
-
-                <p class="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-
-                    @if($loan->interest_rate !== null)
-
-                        {{ number_format(
-                            $loan->interest_rate,
-                            3,
-                            ',',
-                            '.'
-                        ) }} %
-
-                    @else
-
-                        –
-
-                    @endif
-
-                </p>
-
-            </div>
-
-        </div>
-
+                        <div class="text-right shrink-0">
+                            <p class="font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($payment->amount) }}</p>
+                            @if ($payment->status !== 'planned')
+                                <span class="inline-block mt-0.5 rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </section>
 
 
-    {{-- ========================================================= --}}
-    {{-- ZWEI SPALTEN --}}
-    {{-- ========================================================= --}}
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
-
-
-        {{-- ===================================================== --}}
-        {{-- TILGUNGSPLAN --}}
-        {{-- ===================================================== --}}
-
-        <section
-            class="
-                lg:col-span-2
-                bg-white
-                dark:bg-slate-900
-                rounded-3xl
-                border
-                border-slate-100
-                dark:border-slate-800
-                shadow-sm
-                overflow-hidden
-            "
-        >
-
-            <details open>
-
-                <summary
-                    class="
-                        list-none
-                        cursor-pointer
-                        p-6
-                        sm:p-8
-                    "
-                >
-
-                    <div class="flex items-center justify-between gap-4">
-
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                                Tilgung
-                            </p>
-
-                            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mt-1">
-                                Tilgungsplan
-                            </h3>
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Raten und Zahlungsstatus
-                            </p>
-
-                        </div>
-
-                        <span class="text-slate-400 dark:text-slate-500">
-                            ▼
-                        </span>
-
-                    </div>
-
-                </summary>
-
-
-                <div class="px-6 sm:px-8 pb-8">
-
-                    @if($payments->count() > 0)
-
-                        <div class="overflow-x-auto">
-
-                            <table class="w-full text-sm">
-
-                                <thead>
-
-                                    <tr
-                                        class="
-                                            border-b
-                                            border-slate-100
-                                            dark:border-slate-800
-                                            text-left
-                                        "
-                                    >
-
-                                        <th class="py-3 pr-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                                            Rate
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                                            Fälligkeit
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
-                                            Betrag
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
-                                            Zins
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
-                                            Tilgung
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap text-right">
-                                            Restschuld
-                                        </th>
-
-                                        <th class="py-3 px-4 font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                                            Typ
-                                        </th>
-
-                                        <th class="py-3 pl-4 text-right font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                                            Status
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-
-                                <tbody>
-
-                                    @foreach($payments as $payment)
-
-                                        <tr
-                                            class="
-                                                border-b
-                                                border-slate-100
-                                                dark:border-slate-800/70
-                                                last:border-0
-                                            "
-                                        >
-
-                                            <td class="py-4 pr-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                                                {{ $payment->installment_number }}
-                                            </td>
-
-                                            <td class="py-4 px-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
-                                                {{ $payment->due_date->format('d.m.Y') }}
-                                            </td>
-
-                                            <td class="py-4 px-4 whitespace-nowrap font-medium text-slate-900 dark:text-white text-right">
-                                                {{ number_format(
-                                                    $payment->amount,
-                                                    2,
-                                                    ',',
-                                                    '.'
-                                                ) }} €
-                                            </td>
-
-                                            <td class="py-4 px-4 whitespace-nowrap text-right text-slate-600 dark:text-slate-300">
-                                                @if($payment->payment_type === 'regular')
-                                                    {{ number_format(
-                                                        $payment->interest_amount ?? 0,
-                                                        2,
-                                                        ',',
-                                                        '.'
-                                                    ) }} €
-                                                @else
-                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="py-4 px-4 whitespace-nowrap text-right text-slate-600 dark:text-slate-300">
-                                                @if($payment->payment_type === 'regular')
-                                                    {{ number_format(
-                                                        $payment->principal_amount ?? 0,
-                                                        2,
-                                                        ',',
-                                                        '.'
-                                                    ) }} €
-                                                @else
-                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="py-4 px-4 whitespace-nowrap text-right font-medium text-slate-900 dark:text-white">
-                                                @if($payment->payment_type === 'regular')
-                                                    {{ number_format(
-                                                        $payment->remaining_amount ?? 0,
-                                                        2,
-                                                        ',',
-                                                        '.'
-                                                    ) }} €
-                                                @else
-                                                    <span class="text-slate-400 dark:text-slate-600">–</span>
-                                                @endif
-                                            </td>
-
-                                            <td class="py-4 px-4">
-
-                                                @if($payment->payment_type === 'extra')
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-violet-50
-                                                            dark:bg-violet-950/40
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-violet-600
-                                                            dark:text-violet-400
-                                                        "
-                                                    >
-                                                        Sondertilgung
-                                                    </span>
-
-                                                @else
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-slate-100
-                                                            dark:bg-slate-800
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-slate-600
-                                                            dark:text-slate-400
-                                                        "
-                                                    >
-                                                        Rate
-                                                    </span>
-
-                                                @endif
-
-                                            </td>
-
-                                            <td class="py-4 pl-4 text-right">
-
-                                                @if($payment->status === 'paid')
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-emerald-50
-                                                            dark:bg-emerald-950/40
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-emerald-600
-                                                            dark:text-emerald-400
-                                                        "
-                                                    >
-                                                        ✓ Bezahlt
-                                                    </span>
-
-                                                @elseif($payment->status === 'overdue')
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-red-50
-                                                            dark:bg-red-950/40
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-red-600
-                                                            dark:text-red-400
-                                                        "
-                                                    >
-                                                        ⚠ Überfällig
-                                                    </span>
-
-                                                @elseif($payment->status === 'cancelled')
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-slate-100
-                                                            dark:bg-slate-800
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-slate-500
-                                                            dark:text-slate-400
-                                                        "
-                                                    >
-                                                        Storniert
-                                                    </span>
-
-                                                @else
-
-                                                    <span
-                                                        class="
-                                                            inline-flex
-                                                            rounded-full
-                                                            bg-amber-50
-                                                            dark:bg-amber-950/40
-                                                            px-2.5
-                                                            py-1
-                                                            text-xs
-                                                            font-medium
-                                                            text-amber-600
-                                                            dark:text-amber-400
-                                                        "
-                                                    >
-                                                        Geplant
-                                                    </span>
-
-                                                @endif
-
-                                            </td>
-
-                                        </tr>
-
-                                    @endforeach
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
+    {{-- SONDERTILGUNG --}}
+
+    <details class="fv-card group overflow-hidden" @if ($errors->hasAny(['amount', 'paid_date', 'notes'])) open @endif>
+        <summary class="cursor-pointer list-none flex items-center gap-3 px-4 py-4">
+            <span class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center">
+                <x-icon name="plus" class="w-5 h-5" />
+            </span>
+            <span class="flex-1">
+                <span class="block font-medium text-slate-900 dark:text-white">Sondertilgung erfassen</span>
+                <span class="block text-[13px] text-slate-500 dark:text-slate-400">
+                    @if ($extraPayments->isNotEmpty())
+                        Bisher {{ $money($extraPayments->where('status', 'paid')->sum('amount')) }} extra getilgt
                     @else
-
-                        <div
-                            class="
-                                rounded-2xl
-                                bg-slate-50
-                                dark:bg-slate-800/50
-                                p-8
-                                text-center
-                            "
-                        >
-
-                            <div class="text-3xl">
-                                📅
-                            </div>
-
-                            <h3 class="font-medium text-slate-900 dark:text-white mt-3">
-                                Noch kein Tilgungsplan vorhanden
-                            </h3>
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Die Raten werden hier angezeigt, sobald ein Tilgungsplan angelegt wurde.
-                            </p>
-
-                        </div>
-
+                        Zusätzliche Zahlung verkürzt die Laufzeit
                     @endif
-
-                </div>
-
-            </details>
-
-        </section>
-
-
-        {{-- ===================================================== --}}
-        {{-- RECHTE SPALTE --}}
-        {{-- ===================================================== --}}
-
-        <div class="space-y-5">
-
-
-            {{-- ================================================= --}}
-            {{-- SONDETILGUNGEN --}}
-            {{-- ================================================= --}}
-
-            <section
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    border
-                    border-slate-100
-                    dark:border-slate-800
-                    shadow-sm
-                    overflow-hidden
-                "
-            >
-
-                <details>
-
-                    <summary
-                        class="
-                            list-none
-                            cursor-pointer
-                            p-6
-                        "
-                    >
-
-                        <div class="flex items-center justify-between gap-3">
-
-                            <div>
-
-                                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                                    Zusätzliche Zahlungen
-                                </p>
-
-                                <h3 class="font-semibold text-slate-900 dark:text-white mt-1">
-                                    Sondertilgungen
-                                </h3>
-
-                            </div>
-
-                            <span class="text-slate-400 dark:text-slate-500">
-                                ▼
-                            </span>
-
-                        </div>
-
-                    </summary>
-
-
-                    <div class="px-6 pb-6">
-
-                        @if($extraPayments->count() > 0)
-
-                            <div class="space-y-3">
-
-                                @foreach($extraPayments as $payment)
-
-                                    <div
-                                        class="
-                                            flex
-                                            items-center
-                                            justify-between
-                                            gap-3
-                                            rounded-2xl
-                                            bg-slate-50
-                                            dark:bg-slate-800
-                                            p-3
-                                        "
-                                    >
-
-                                        <div>
-
-                                            <p class="text-sm font-medium text-slate-900 dark:text-white">
-
-                                                {{ $payment->paid_date?->format('d.m.Y')
-                                                    ?? $payment->due_date->format('d.m.Y') }}
-
-                                            </p>
-
-                                            <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                                                Sondertilgung
-                                            </p>
-
-                                            @if($payment->notes)
-                                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                                                    {{ $payment->notes }}
-                                                </p>
-                                            @endif
-
-                                        </div>
-
-                                        <p class="font-semibold text-slate-900 dark:text-white">
-                                            {{ number_format(
-                                                $payment->amount,
-                                                2,
-                                                ',',
-                                                '.'
-                                            ) }} €
-                                        </p>
-
-                                    </div>
-
-                                @endforeach
-
-                            </div>
-
-                        @else
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400">
-                                Noch keine Sondertilgungen erfasst.
-                            </p>
-
-                        @endif
-
-
-                        {{-- FORMULAR --}}
-
-                        <form
-                            method="POST"
-                            action="{{ route('loans.extra-payment', $loan) }}"
-                            class="
-                                mt-5
-                                pt-5
-                                border-t
-                                border-slate-100
-                                dark:border-slate-800
-                                space-y-4
-                            "
-                        >
-
-                            @csrf
-
-                            <div>
-
-                                <label
-                                    for="extra_amount"
-                                    class="
-                                        block
-                                        text-sm
-                                        font-medium
-                                        text-slate-700
-                                        dark:text-slate-300
-                                        mb-2
-                                    "
-                                >
-                                    Betrag
-                                </label>
-
-                                <div class="relative">
-
-                                    <input
-                                        type="number"
-                                        id="extra_amount"
-                                        name="amount"
-                                        min="0.01"
-                                        step="0.01"
-                                        required
-                                        placeholder="500,00"
-                                        class="
-                                            w-full
-                                            rounded-xl
-                                            border
-                                            border-slate-200
-                                            dark:border-slate-700
-                                            bg-white
-                                            dark:bg-slate-800
-                                            px-4
-                                            py-3
-                                            pr-10
-                                            text-slate-900
-                                            dark:text-white
-                                            outline-none
-                                            focus:ring-2
-                                            focus:ring-emerald-500/20
-                                            focus:border-emerald-500
-                                        "
-                                    >
-
-                                    <span
-                                        class="
-                                            absolute
-                                            right-4
-                                            top-1/2
-                                            -translate-y-1/2
-                                            text-slate-400
-                                        "
-                                    >
-                                        €
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    for="extra_paid_date"
-                                    class="
-                                        block
-                                        text-sm
-                                        font-medium
-                                        text-slate-700
-                                        dark:text-slate-300
-                                        mb-2
-                                    "
-                                >
-                                    Datum
-                                </label>
-
-                                <input
-                                    type="date"
-                                    id="extra_paid_date"
-                                    name="paid_date"
-                                    value="{{ now()->format('Y-m-d') }}"
-                                    required
-                                    class="
-                                        w-full
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        dark:border-slate-700
-                                        bg-white
-                                        dark:bg-slate-800
-                                        px-4
-                                        py-3
-                                        text-slate-900
-                                        dark:text-white
-                                        outline-none
-                                        focus:ring-2
-                                        focus:ring-emerald-500/20
-                                        focus:border-emerald-500
-                                    "
-                                >
-
-                            </div>
-
-
-                            <div>
-                                <label
-                                    for="extra_notes"
-                                    class="
-                                        block
-                                        text-sm
-                                        font-medium
-                                        text-slate-700
-                                        dark:text-slate-300
-                                        mb-2
-                                    "
-                                >
-                                    Notiz
-                                    <span class="font-normal text-slate-400 dark:text-slate-500">
-                                        (optional)
-                                    </span>
-                                </label>
-
-                                <textarea
-                                    id="extra_notes"
-                                    name="notes"
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="z. B. Sonderzahlung aus Bonuszahlung"
-                                    class="
-                                        w-full
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        dark:border-slate-700
-                                        bg-white
-                                        dark:bg-slate-800
-                                        px-4
-                                        py-3
-                                        text-slate-900
-                                        dark:text-white
-                                        placeholder-slate-400
-                                        dark:placeholder-slate-500
-                                        outline-none
-                                        resize-y
-                                        focus:ring-2
-                                        focus:ring-emerald-500/20
-                                        focus:border-emerald-500
-                                    "
-                                >{{ old('notes') }}</textarea>
-
-                                @error('notes')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
-
-                            <button
-                                type="submit"
-                                class="
-                                    w-full
-                                    rounded-xl
-                                    bg-emerald-600
-                                    py-3
-                                    text-sm
-                                    font-medium
-                                    text-white
-                                    hover:bg-emerald-700
-                                    transition
-                                "
-                            >
-                                + Sondertilgung erfassen
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </details>
-
-            </section>
-
-
-            {{-- ================================================= --}}
-            {{-- KREDITINFORMATIONEN --}}
-            {{-- ================================================= --}}
-
-            <section
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    border
-                    border-slate-100
-                    dark:border-slate-800
-                    shadow-sm
-                    p-6
-                "
-            >
-
-                <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    Übersicht
-                </p>
-
-                <h3 class="font-semibold text-slate-900 dark:text-white mt-1 mb-5">
-                    Kreditinformationen
-                </h3>
-
-
-                <div class="space-y-4 text-sm">
-
-
-                    <div class="flex items-center justify-between gap-4">
-
-                        <span class="text-slate-500 dark:text-slate-400">
-                            Kreditart
-                        </span>
-
-                        <span class="font-medium text-slate-900 dark:text-white text-right">
-
-                            @switch($loan->type)
-
-                                @case('loan')
-                                    Ratenkredit
-                                    @break
-
-                                @case('installment')
-                                    Finanzierung
-                                    @break
-
-                                @case('paypal_installment')
-                                    PayPal Ratenzahlung
-                                    @break
-
-                                @default
-                                    Sonstige
-
-                            @endswitch
-
-                        </span>
-
-                    </div>
-
-
-                    @if($loan->start_date)
-
-                        <div class="flex items-center justify-between gap-4">
-
-                            <span class="text-slate-500 dark:text-slate-400">
-                                Startdatum
-                            </span>
-
-                            <span class="font-medium text-slate-900 dark:text-white">
-                                {{ $loan->start_date->format('d.m.Y') }}
-                            </span>
-
-                        </div>
-
-                    @endif
-
-
-                    @if($loan->end_date)
-
-                        <div class="flex items-center justify-between gap-4">
-
-                            <span class="text-slate-500 dark:text-slate-400">
-                                Enddatum
-                            </span>
-
-                            <span class="font-medium text-slate-900 dark:text-white">
-                                {{ $loan->end_date->format('d.m.Y') }}
-                            </span>
-
-                        </div>
-
-                    @endif
-
-
-                    @if($loan->account)
-
-                        <div class="flex items-center justify-between gap-4">
-
-                            <span class="text-slate-500 dark:text-slate-400">
-                                Zahlungskonto
-                            </span>
-
-                            <span class="font-medium text-slate-900 dark:text-white text-right">
-                                {{ $loan->account->name }}
-                            </span>
-
-                        </div>
-
-                    @endif
-
-                </div>
-
-            </section>
-
-
-            {{-- ================================================= --}}
-            {{-- NOTIZEN --}}
-            {{-- ================================================= --}}
-
-            @if($loan->notes)
-
-                <section
-                    class="
-                        bg-white
-                        dark:bg-slate-900
-                        rounded-3xl
-                        border
-                        border-slate-100
-                        dark:border-slate-800
-                        shadow-sm
-                        p-6
-                    "
-                >
-
-                    <p class="text-xs font-medium uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        Hinweise
-                    </p>
-
-                    <h3 class="font-semibold text-slate-900 dark:text-white mt-1 mb-3">
-                        Notizen
-                    </h3>
-
-                    <p
-                        class="
-                            text-sm
-                            text-slate-600
-                            dark:text-slate-400
-                            whitespace-pre-line
-                        "
-                    >
-                        {{ $loan->notes }}
-                    </p>
-
-                </section>
-
-            @endif
-
-        </div>
-
-    </div>
-
-
-    {{-- ========================================================= --}}
-    {{-- LÖSCHEN --}}
-    {{-- ========================================================= --}}
-
-    <div class="mt-8 text-center">
-
-        <form
-            method="POST"
-            action="{{ route('loans.destroy', $loan) }}"
-            onsubmit="return confirm('Möchtest du diesen Kredit wirklich löschen?');"
-        >
-
+                </span>
+            </span>
+            <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
+        </summary>
+
+        <form method="POST" action="{{ route('loans.extra-payment', $loan) }}" class="border-t border-slate-100 dark:border-white/5 p-4 space-y-4">
             @csrf
 
-            @method('DELETE')
+            <div class="grid grid-cols-2 gap-4">
+                <x-field label="Betrag" for="extra_amount" error="amount">
+                    <input id="extra_amount" name="amount" type="number" step="0.01" min="0.01" inputmode="decimal" required
+                        value="{{ old('amount') }}" placeholder="0,00" class="fv-input tabular-nums">
+                </x-field>
 
-            <button
-                type="submit"
-                class="
-                    text-sm
-                    text-red-500
-                    dark:text-red-400
-                    hover:text-red-700
-                    dark:hover:text-red-300
-                    transition
-                "
-            >
-                Kredit löschen
-            </button>
+                <x-field label="Gezahlt am" for="paid_date" error="paid_date">
+                    <input id="paid_date" name="paid_date" type="date" required value="{{ old('paid_date', now()->format('Y-m-d')) }}" class="fv-input">
+                </x-field>
+            </div>
 
+            <x-field label="Notiz" for="extra_notes" error="notes">
+                <input id="extra_notes" name="notes" type="text" maxlength="1000" value="{{ old('notes') }}" placeholder="Optional" class="fv-input">
+            </x-field>
+
+            <div class="flex justify-end">
+                <button type="submit" class="fv-btn fv-btn-primary text-sm">Sondertilgung speichern</button>
+            </div>
         </form>
 
-    </div>
+        @if ($extraPayments->isNotEmpty())
+            <ul class="border-t border-slate-100 dark:border-white/5 divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($extraPayments->sortByDesc('paid_date') as $payment)
+                    <li class="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                        <span class="text-slate-600 dark:text-slate-300">
+                            {{ $payment->paid_date?->format('d.m.Y') ?? $payment->due_date?->format('d.m.Y') }}
+                            @if ($payment->notes)
+                                · {{ $payment->notes }}
+                            @endif
+                        </span>
+                        <span class="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{{ $money($payment->amount) }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </details>
+
+
+    {{-- TILGUNGSPLAN --}}
+
+    @if ($regularPayments->isNotEmpty())
+        <details class="fv-card group overflow-hidden">
+            <summary class="cursor-pointer list-none flex items-center gap-3 px-4 py-4">
+                <x-emoji-tile fallback="calendar" size="sm" />
+                <span class="flex-1 font-medium text-slate-900 dark:text-white">Kompletter Tilgungsplan</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">{{ $regularPayments->count() }} Raten</span>
+                <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
+            </summary>
+
+            <div class="border-t border-slate-100 dark:border-white/5 overflow-x-auto">
+                <table class="w-full text-sm tabular-nums">
+                    <thead class="text-xs text-slate-500 dark:text-slate-400">
+                        <tr class="text-left">
+                            <th class="px-4 py-2 font-medium">Nr.</th>
+                            <th class="px-2 py-2 font-medium">Fällig</th>
+                            <th class="px-2 py-2 font-medium text-right">Rate</th>
+                            <th class="px-2 py-2 font-medium text-right hidden sm:table-cell">Zinsen</th>
+                            <th class="px-2 py-2 font-medium text-right hidden sm:table-cell">Tilgung</th>
+                            <th class="px-2 py-2 font-medium text-right">Rest</th>
+                            <th class="px-4 py-2 font-medium text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                        @foreach ($regularPayments as $payment)
+                            @php [$statusLabel, $statusClass] = $statusLabels[$payment->status] ?? $statusLabels['planned']; @endphp
+                            <tr class="{{ in_array($payment->status, ['paid', 'cancelled'], true) ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200' }}">
+                                <td class="px-4 py-2">{{ $payment->installment_number }}</td>
+                                <td class="px-2 py-2">{{ $payment->due_date?->format('d.m.Y') }}</td>
+                                <td class="px-2 py-2 text-right">{{ number_format((float) $payment->amount, 2, ',', '.') }}</td>
+                                <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->interest_amount, 2, ',', '.') }}</td>
+                                <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</td>
+                                <td class="px-2 py-2 text-right">{{ number_format((float) $payment->remaining_amount, 2, ',', '.') }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    <span class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    @endif
+
+
+    {{-- DETAILS --}}
+
+    <dl class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5 text-sm">
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Art</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $typeLabels[$loan->type] ?? 'Kredit' }}</dd>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Beginn</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $loan->start_date?->format('d.m.Y') ?? '–' }}</dd>
+        </div>
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-slate-500 dark:text-slate-400">Abbuchung von</dt>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $loan->account?->name ?? '–' }}</dd>
+        </div>
+        @if ($loan->notes)
+            <div class="px-4 py-3">
+                <dt class="text-slate-500 dark:text-slate-400">Notizen</dt>
+                <dd class="mt-1 whitespace-pre-line text-slate-900 dark:text-white">{{ $loan->notes }}</dd>
+            </div>
+        @endif
+    </dl>
+
+    <form method="POST" action="{{ route('loans.destroy', $loan) }}"
+        onsubmit="return confirm('Kredit „{{ addslashes($loan->name) }}“ mit Tilgungsplan wirklich löschen?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="fv-card w-full py-3.5 text-center font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+            Kredit löschen
+        </button>
+    </form>
 
 </div>
 
