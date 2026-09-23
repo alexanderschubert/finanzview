@@ -13,3 +13,10 @@ storage/framework/views/*
 *.bak
 .env.*
 !.env.example
+.claude
+.github
+public/build
+public/hot
+public/storage
+storage/app/private
+bootstrap/cache/*.php
