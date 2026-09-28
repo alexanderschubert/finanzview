@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\OidcController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -362,6 +363,11 @@ Route::get('/settings/dashboard', [
      */
 
     Route::resource('categories', CategoryController::class)->except('show');
+
+    Route::post('/category-rules/apply', [CategoryRuleController::class, 'apply'])
+        ->name('category-rules.apply');
+
+    Route::resource('category-rules', CategoryRuleController::class)->except(['show', 'create']);
 
 
     /*

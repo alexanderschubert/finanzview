@@ -6,12 +6,15 @@
 
 @php
     $valid = $items->whereNull('error');
-    $newCount = $valid->whereNull('duplicate')->count();
+    $newCount = $valid->whereNull('duplicate')->where('pending', false)->count();
     $importedCount = $valid->where('duplicate', 'imported')->count();
     $possibleCount = $valid->where('duplicate', 'possible')->count();
     $errorCount = $items->whereNotNull('error')->count();
 
-    $categoriesByType = $categories->groupBy('type');
+    $categoriesByType = [
+        'expense' => $categories->whereIn('type', ['expense', 'both']),
+        'income' => $categories->whereIn('type', ['income', 'both']),
+    ];
 
     $money = fn ($amount) => number_format((float) $amount, 2, ',', '.') . ' €';
 @endphp
@@ -131,10 +134,10 @@
                 @foreach ($items as $item)
                     @php
                         $disabled = $item['error'] !== null || $item['duplicate'] === 'imported';
-                        $checked = ! $disabled && $item['duplicate'] === null;
+                        $checked = ! $disabled && $item['duplicate'] === null && ! $item['pending'];
                     @endphp
 
-                    <li class="flex gap-3 px-4 py-3 {{ $disabled ? 'opacity-50' : '' }}" data-row data-duplicate="{{ $item['duplicate'] ?? ($item['error'] ? 'error' : 'new') }}">
+                    <li class="flex gap-3 px-4 py-3 {{ $disabled ? 'opacity-50' : '' }}" data-row data-duplicate="{{ $item['duplicate'] ?? ($item['error'] ? 'error' : ($item['pending'] ? 'pending' : 'new')) }}">
                         <label class="pt-0.5 cursor-pointer">
                             <span class="sr-only">Zeile {{ $item['index'] + 1 }} importieren</span>
                             <input type="checkbox" name="import[]" value="{{ $item['index'] }}" class="w-5 h-5 rounded-md accent-emerald-600" @checked($checked) @disabled($disabled)>
@@ -173,6 +176,12 @@
                                             <option value="{{ $category->id }}" @selected($item['category_id'] === $category->id)>{{ $category->icon }} {{ $category->name }}</option>
                                         @endforeach
                                     </select>
+
+                                    @if ($item['pending'])
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-sky-100 dark:bg-sky-500/15 px-2 py-0.5 text-xs font-medium text-sky-800 dark:text-sky-300">
+                                            Vorgemerkt – noch nicht gebucht
+                                        </span>
+                                    @endif
 
                                     @if ($item['duplicate'] === 'possible')
                                         <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">

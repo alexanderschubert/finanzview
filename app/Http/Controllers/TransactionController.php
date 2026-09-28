@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\CreditCard;
 use App\Models\Transaction;
+use App\Services\CategoryRuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -490,12 +491,28 @@ class TransactionController extends Controller
                 ? null
                 : ($validated['credit_card_id'] ?? null);
 
+        /*
+         * Ohne gewählte Kategorie: passende Kategorie-Regel anwenden.
+         */
+        if ($transaction->category_id === null) {
+            $rules = app(CategoryRuleService::class);
+
+            $transaction->category_id = $rules->match(
+                $rules->rulesFor($user->id),
+                $transaction->type,
+                $transaction->merchant,
+                $transaction->description
+            );
+        }
+
         $transaction->save();
 
 
         return redirect()
             ->route('transactions.index')
-            ->with('success', 'Buchung wurde erfolgreich erstellt.');
+            ->with('success', $transaction->category_id !== null && empty($validated['category_id'])
+                ? 'Buchung wurde erstellt und per Regel einer Kategorie zugeordnet.'
+                : 'Buchung wurde erfolgreich erstellt.');
     }
 
 

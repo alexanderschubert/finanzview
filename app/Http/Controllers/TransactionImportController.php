@@ -100,7 +100,7 @@ class TransactionImportController extends Controller
         $categories = Category::query()
             ->where('user_id', $user->id)
             ->where('is_active', true)
-            ->whereIn('type', ['income', 'expense'])
+            ->whereIn('type', ['income', 'expense', 'both'])
             ->orderBy('name')
             ->get(['id', 'name', 'type', 'icon']);
 
@@ -185,7 +185,7 @@ class TransactionImportController extends Controller
                     : $item['category_id'];
 
                 // Kategorie muss dem Benutzer gehören und zur Buchungsart passen.
-                if (! $categoryId || ($validCategories[$categoryId] ?? null) !== $item['type']) {
+                if (! $categoryId || ! in_array($validCategories[$categoryId] ?? null, [$item['type'], 'both'], true)) {
                     $categoryId = null;
                 }
 
@@ -199,6 +199,7 @@ class TransactionImportController extends Controller
                     'description' => $item['description'],
                     'merchant' => $item['merchant'] !== '' ? $item['merchant'] : null,
                     'external_id' => $item['external_id'],
+                    'is_pending' => $item['pending'],
                 ]);
             }
         });

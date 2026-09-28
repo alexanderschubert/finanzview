@@ -129,7 +129,8 @@
             </select>
         </x-field>
 
-        <x-field label="Kategorie" for="category_id" error="category_id" id="category-card" class="{{ $selectedType === 'transfer' ? 'hidden' : '' }}">
+        <x-field label="Kategorie" for="category_id" error="category_id" id="category-card" class="{{ $selectedType === 'transfer' ? 'hidden' : '' }}"
+            :hint="$isEdit ? null : 'Leer lassen: eine passende Kategorie-Regel ordnet automatisch zu.'">
             <select id="category_id" name="category_id" class="fv-input">
                 <option value="">Keine Kategorie</option>
                 @foreach ($categories as $category)
@@ -142,6 +143,14 @@
                     </option>
                 @endforeach
             </select>
+
+            @if ($isEdit && $transaction->category_id && ($transaction->merchant || $transaction->description))
+                <a href="{{ route('category-rules.index', ['pattern' => $transaction->merchant ?: $transaction->description, 'category_id' => $transaction->category_id]) }}"
+                    class="fv-link mt-1.5 inline-flex items-center gap-1 text-[13px]">
+                    <x-icon name="repeat" class="w-3.5 h-3.5" />
+                    Als Regel speichern
+                </a>
+            @endif
         </x-field>
 
         @if ($creditCards->isNotEmpty())
