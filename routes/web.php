@@ -277,6 +277,11 @@ Route::get('/settings/dashboard', [
         'updatePassword',
     ])->name('settings.security.password');
 
+    // Passwort bestätigen und zurück zu den Passkeys (für Hinzufügen/Löschen).
+    Route::get('/settings/security/passkeys', fn () => redirect()->to(route('settings.security') . '#passkeys'))
+        ->middleware('password.confirm')
+        ->name('settings.security.passkeys');
+
 
     /*
      * =========================================================

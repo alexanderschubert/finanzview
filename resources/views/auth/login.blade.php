@@ -23,7 +23,7 @@
                 value="{{ old('email') }}"
                 required
                 autofocus
-                autocomplete="username"
+                autocomplete="username webauthn"
                 placeholder="name@beispiel.de"
                 class="fv-input"
             >
@@ -47,6 +47,23 @@
             Anmelden
         </button>
     </form>
+
+
+    {{-- Passkey: wird per JavaScript eingeblendet, wenn der Browser es kann (nur HTTPS). --}}
+    <div
+        data-passkey-login
+        data-passkey-autofill
+        data-options-url="{{ route('passkey.login-options') }}"
+        data-verify-url="{{ route('passkey.login') }}"
+        hidden
+        class="mt-3"
+    >
+        <button type="button" class="fv-btn fv-btn-secondary w-full">
+            <x-icon name="passkey" class="w-[18px] h-[18px]" />
+            Mit Passkey anmelden
+        </button>
+        <p data-passkey-error hidden class="mt-2 text-[13px] text-red-600 dark:text-red-400" role="alert"></p>
+    </div>
 
 
     @if ($oidc->enabled())
