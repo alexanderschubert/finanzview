@@ -317,9 +317,11 @@ class CsvImportService
         );
 
         $categorySuggestions = $this->categorySuggestions($userId);
+        $ruleService = new CategoryRuleService();
+        $rules = $ruleService->rulesFor($userId);
         $occurrences = [];
 
-        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $categorySuggestions, &$occurrences) {
+        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $categorySuggestions, $ruleService, $rules, &$occurrences) {
 
             $date = $this->parseDate($cell($row, $mapping['date']));
 
@@ -362,9 +364,15 @@ class CsvImportService
                 'merchant' => $merchant,
                 'description' => $description !== '' ? $description : ($merchant !== '' ? $merchant : 'CSV-Import'),
                 'external_id' => $externalId,
-                'category_id' => $error === null ? $this->suggestCategory($categorySuggestions, $type, $merchant, $description) : null,
+                // Eigene Regeln zuerst, sonst aus bisherigen Buchungen gelernt.
+                'category_id' => $error === null
+                    ? ($ruleService->match($rules, $type, $merchant, $description)
+                        ?? $this->suggestCategory($categorySuggestions, $type, $merchant, $description))
+                    : null,
                 'error' => $error,
                 'duplicate' => null,
+                // Sparkasse: Spalte „Info“ = „Umsatz vorgemerkt“ (noch nicht gebucht).
+                'pending' => collect($row)->contains(fn ($value) => mb_strtolower($value) === 'umsatz vorgemerkt'),
             ];
         });
 
