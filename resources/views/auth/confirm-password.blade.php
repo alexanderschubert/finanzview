@@ -20,6 +20,22 @@
         </button>
     </form>
 
+    @if (auth()->user()?->hasPasskeysEnabled())
+        <div
+            data-passkey-confirm
+            data-options-url="{{ route('passkey.confirm-options') }}"
+            data-verify-url="{{ route('passkey.confirm') }}"
+            hidden
+            class="mt-3"
+        >
+            <button type="button" class="fv-btn fv-btn-secondary w-full">
+                <x-icon name="passkey" class="w-[18px] h-[18px]" />
+                Mit Passkey bestätigen
+            </button>
+            <p data-passkey-error hidden class="mt-2 text-[13px] text-red-600 dark:text-red-400" role="alert"></p>
+        </div>
+    @endif
+
 @endsection
 
 @section('footer')

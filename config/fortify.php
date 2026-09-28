@@ -144,9 +144,14 @@ return [
     |
     */
 
+    /*
+     * Leer = aus der aufgerufenen Adresse ermitteln (siehe
+     * FortifyServiceProvider). Passkeys funktionieren nur über HTTPS
+     * mit Domain, nicht über eine IP-Adresse.
+     */
     'passkeys' => [
-        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
+        'relying_party_id' => env('PASSKEYS_RP_ID'),
+        'allowed_origins' => array_values(array_filter(explode(',', (string) env('PASSKEYS_ALLOWED_ORIGINS', '')))),
         'timeout' => 60000,
     ],
 

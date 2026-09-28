@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
+use Laravel\Passkeys\Passkeys;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -84,6 +85,39 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by(
                 $request->session()->get('login.id')
             );
+        });
+
+
+        /*
+         * =========================================================
+         * PASSKEYS
+         * =========================================================
+         *
+         * Relying Party (Domain) und erlaubte Herkunft: aus der
+         * Konfiguration, sonst aus der aufgerufenen Adresse. So klappt
+         * es hinter dem Reverse Proxy auch ohne passende APP_URL; der
+         * Browser bindet jeden Passkey ohnehin fest an die Domain.
+         */
+        $request = $this->app['request'];
+
+        config([
+            'passkeys.relying_party_id' => config('fortify.passkeys.relying_party_id') ?: $request->getHost(),
+            'passkeys.allowed_origins' => config('fortify.passkeys.allowed_origins') ?: [$request->getSchemeAndHttpHost()],
+        ]);
+
+        // Deaktivierte Benutzer dürfen sich auch per Passkey nicht anmelden.
+        Passkeys::authorizeLoginUsing(function (Request $request, User $user) {
+            if (! $user->is_active) {
+                return false;
+            }
+
+            $user->forceFill(['last_login_at' => now()])->save();
+
+            return true;
+        });
+
+        RateLimiter::for('passkeys', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
         });
     }
 }
