@@ -92,6 +92,26 @@
     @endforeach
 
 
+    {{-- APP INSTALLIEREN (nur sichtbar, wenn möglich und noch nicht installiert) --}}
+
+    <section data-install hidden>
+        <h3 class="px-1 pb-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">App</h3>
+
+        <div class="fv-card p-4 flex items-center gap-3.5">
+            <x-logo class="w-11 h-11 rounded-xl" />
+
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-slate-900 dark:text-white">FinanzView als App</p>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400" data-install-text>
+                    Auf dem Home-Bildschirm, im Vollbild und mit eigenem App-Symbol.
+                </p>
+            </div>
+
+            <button type="button" class="fv-btn fv-btn-primary text-sm py-2 hidden" data-install-button>Installieren</button>
+        </div>
+    </section>
+
+
     {{-- ABMELDEN --}}
 
     <form method="POST" action="{{ route('logout') }}">
@@ -102,5 +122,50 @@
     </form>
 
 </div>
+
+<script>
+    (function () {
+        const section = document.querySelector('[data-install]');
+        const button = section.querySelector('[data-install-button]');
+        const text = section.querySelector('[data-install-text]');
+
+        const installed = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (installed) {
+            return;
+        }
+
+        // iPhone/iPad (Safari): Installation nur über das Teilen-Menü.
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isIos) {
+            text.textContent = 'In Safari auf „Teilen“ tippen und „Zum Home-Bildschirm“ wählen.';
+            section.hidden = false;
+            return;
+        }
+
+        // Chrome, Edge, Android: eigener Installieren-Dialog.
+        let promptEvent = null;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            promptEvent = event;
+            button.classList.remove('hidden');
+            section.hidden = false;
+        });
+
+        button.addEventListener('click', async () => {
+            if (!promptEvent) return;
+
+            promptEvent.prompt();
+            await promptEvent.userChoice;
+            promptEvent = null;
+            section.hidden = true;
+        });
+
+        window.addEventListener('appinstalled', () => section.hidden = true);
+    })();
+</script>
 
 @endsection

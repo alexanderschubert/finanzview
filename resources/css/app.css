@@ -12,6 +12,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Nur in der installierten App (PWA), z. B. "standalone:flex".
+ */
+@custom-variant standalone (@media (display-mode: standalone));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
