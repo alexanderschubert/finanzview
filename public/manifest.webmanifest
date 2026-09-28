@@ -1,0 +1,39 @@
+{
+    "id": "/",
+    "name": "FinanzView",
+    "short_name": "FinanzView",
+    "description": "Deine Finanzen im Überblick – Konten, Buchungen, Budgets und Kredite.",
+    "lang": "de",
+    "dir": "ltr",
+    "start_url": "/dashboard?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#f2f2f7",
+    "theme_color": "#0e8c67",
+    "categories": ["finance", "productivity"],
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        {
+            "name": "Neue Buchung",
+            "short_name": "Buchung",
+            "url": "/transactions/create?source=pwa",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Buchungen",
+            "url": "/transactions?source=pwa",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Budgets",
+            "url": "/budgets?source=pwa",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        }
+    ]
+}
