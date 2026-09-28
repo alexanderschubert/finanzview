@@ -29,6 +29,7 @@ class Transaction extends Model
         'is_pending',
         'is_recurring',
         'recurring_transaction_id',
+        'external_id',
     ];
 
     protected function casts(): array

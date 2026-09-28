@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransactionImportController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\RecurringTransactionController;
@@ -324,6 +325,21 @@ Route::get('/settings/dashboard', [
      * BUCHUNGEN
      * =========================================================
      */
+
+    Route::get('/transactions/import', [TransactionImportController::class, 'create'])
+        ->name('transactions.import.create');
+
+    Route::post('/transactions/import', [TransactionImportController::class, 'upload'])
+        ->name('transactions.import.upload');
+
+    Route::get('/transactions/import/{token}', [TransactionImportController::class, 'preview'])
+        ->name('transactions.import.preview');
+
+    Route::post('/transactions/import/{token}', [TransactionImportController::class, 'store'])
+        ->name('transactions.import.store');
+
+    Route::delete('/transactions/import/{token}', [TransactionImportController::class, 'destroy'])
+        ->name('transactions.import.destroy');
 
     Route::resource('transactions', TransactionController::class)->except('show');
 
