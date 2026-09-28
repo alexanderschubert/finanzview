@@ -397,7 +397,8 @@ class CsvImportService
             ->whereDate('transaction_date', '<=', $valid->max('date')->toDateString())
             ->where(fn ($q) => $q->whereNull('external_id')->orWhere('external_id', 'not like', 'csv:%'))
             ->get(['transaction_date', 'amount', 'type'])
-            ->countBy(fn ($t) => $t->transaction_date->toDateString() . '|' . number_format((float) $t->amount, 2, '.', '') . '|' . $t->type);
+            ->countBy(fn ($t) => $t->transaction_date->toDateString() . '|' . number_format((float) $t->amount, 2, '.', '') . '|' . $t->type)
+            ->all();
 
         return $items->map(function (array $item) use ($imported, &$existing) {
             if ($item['error'] !== null) {
