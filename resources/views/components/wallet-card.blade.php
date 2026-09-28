@@ -70,10 +70,9 @@
             <p class="text-2xl font-semibold tracking-tight tabular-nums">{{ $amount }}</p>
         </div>
 
-        {{-- null = keine Zeile; leerer Text = Platz für die Live-Vorschau --}}
-        @if (! is_null($number))
-            <p class="font-mono text-sm tracking-[0.2em] min-h-5 {{ $muted }}">{{ $number }}</p>
-        @endif
+        {{-- Zeile immer vorhanden, damit der Saldo bei allen Karten
+             mittig steht – auch ohne IBAN bzw. Kartennummer. --}}
+        <p class="font-mono text-sm tracking-[0.2em] min-h-5 {{ $muted }}" @if (blank($number)) aria-hidden="true" @endif>{{ $number }}</p>
 
     </div>
 </div>
