@@ -233,10 +233,26 @@ class TransactionController extends Controller
 
         $creditCards = $this->creditCardsFor($user->id);
 
+        /*
+         * Voreinstellungen aus Einstellungen → Finanzen, sofern
+         * Konto bzw. Kategorie noch aktiv sind.
+         */
+        $setting = $user->setting;
+
+        $defaultAccountId = $accounts->contains('id', $setting?->default_account_id)
+            ? $setting->default_account_id
+            : null;
+
+        $defaultCategoryId = $categories->contains('id', $setting?->default_category_id)
+            ? $setting->default_category_id
+            : null;
+
         return view('transactions.create', compact(
             'accounts',
             'categories',
-            'creditCards'
+            'creditCards',
+            'defaultAccountId',
+            'defaultCategoryId'
         ));
     }
 

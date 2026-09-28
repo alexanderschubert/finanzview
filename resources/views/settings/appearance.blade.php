@@ -1,338 +1,75 @@
 @extends('layouts.app')
 
-@section('title', 'Darstellung – FinanzView')
-
+@section('title', 'Erscheinungsbild – FinanzView')
 @section('eyebrow', 'Einstellungen')
+@section('page_title', 'Erscheinungsbild')
 
-@section('page_title', 'Darstellung')
+@php
+    $current = old('theme', $user->theme ?? 'system');
+
+    $options = [
+        'light' => 'Hell',
+        'dark' => 'Dunkel',
+        'system' => 'Automatisch',
+    ];
+@endphp
 
 @section('content')
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- HEADER --}}
+    <x-back-link :href="route('settings.index')" label="Einstellungen" />
 
-    <div class="mb-8">
+    <x-page-header title="Erscheinungsbild" subtitle="„Automatisch“ folgt der Einstellung deines Geräts." />
 
-        <a
-            href="{{ route('settings.index') }}"
-            class="inline-flex items-center text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
-        >
-            ← Zurück zu Einstellungen
-        </a>
+    <x-flash />
 
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-6">
-            Darstellung
-        </p>
+    <form method="POST" action="{{ route('settings.appearance.update') }}" class="space-y-5">
+        @csrf
+        @method('PUT')
 
-        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white mt-1">
-            Erscheinungsbild
-        </h2>
+        <div class="fv-card p-5 sm:p-6">
+            <div class="grid grid-cols-3 gap-3 sm:gap-5" role="radiogroup" aria-label="Darstellung">
+                @foreach ($options as $value => $label)
+                    <label class="group cursor-pointer text-center">
+                        <input type="radio" name="theme" value="{{ $value }}" class="sr-only peer" @checked($current === $value) onchange="this.form.requestSubmit()">
 
-        <p class="text-slate-500 dark:text-slate-400 mt-2">
-            Wähle aus, wie FinanzView dargestellt werden soll.
-        </p>
+                        {{-- Mini-Vorschau --}}
+                        <span class="block overflow-hidden rounded-2xl ring-2 ring-transparent peer-checked:ring-emerald-500 peer-focus-visible:ring-emerald-500 transition aspect-[3/4] relative">
+                            @if ($value === 'system')
+                                <span class="absolute inset-0 bg-[#f2f2f7] [clip-path:polygon(0_0,100%_0,0_100%)]"></span>
+                                <span class="absolute inset-0 bg-[#0b0b0c] [clip-path:polygon(100%_0,100%_100%,0_100%)]"></span>
+                            @else
+                                <span class="absolute inset-0 {{ $value === 'dark' ? 'bg-[#0b0b0c]' : 'bg-[#f2f2f7]' }}"></span>
+                            @endif
 
-    </div>
+                            <span class="absolute inset-x-[12%] top-[14%] h-[16%] rounded-lg {{ $value === 'dark' ? 'bg-[#1c1c1e]' : 'bg-white' }} {{ $value === 'system' ? 'bg-white/90' : '' }}"></span>
+                            <span class="absolute inset-x-[12%] top-[36%] h-[10%] rounded-md bg-emerald-500/90"></span>
+                            <span class="absolute left-[12%] right-[40%] top-[52%] h-[6%] rounded-full {{ $value === 'light' ? 'bg-slate-300' : 'bg-slate-600' }}"></span>
+                            <span class="absolute left-[12%] right-[25%] top-[62%] h-[6%] rounded-full {{ $value === 'light' ? 'bg-slate-300' : 'bg-slate-600' }}"></span>
+                            <span class="absolute inset-x-[12%] bottom-[10%] h-[14%] rounded-lg {{ $value === 'light' ? 'bg-white' : 'bg-[#1c1c1e]' }}"></span>
+                        </span>
 
+                        <span class="mt-2 block text-sm font-medium text-slate-900 dark:text-white">{{ $label }}</span>
 
-    {{-- ERFOLGSMELDUNG --}}
-
-    @if (session('success'))
-
-        <div class="mb-5 rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 px-5 py-4">
-
-            <div class="flex items-center gap-3">
-
-                <span class="text-lg text-emerald-600 dark:text-emerald-400">
-                    ✓
-                </span>
-
-                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                    {{ session('success') }}
-                </p>
-
-            </div>
-
-        </div>
-
-    @endif
-
-
-    {{-- FEHLER --}}
-
-    @if ($errors->any())
-
-        <div class="mb-5 rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-5 py-4">
-
-            <p class="text-sm font-semibold text-red-700 dark:text-red-300">
-                Bitte überprüfe deine Eingaben.
-            </p>
-
-            <ul class="mt-2 space-y-1">
-
-                @foreach ($errors->all() as $error)
-
-                    <li class="text-sm text-red-600 dark:text-red-400">
-                        {{ $error }}
-                    </li>
-
+                        <span class="mx-auto mt-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-300 dark:border-slate-600 peer-checked:border-emerald-500 peer-checked:bg-emerald-500 transition">
+                            <x-icon name="check-circle" class="w-5 h-5 text-white opacity-0 group-has-[:checked]:opacity-100" />
+                        </span>
+                    </label>
                 @endforeach
-
-            </ul>
-
-        </div>
-
-    @endif
-
-
-    {{-- DARSTELLUNG --}}
-
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-
-        <div class="p-6 sm:p-8 border-b border-slate-100 dark:border-slate-800">
-
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
-                Farbschema
-            </h3>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Lege fest, welches Erscheinungsbild FinanzView verwenden soll.
-            </p>
-
-        </div>
-
-
-        <form
-            method="POST"
-            action="{{ route('settings.appearance.update') }}"
-            class="p-6 sm:p-8"
-        >
-
-            @csrf
-            @method('PUT')
-
-
-            <div class="space-y-4">
-
-                {{-- SYSTEM --}}
-
-                <label class="block cursor-pointer">
-
-                    <input
-                        type="radio"
-                        name="theme"
-                        value="system"
-                        class="peer sr-only"
-                        {{ ($user->theme ?? 'system') === 'system' ? 'checked' : '' }}
-                    >
-
-                    <div
-                        class="
-                            flex items-center gap-4
-                            rounded-2xl
-                            border border-slate-200 dark:border-slate-700
-                            p-5
-                            transition
-                            hover:border-slate-300 dark:hover:border-slate-600
-                            peer-checked:border-slate-950 dark:peer-checked:border-white
-                            peer-checked:bg-slate-50 dark:peer-checked:bg-slate-800
-                        "
-                    >
-
-                        <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl flex-shrink-0">
-                            🖥️
-                        </div>
-
-                        <div class="flex-1">
-
-                            <p class="font-semibold text-slate-900 dark:text-white">
-                                System
-                            </p>
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                FinanzView verwendet automatisch die Einstellung deines Geräts.
-                            </p>
-
-                        </div>
-
-                        <div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center">
-
-                            <div class="w-2.5 h-2.5 rounded-full bg-slate-950 dark:bg-white"></div>
-
-                        </div>
-
-                    </div>
-
-                </label>
-
-
-                {{-- HELL --}}
-
-                <label class="block cursor-pointer">
-
-                    <input
-                        type="radio"
-                        name="theme"
-                        value="light"
-                        class="peer sr-only"
-                        {{ ($user->theme ?? 'system') === 'light' ? 'checked' : '' }}
-                    >
-
-                    <div
-                        class="
-                            flex items-center gap-4
-                            rounded-2xl
-                            border border-slate-200 dark:border-slate-700
-                            p-5
-                            transition
-                            hover:border-slate-300 dark:hover:border-slate-600
-                            peer-checked:border-slate-950 dark:peer-checked:border-white
-                            peer-checked:bg-slate-50 dark:peer-checked:bg-slate-800
-                        "
-                    >
-
-                        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-2xl flex-shrink-0">
-                            ☀️
-                        </div>
-
-                        <div class="flex-1">
-
-                            <p class="font-semibold text-slate-900 dark:text-white">
-                                Hell
-                            </p>
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Verwende das helle Erscheinungsbild von FinanzView.
-                            </p>
-
-                        </div>
-
-                        <div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center">
-
-                            <div class="w-2.5 h-2.5 rounded-full bg-slate-950 dark:bg-white"></div>
-
-                        </div>
-
-                    </div>
-
-                </label>
-
-
-                {{-- DUNKEL --}}
-
-                <label class="block cursor-pointer">
-
-                    <input
-                        type="radio"
-                        name="theme"
-                        value="dark"
-                        class="peer sr-only"
-                        {{ ($user->theme ?? 'system') === 'dark' ? 'checked' : '' }}
-                    >
-
-                    <div
-                        class="
-                            flex items-center gap-4
-                            rounded-2xl
-                            border border-slate-200 dark:border-slate-700
-                            p-5
-                            transition
-                            hover:border-slate-300 dark:hover:border-slate-600
-                            peer-checked:border-slate-950 dark:peer-checked:border-white
-                            peer-checked:bg-slate-50 dark:peer-checked:bg-slate-800
-                        "
-                    >
-
-                        <div class="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-slate-800 flex items-center justify-center text-2xl flex-shrink-0">
-                            🌙
-                        </div>
-
-                        <div class="flex-1">
-
-                            <p class="font-semibold text-slate-900 dark:text-white">
-                                Dunkel
-                            </p>
-
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Verwende das dunkle Erscheinungsbild von FinanzView.
-                            </p>
-
-                        </div>
-
-                        <div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center">
-
-                            <div class="w-2.5 h-2.5 rounded-full bg-slate-950 dark:bg-white"></div>
-
-                        </div>
-
-                    </div>
-
-                </label>
-
             </div>
 
-
-            {{-- SPEICHERN --}}
-
-            <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-
-                <button
-                    type="submit"
-                    class="
-                        inline-flex
-                        items-center
-                        justify-center
-                        rounded-xl
-                        bg-slate-950
-                        dark:bg-white
-                        px-6
-                        py-3
-                        text-sm
-                        font-medium
-                        text-white
-                        dark:text-slate-950
-                        hover:bg-slate-800
-                        dark:hover:bg-slate-200
-                        transition
-                    "
-                >
-                    Darstellung speichern
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-
-    {{-- HINWEIS --}}
-
-    <div class="mt-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5">
-
-        <div class="flex gap-3">
-
-            <span class="text-lg">
-                💡
-            </span>
-
-            <div>
-
-                <p class="text-sm font-medium text-slate-700 dark:text-slate-200">
-                    Hinweis
-                </p>
-
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Die Auswahl wird deinem Benutzerkonto zugeordnet und bleibt auch nach
-                    dem nächsten Login erhalten.
-                </p>
-
-            </div>
-
+            @error('theme')
+                <p class="mt-3 text-[13px] text-red-600 dark:text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-    </div>
+        <noscript>
+            <div class="flex justify-end">
+                <button type="submit" class="fv-btn fv-btn-primary">Speichern</button>
+            </div>
+        </noscript>
+    </form>
 
 </div>
 

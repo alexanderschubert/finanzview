@@ -1,253 +1,92 @@
 @extends('layouts.app')
 
-@section('title', 'Anbieter – Administration')
+@section('title', 'Finanzanbieter – Administration – FinanzView')
+@section('eyebrow', 'Administration')
+@section('page_title', 'Finanzanbieter')
+
+@php
+    $types = [
+        'bank' => 'Bank',
+        'payment' => 'Zahlungsdienst',
+        'card' => 'Kartenanbieter',
+        'lender' => 'Kreditgeber',
+        'other' => 'Sonstiges',
+    ];
+@endphp
 
 @section('content')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- HEADER --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <x-back-link :href="route('admin.index')" label="Administration" />
 
-        <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-                Anbieter
-            </h1>
+    <x-page-header title="Finanzanbieter" subtitle="Banken und Dienste mit Logo und Farbe für Konten, Karten und Kredite.">
+        <a href="{{ route('admin.providers.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
+            <x-icon name="plus" class="w-4 h-4" />
+            Neuer Anbieter
+        </a>
+    </x-page-header>
 
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Zentrale Verwaltung der Anbieter für Konten, Kreditkarten und Kredite.
-            </p>
+    <x-flash />
+
+    @if ($providers->isEmpty())
+        <div class="fv-card">
+            <x-empty-state icon="landmark" title="Noch keine Anbieter" :href="route('admin.providers.create')" action="Anbieter anlegen" />
         </div>
+    @else
+        <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+            @foreach ($providers as $provider)
+                @php
+                    $usage = $provider->accounts_count + $provider->credit_cards_count + $provider->loans_count;
+                @endphp
 
-        <div class="flex items-center gap-2">
-            <a
-                href="{{ route('admin.providers.create') }}"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-                       bg-violet-600 hover:bg-violet-700
-                       text-sm font-semibold text-white transition"
-            >
-                <span class="text-lg leading-none">+</span>
-                Anbieter hinzufügen
-            </a>
+                <li class="flex items-center gap-3 px-4 py-3 {{ $provider->is_active ? '' : 'opacity-60' }}">
+                    <x-financial-provider :provider="$provider" size="sm" />
 
-            <a
-                href="{{ route('admin.index') }}"
-                class="inline-flex items-center justify-center px-4 py-2 rounded-xl
-                       bg-slate-100 hover:bg-slate-200
-                       dark:bg-slate-800 dark:hover:bg-slate-700
-                       text-sm font-medium text-slate-700 dark:text-slate-200 transition"
-            >
-                ← Administration
-            </a>
-        </div>
-
-    </div>
-
-
-    {{-- FLASH MESSAGES --}}
-    @if(session('success'))
-        <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50
-                    px-4 py-3 text-sm text-emerald-800
-                    dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-5 rounded-xl border border-red-200 bg-red-50
-                    px-4 py-3 text-sm text-red-800
-                    dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-            {{ session('error') }}
-        </div>
-    @endif
-
-
-    {{-- PROVIDERS --}}
-    <div class="bg-white dark:bg-slate-900
-                border border-slate-200 dark:border-slate-800
-                rounded-2xl overflow-hidden shadow-sm">
-
-        <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-
-            <h2 class="font-semibold text-slate-900 dark:text-white">
-                Anbieter
-            </h2>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {{ $providers->count() }} Anbieter vorhanden
-            </p>
-
-        </div>
-
-
-        <div class="divide-y divide-slate-200 dark:divide-slate-800">
-
-            @forelse($providers as $provider)
-
-                <div class="px-5 py-4 flex flex-col lg:flex-row lg:items-center gap-4">
-
-                    {{-- PROVIDER --}}
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-
-                        <x-financial-provider
-                            :provider="$provider"
-                            fallback-icon="🏦"
-                            size="sm"
-                        />
-
-                        <div class="min-w-0">
-
-                            <div class="font-medium text-slate-900 dark:text-white truncate">
-                                {{ $provider->name }}
-                            </div>
-
-                            <div class="text-xs text-slate-500 dark:text-slate-400">
-                                {{ $provider->type }}
-                                ·
-                                {{ $provider->slug }}
-                            </div>
-
-                        </div>
-
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-slate-900 dark:text-white truncate">{{ $provider->name }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {{ $types[$provider->type] ?? 'Sonstiges' }}
+                            · {{ $usage === 0 ? 'nicht verwendet' : $usage . ' × verwendet' }}
+                            @unless ($provider->is_active) · inaktiv @endunless
+                        </p>
                     </div>
 
-
-                    {{-- VERWENDUNG --}}
-                    <div class="flex flex-wrap gap-2 text-xs">
-
-                        <span class="px-2.5 py-1 rounded-lg
-                                     bg-slate-100 dark:bg-slate-800
-                                     text-slate-600 dark:text-slate-300">
-                            {{ $provider->accounts_count }} Konten
-                        </span>
-
-                        <span class="px-2.5 py-1 rounded-lg
-                                     bg-slate-100 dark:bg-slate-800
-                                     text-slate-600 dark:text-slate-300">
-                            {{ $provider->credit_cards_count }} Karten
-                        </span>
-
-                        <span class="px-2.5 py-1 rounded-lg
-                                     bg-slate-100 dark:bg-slate-800
-                                     text-slate-600 dark:text-slate-300">
-                            {{ $provider->loans_count }} Kredite
-                        </span>
-
-                    </div>
-
-
-                    {{-- STATUS --}}
-                    <div>
-
-                        @if($provider->is_active)
-
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg
-                                         bg-emerald-50 dark:bg-emerald-950/40
-                                         text-emerald-700 dark:text-emerald-300 text-xs font-medium">
-                                Aktiv
-                            </span>
-
-                        @else
-
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg
-                                         bg-slate-100 dark:bg-slate-800
-                                         text-slate-500 dark:text-slate-400 text-xs font-medium">
-                                Deaktiviert
-                            </span>
-
-                        @endif
-
-                    </div>
-
-
-                    {{-- ACTIONS --}}
-                    <div class="flex items-center gap-2">
-
-                        <a
-                            href="{{ route('admin.providers.edit', $provider) }}"
-                            class="px-3 py-2 rounded-xl text-xs font-medium
-                                   bg-violet-50 hover:bg-violet-100
-                                   dark:bg-violet-950/40 dark:hover:bg-violet-950/60
-                                   text-violet-700 dark:text-violet-300 transition"
-                        >
-                            Bearbeiten
-                        </a>
-
-                        <form
-                            method="POST"
-                            action="{{ route('admin.providers.toggle-active', $provider) }}"
-                        >
+                    <div class="flex items-center gap-1">
+                        <form method="POST" action="{{ route('admin.providers.toggle-active', $provider) }}">
                             @csrf
                             @method('PATCH')
-
-                            <button
-                                type="submit"
-                                class="px-3 py-2 rounded-xl text-xs font-medium
-                                       bg-slate-100 hover:bg-slate-200
-                                       dark:bg-slate-800 dark:hover:bg-slate-700
-                                       text-slate-700 dark:text-slate-200 transition"
-                            >
-                                {{ $provider->is_active ? 'Deaktivieren' : 'Aktivieren' }}
+                            <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10 transition"
+                                title="{{ $provider->is_active ? 'Deaktivieren' : 'Aktivieren' }}" aria-label="{{ $provider->name }} {{ $provider->is_active ? 'deaktivieren' : 'aktivieren' }}">
+                                <x-icon :name="$provider->is_active ? 'pause' : 'check-circle'" class="w-4 h-4" />
                             </button>
-
                         </form>
 
+                        <a href="{{ route('admin.providers.edit', $provider) }}" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10 transition"
+                            title="Bearbeiten" aria-label="{{ $provider->name }} bearbeiten">
+                            <x-icon name="pencil" class="w-4 h-4" />
+                        </a>
 
-                        @if(
-                            $provider->accounts_count === 0 &&
-                            $provider->credit_cards_count === 0 &&
-                            $provider->loans_count === 0
-                        )
-
-                            <form
-                                method="POST"
-                                action="{{ route('admin.providers.destroy', $provider) }}"
-                                onsubmit="return confirm('Diesen Anbieter wirklich löschen?');"
-                            >
+                        @if ($usage === 0)
+                            <form method="POST" action="{{ route('admin.providers.destroy', $provider) }}"
+                                onsubmit="return confirm('Anbieter „{{ addslashes($provider->name) }}“ löschen?');">
                                 @csrf
                                 @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="px-3 py-2 rounded-xl text-xs font-medium
-                                           bg-red-50 hover:bg-red-100
-                                           dark:bg-red-950/40 dark:hover:bg-red-950/60
-                                           text-red-700 dark:text-red-300 transition"
-                                >
-                                    Löschen
+                                <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition"
+                                    title="Löschen" aria-label="{{ $provider->name }} löschen">
+                                    <x-icon name="trash" class="w-4 h-4" />
                                 </button>
-
                             </form>
-
+                        @else
+                            <span class="w-9 h-9" aria-hidden="true"></span>
                         @endif
-
                     </div>
+                </li>
+            @endforeach
+        </ul>
 
-                </div>
-
-            @empty
-
-                <div class="px-5 py-12 text-center">
-
-                    <div class="text-4xl mb-3">
-                        🏦
-                    </div>
-
-                    <div class="font-medium text-slate-900 dark:text-white">
-                        Noch keine Anbieter vorhanden
-                    </div>
-
-                    <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Lege den ersten Anbieter an.
-                    </div>
-
-                </div>
-
-            @endforelse
-
-        </div>
-
-    </div>
+        <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">Verwendete Anbieter können nicht gelöscht, aber deaktiviert werden.</p>
+    @endif
 
 </div>
 

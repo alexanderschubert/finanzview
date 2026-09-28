@@ -10,7 +10,12 @@
 
     <x-page-header title="Neue Buchung" subtitle="Erfasse eine Ausgabe, Einnahme oder Umbuchung." />
 
-    @include('transactions._form', ['transaction' => new \App\Models\Transaction()])
+    @include('transactions._form', [
+        'transaction' => new \App\Models\Transaction([
+            'account_id' => $defaultAccountId,
+            'category_id' => $defaultCategoryId,
+        ]),
+    ])
 
 </div>
 
