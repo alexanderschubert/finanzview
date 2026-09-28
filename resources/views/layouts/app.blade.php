@@ -61,6 +61,17 @@
 
     $moreIsActive = ! request()->routeIs(...$tabBarRoutes)
         && ! request()->routeIs('transactions.create');
+
+    /*
+     * Hauptseiten brauchen in der installierten App keinen
+     * Zurück-Pfeil, alle Unterseiten schon (dort fehlt der
+     * Zurück-Knopf des Browsers).
+     */
+    $isRootPage = request()->routeIs(
+        'dashboard',
+        ...collect($navigation)->flatten(1)->pluck(0)->all(),
+        ...collect($systemNavigation)->pluck(0)->all(),
+    );
 @endphp
 
 <!DOCTYPE html>
@@ -75,16 +86,7 @@
 
     <meta charset="UTF-8">
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('finanzview.svg') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
-
-    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="FinanzView">
+    @include('partials.pwa-head')
 
     <meta
         name="viewport"
@@ -307,9 +309,17 @@
             "
         >
 
+            {{-- ZURÜCK (NUR INSTALLIERTE APP, UNTERSEITEN) --}}
+
+            @unless ($isRootPage)
+                <button type="button" onclick="history.back()" class="hidden standalone:max-lg:flex items-center -ml-2 w-9 h-9 justify-center rounded-full text-emerald-600 dark:text-emerald-400" aria-label="Zurück">
+                    <x-icon name="chevron-left" class="w-6 h-6" />
+                </button>
+            @endunless
+
             {{-- LOGO (HANDY) --}}
 
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden min-w-0">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 lg:hidden min-w-0 flex-1">
                 <x-logo class="w-8 h-8" />
                 <span class="font-semibold tracking-tight text-slate-900 dark:text-white truncate">
                     @yield('page_title', 'FinanzView')

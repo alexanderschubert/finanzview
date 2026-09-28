@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Offline – FinanzView</title>
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)">
+    <link rel="icon" type="image/svg+xml" href="/finanzview.svg">
+    <style>
+        :root { color-scheme: light dark; --bg: #f2f2f7; --card: #fff; --text: #1c1c1e; --muted: #7c7c82; --brand: #0e8c67; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #0b0b0c; --card: #1c1c1e; --text: #f9f9fb; --muted: #98989f; } }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+            background: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased; text-align: center;
+        }
+        main { max-width: 360px; }
+        img { width: 72px; height: 72px; }
+        h1 { margin: 20px 0 8px; font-size: 24px; letter-spacing: -0.015em; }
+        p { margin: 0; color: var(--muted); line-height: 1.5; }
+        button {
+            margin-top: 24px; border: 0; border-radius: 12px; padding: 12px 20px;
+            background: var(--brand); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <img src="/finanzview.svg" alt="FinanzView">
+        <h1>Keine Verbindung</h1>
+        <p>FinanzView braucht eine Internetverbindung zu deinem Server. Deine Daten werden aus Sicherheitsgründen nicht auf dem Gerät gespeichert.</p>
+        <button type="button" onclick="location.reload()">Erneut versuchen</button>
+    </main>
+    <script>
+        window.addEventListener('online', () => location.reload());
+    </script>
+</body>
+</html>
