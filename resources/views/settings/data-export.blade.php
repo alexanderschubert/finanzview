@@ -1,400 +1,119 @@
 @extends('layouts.app')
 
-@section('title', 'Daten & Export')
+@section('title', 'Daten & Export – FinanzView')
+@section('eyebrow', 'Einstellungen')
+@section('page_title', 'Daten & Export')
 
 @section('content')
 
-<div class="max-w-5xl mx-auto space-y-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    @if(session('success'))
-        <div class="rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5">
-            <div class="flex gap-3">
-                <div class="text-xl">✓</div>
+    <x-back-link :href="route('settings.index')" label="Einstellungen" />
 
-                <div>
-                    <h3 class="font-semibold text-emerald-900 dark:text-emerald-200">
-                        Wiederherstellung erfolgreich
-                    </h3>
+    <x-page-header title="Daten & Export" subtitle="Deine Daten gehören dir – exportieren, sichern und wiederherstellen." />
 
-                    <p class="text-sm text-emerald-800 dark:text-emerald-300 mt-1">
-                        {{ session('success') }}
-                    </p>
-                </div>
+    <x-flash />
+
+    @if ($errors->any())
+        <div class="flex gap-3 rounded-2xl bg-red-50 dark:bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300" role="alert">
+            <x-icon name="alert" class="w-5 h-5" />
+            <div>
+                @foreach ($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
             </div>
         </div>
     @endif
 
-    <div>
-        <a
-            href="{{ route('settings.index') }}"
-            class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white mb-4"
-        >
-            ← Einstellungen
-        </a>
 
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">
-            Daten & Export
-        </h1>
+    {{-- CSV --}}
 
-        <p class="mt-2 text-slate-500 dark:text-slate-400">
-            Exportiere deine Finanzdaten als CSV oder vollständiges JSON-Backup.
-        </p>
-    </div>
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Buchungen als Tabelle</h3>
 
-
-    {{-- TRANSAKTIONS-CSV --}}
-    <section class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-
-        <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-
-            <div class="flex items-start gap-4">
-
-                <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center text-xl">
-                    📊
-                </div>
-
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Transaktionen als CSV
-                    </h2>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Ideal für Excel, Numbers oder LibreOffice.
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <form
-            method="POST"
-            action="{{ route('settings.data-export.transactions') }}"
-            class="p-6 space-y-6"
-        >
-
+        <form method="POST" action="{{ route('settings.data-export.transactions') }}" class="fv-card p-5 sm:p-6 space-y-4">
             @csrf
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <p class="text-sm text-slate-600 dark:text-slate-300">
+                CSV-Datei für Excel, Numbers oder LibreOffice. Ohne Angaben werden alle Buchungen exportiert.
+            </p>
 
-                <div>
-                    <label
-                        for="date_from"
-                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >
-                        Von
-                    </label>
+            <div class="grid grid-cols-2 gap-4">
+                <x-field label="Von" for="date_from" error="date_from">
+                    <input id="date_from" name="date_from" type="date" value="{{ old('date_from') }}" class="fv-input">
+                </x-field>
 
-                    <input
-                        type="date"
-                        id="date_from"
-                        name="date_from"
-                        value="{{ old('date_from') }}"
-                        class="w-full rounded-xl border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                    >
-                </div>
-
-
-                <div>
-                    <label
-                        for="date_to"
-                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >
-                        Bis
-                    </label>
-
-                    <input
-                        type="date"
-                        id="date_to"
-                        name="date_to"
-                        value="{{ old('date_to') }}"
-                        class="w-full rounded-xl border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                    >
-                </div>
-
-
-                <div>
-                    <label
-                        for="account_id"
-                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >
-                        Konto
-                    </label>
-
-                    <select
-                        id="account_id"
-                        name="account_id"
-                        class="w-full rounded-xl border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                    >
-                        <option value="">Alle Konten</option>
-
-                        @foreach($accounts as $account)
-                            <option
-                                value="{{ $account->id }}"
-                                @selected(old('account_id') == $account->id)
-                            >
-                                {{ $account->name }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                </div>
-
+                <x-field label="Bis" for="date_to" error="date_to">
+                    <input id="date_to" name="date_to" type="date" value="{{ old('date_to') }}" class="fv-input">
+                </x-field>
             </div>
 
+            <x-field label="Konto" for="account_id" error="account_id">
+                <select id="account_id" name="account_id" class="fv-input">
+                    <option value="">Alle Konten</option>
+                    @foreach ($accounts as $account)
+                        <option value="{{ $account->id }}" @selected((string) old('account_id') === (string) $account->id)>{{ $account->name }}</option>
+                    @endforeach
+                </select>
+            </x-field>
 
             <div class="flex justify-end">
-
-                <button
-                    type="submit"
-                    class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white font-medium transition"
-                >
-                    CSV exportieren
+                <button type="submit" class="fv-btn fv-btn-primary">
+                    <x-icon name="download" class="w-4 h-4" />
+                    CSV herunterladen
                 </button>
-
             </div>
-
         </form>
-
     </section>
 
 
-    {{-- JSON BACKUP --}}
-    <section class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    {{-- BACKUP --}}
 
-        <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Vollständiges Backup</h3>
 
-            <div class="flex items-start gap-4">
+        <div class="fv-card p-5 sm:p-6 space-y-4">
+            <p class="text-sm text-slate-600 dark:text-slate-300">
+                JSON-Datei mit allen Konten, Buchungen, Kategorien, Budgets, Krediten, Kreditkarten, wiederkehrenden Buchungen und Dashboard-Einstellungen.
+            </p>
 
-                <div class="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-950/40 flex items-center justify-center text-xl">
-                    💾
-                </div>
-
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Vollständiges Backup
-                    </h2>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Exportiert deine Finanzdaten als strukturiertes JSON-Backup.
-                    </p>
-                </div>
-
-            </div>
-
+            <form method="POST" action="{{ route('settings.data-export.json') }}" class="flex justify-end">
+                @csrf
+                <button type="submit" class="fv-btn fv-btn-secondary">
+                    <x-icon name="download" class="w-4 h-4" />
+                    Backup herunterladen
+                </button>
+            </form>
         </div>
+    </section>
 
 
-        <div class="p-6">
+    {{-- WIEDERHERSTELLEN --}}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-300 mb-6">
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Backup wiederherstellen</h3>
 
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Konten
-                </div>
+        <form method="POST" action="{{ route('settings.data-export.import') }}" enctype="multipart/form-data" class="fv-card p-5 sm:p-6 space-y-4">
+            @csrf
 
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Transaktionen
-                </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">
+                Lade ein FinanzView-Backup hoch. Du siehst zuerst eine Vorschau – erst danach wird etwas übernommen.
+                Vorhandene Daten werden <span class="font-medium">nicht gelöscht</span>, fehlende werden ergänzt.
+            </p>
 
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Kategorien & Tags
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Budgets
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Wiederkehrende Buchungen
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Kreditkarten & Abrechnungen
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Kredite & Zahlungen
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-emerald-500">✓</span>
-                    Dashboard-Einstellungen
-                </div>
-
-            </div>
-
+            <label for="backup" class="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/10 px-4 py-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/5 transition">
+                <x-icon name="download" class="w-7 h-7 text-slate-400 rotate-180" />
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-200" data-file-name>JSON-Datei auswählen</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">finanzview-backup-….json</span>
+                <input id="backup" name="backup" type="file" accept=".json,application/json" required class="sr-only"
+                    onchange="this.form.querySelector('[data-file-name]').textContent = this.files[0]?.name || 'JSON-Datei auswählen'">
+            </label>
 
             <div class="flex justify-end">
-
-                <form
-                    method="POST"
-                    action="{{ route('settings.data-export.json') }}"
-                >
-
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium transition"
-                    >
-                        Vollständiges Backup exportieren
-                    </button>
-
-                </form>
-
+                <button type="submit" class="fv-btn fv-btn-primary">Vorschau anzeigen</button>
             </div>
-
-        </div>
-
+        </form>
     </section>
-
-
-    {{-- BACKUP IMPORT --}}
-    <section class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-
-        <div class="p-6 border-b border-slate-200 dark:border-slate-800">
-
-            <div class="flex items-start gap-4">
-
-                <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-xl">
-                    ♻️
-                </div>
-
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Backup wiederherstellen
-                    </h2>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Stelle ein zuvor exportiertes FinanzView-Backup wieder her.
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="p-6">
-
-            @if($errors->has('backup'))
-                <div class="mb-5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-4 text-sm text-red-800 dark:text-red-300">
-                    {{ $errors->first('backup') }}
-                </div>
-            @endif
-
-
-            <div class="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-4 mb-6">
-
-                <div class="flex gap-3">
-
-                    <div>⚠️</div>
-
-                    <div class="text-sm text-amber-800 dark:text-amber-300">
-
-                        <p class="font-semibold mb-1">
-                            Bitte nur vertrauenswürdige Backups verwenden.
-                        </p>
-
-                        <p>
-                            Das Backup wird zunächst geprüft und eine Vorschau angezeigt.
-                            Erst danach kann die Wiederherstellung ausdrücklich bestätigt werden.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <form
-                method="POST"
-                action="{{ route('settings.data-export.import') }}"
-                enctype="multipart/form-data"
-                class="space-y-5"
-            >
-
-                @csrf
-
-                <div>
-
-                    <label
-                        for="backup"
-                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                    >
-                        FinanzView-Backup
-                    </label>
-
-                    <input
-                        type="file"
-                        id="backup"
-                        name="backup"
-                        accept=".json,application/json"
-                        required
-                        class="block w-full text-sm text-slate-600 dark:text-slate-300
-                               file:mr-4 file:py-2 file:px-4
-                               file:rounded-xl file:border-0
-                               file:bg-slate-100 dark:file:bg-slate-800
-                               file:text-slate-700 dark:file:text-slate-200
-                               hover:file:bg-slate-200 dark:hover:file:bg-slate-700"
-                    >
-
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Maximale Dateigröße: 20 MB
-                    </p>
-
-                </div>
-
-
-                <div class="flex justify-end">
-
-                    <button
-                        type="submit"
-                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium transition"
-                    >
-                        Backup prüfen
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </section>
-
-
-    {{-- HINWEIS --}}
-    <div class="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-5">
-
-        <div class="flex gap-3">
-
-            <div class="text-xl">⚠️</div>
-
-            <div>
-                <h3 class="font-semibold text-amber-900 dark:text-amber-200">
-                    Hinweis zum Backup
-                </h3>
-
-                <p class="text-sm text-amber-800 dark:text-amber-300 mt-1">
-                    Bewahre deine Backup-Dateien sicher auf. Ein JSON-Backup kann sensible Finanzinformationen enthalten.
-                    Verwende für die Wiederherstellung ausschließlich Backups aus vertrauenswürdigen Quellen.
-                </p>
-            </div>
-
-        </div>
-
-    </div>
 
 </div>
 

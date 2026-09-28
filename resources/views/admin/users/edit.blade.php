@@ -1,570 +1,103 @@
 @extends('layouts.app')
 
-@section('title', 'Benutzer bearbeiten – FinanzView')
-
+@section('title', $user->name . ' – Administration – FinanzView')
 @section('eyebrow', 'Administration')
-
 @section('page_title', 'Benutzer bearbeiten')
+
+@php
+    $isSelf = $user->id === auth()->id();
+
+    $initials = collect(preg_split('/\s+/', trim($user->name)))
+        ->filter()->take(2)
+        ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+        ->join('');
+
+    $switch = 'relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 transition peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-disabled:opacity-50 after:absolute after:top-[2px] after:left-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-[20px]';
+@endphp
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    {{-- HEADER --}}
+    <x-back-link :href="route('admin.index')" label="Administration" />
 
-    <div class="mb-8">
-
-        <a
-            href="{{ route('admin.index') }}"
-            class="
-                inline-flex
-                items-center
-                text-sm
-                text-slate-500
-                dark:text-slate-400
-                hover:text-slate-900
-                dark:hover:text-white
-                transition
-            "
-        >
-            ← Administration
-        </a>
-
-        <div class="flex items-center gap-4 mt-5">
-
-            <div
-                class="
-                    w-14
-                    h-14
-                    shrink-0
-                    rounded-2xl
-                    bg-violet-50
-                    dark:bg-violet-500/10
-                    flex
-                    items-center
-                    justify-center
-                    text-xl
-                    font-semibold
-                    text-violet-600
-                    dark:text-violet-400
-                "
-            >
-                {{ strtoupper(substr($user->name, 0, 1)) }}
-            </div>
-
-            <div class="min-w-0">
-
-                <h2
-                    class="
-                        text-2xl
-                        sm:text-3xl
-                        font-semibold
-                        text-slate-900
-                        dark:text-white
-                    "
-                >
-                    Benutzer bearbeiten
-                </h2>
-
-                <p class="text-slate-500 dark:text-slate-400 mt-1 truncate">
-                    {{ $user->name }}
-                </p>
-
-            </div>
-
+    <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold {{ $user->is_admin ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300' }}">
+            {{ $initials ?: '?' }}
         </div>
-
+        <div class="min-w-0">
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{{ $user->name }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 truncate">
+                Registriert am {{ $user->created_at?->format('d.m.Y') }}
+                · {{ $user->last_login_at ? 'zuletzt ' . $user->last_login_at->format('d.m.Y H:i') : 'noch nie angemeldet' }}
+            </p>
+        </div>
     </div>
 
+    <x-flash />
 
-    {{-- FEHLER --}}
-
-    @if ($errors->any())
-
-        <div
-            class="
-                mb-6
-                rounded-2xl
-                bg-red-50
-                dark:bg-red-950/40
-                border
-                border-red-100
-                dark:border-red-900
-                p-4
-                text-sm
-                text-red-700
-                dark:text-red-300
-            "
-        >
-
-            <p class="font-medium mb-2">
-                Bitte überprüfe deine Eingaben.
-            </p>
-
-            <ul class="list-disc list-inside space-y-1">
-
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-
-            </ul>
-
-        </div>
-
-    @endif
-
-
-    {{-- FORMULAR --}}
-
-    <form
-        method="POST"
-        action="{{ route('admin.users.update', $user) }}"
-    >
-
+    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-5">
         @csrf
         @method('PATCH')
 
-
-        <div class="space-y-6">
-
-
-            {{-- PERSÖNLICHE DATEN --}}
-
-            <div
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    shadow-sm
-                    border
-                    border-slate-100
-                    dark:border-slate-800
-                    p-6
-                    sm:p-8
-                "
-            >
-
-                <div class="mb-6">
-
-                    <h3 class="font-semibold text-slate-900 dark:text-white">
-                        Persönliche Daten
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Name und E-Mail-Adresse des Benutzers.
-                    </p>
-
-                </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {{-- NAME --}}
-
-                    <div>
-
-                        <label
-                            for="name"
-                            class="
-                                block
-                                text-sm
-                                font-medium
-                                text-slate-700
-                                dark:text-slate-300
-                                mb-2
-                            "
-                        >
-                            Name
-                        </label>
-
-                        <input
-                            id="name"
-                            type="text"
-                            name="name"
-                            value="{{ old('name', $user->name) }}"
-                            required
-                            autocomplete="name"
-                            class="
-                                w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                dark:border-slate-700
-                                bg-white
-                                dark:bg-slate-800
-                                text-slate-900
-                                dark:text-white
-                                px-4
-                                py-3
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-violet-500
-                            "
-                        >
-
-                    </div>
-
-
-                    {{-- E-MAIL --}}
-
-                    <div>
-
-                        <label
-                            for="email"
-                            class="
-                                block
-                                text-sm
-                                font-medium
-                                text-slate-700
-                                dark:text-slate-300
-                                mb-2
-                            "
-                        >
-                            E-Mail-Adresse
-                        </label>
-
-                        <input
-                            id="email"
-                            type="email"
-                            name="email"
-                            value="{{ old('email', $user->email) }}"
-                            required
-                            autocomplete="email"
-                            class="
-                                w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                dark:border-slate-700
-                                bg-white
-                                dark:bg-slate-800
-                                text-slate-900
-                                dark:text-white
-                                px-4
-                                py-3
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-violet-500
-                            "
-                        >
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            {{-- BERECHTIGUNGEN --}}
-
-            <div
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    shadow-sm
-                    border
-                    border-slate-100
-                    dark:border-slate-800
-                    p-6
-                    sm:p-8
-                "
-            >
-
-                <div class="mb-6">
-
-                    <h3 class="font-semibold text-slate-900 dark:text-white">
-                        Berechtigungen
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Lege fest, welche Rechte der Benutzer besitzt.
-                    </p>
-
-                </div>
-
-
-                <div class="space-y-5">
-
-                    {{-- ADMIN --}}
-
-                    <label
-                        class="
-                            flex
-                            items-start
-                            gap-4
-                            cursor-pointer
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            dark:border-slate-700
-                            p-4
-                            hover:bg-slate-50
-                            dark:hover:bg-slate-800/60
-                            transition
-                        "
-                    >
-
-                        <input
-                            type="checkbox"
-                            name="is_admin"
-                            value="1"
-                            @checked(old('is_admin', $user->is_admin))
-                            class="
-                                mt-1
-                                h-5
-                                w-5
-                                rounded
-                                border-slate-300
-                                text-violet-600
-                                focus:ring-violet-500
-                            "
-                        >
-
-                        <span>
-
-                            <span class="block font-medium text-slate-900 dark:text-white">
-                                Administrator
-                            </span>
-
-                            <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Zugriff auf den Administrationsbereich und die Benutzerverwaltung.
-                            </span>
-
-                        </span>
-
-                    </label>
-
-
-                    {{-- AKTIV --}}
-
-                    <label
-                        class="
-                            flex
-                            items-start
-                            gap-4
-                            cursor-pointer
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            dark:border-slate-700
-                            p-4
-                            hover:bg-slate-50
-                            dark:hover:bg-slate-800/60
-                            transition
-                        "
-                    >
-
-                        <input
-                            type="checkbox"
-                            name="is_active"
-                            value="1"
-                            @checked(old('is_active', $user->is_active))
-                            class="
-                                mt-1
-                                h-5
-                                w-5
-                                rounded
-                                border-slate-300
-                                text-violet-600
-                                focus:ring-violet-500
-                            "
-                        >
-
-                        <span>
-
-                            <span class="block font-medium text-slate-900 dark:text-white">
-                                Benutzer aktiv
-                            </span>
-
-                            <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                Deaktivierte Benutzer können sich nicht anmelden.
-                            </span>
-
-                        </span>
-
-                    </label>
-
-                </div>
-
-            </div>
-
-
-            {{-- PASSWORT --}}
-
-            <div
-                class="
-                    bg-white
-                    dark:bg-slate-900
-                    rounded-3xl
-                    shadow-sm
-                    border
-                    border-slate-100
-                    dark:border-slate-800
-                    p-6
-                    sm:p-8
-                "
-            >
-
-                <div class="mb-6">
-
-                    <h3 class="font-semibold text-slate-900 dark:text-white">
-                        Passwort ändern
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Leer lassen, wenn das aktuelle Passwort beibehalten werden soll.
-                    </p>
-
-                </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {{-- PASSWORT --}}
-
-                    <div>
-
-                        <label
-                            for="password"
-                            class="
-                                block
-                                text-sm
-                                font-medium
-                                text-slate-700
-                                dark:text-slate-300
-                                mb-2
-                            "
-                        >
-                            Neues Passwort
-                        </label>
-
-                        <input
-                            id="password"
-                            type="password"
-                            name="password"
-                            autocomplete="new-password"
-                            class="
-                                w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                dark:border-slate-700
-                                bg-white
-                                dark:bg-slate-800
-                                text-slate-900
-                                dark:text-white
-                                px-4
-                                py-3
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-violet-500
-                            "
-                        >
-
-                    </div>
-
-
-                    {{-- PASSWORT BESTÄTIGEN --}}
-
-                    <div>
-
-                        <label
-                            for="password_confirmation"
-                            class="
-                                block
-                                text-sm
-                                font-medium
-                                text-slate-700
-                                dark:text-slate-300
-                                mb-2
-                            "
-                        >
-                            Passwort bestätigen
-                        </label>
-
-                        <input
-                            id="password_confirmation"
-                            type="password"
-                            name="password_confirmation"
-                            autocomplete="new-password"
-                            class="
-                                w-full
-                                rounded-xl
-                                border
-                                border-slate-200
-                                dark:border-slate-700
-                                bg-white
-                                dark:bg-slate-800
-                                text-slate-900
-                                dark:text-white
-                                px-4
-                                py-3
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-violet-500
-                            "
-                        >
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            {{-- BUTTONS --}}
-
-            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-
-                <a
-                    href="{{ route('admin.index') }}"
-                    class="
-                        inline-flex
-                        items-center
-                        justify-center
-                        rounded-xl
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        text-slate-700
-                        dark:text-slate-300
-                        border
-                        border-slate-200
-                        dark:border-slate-700
-                        hover:bg-slate-100
-                        dark:hover:bg-slate-800
-                        transition
-                    "
-                >
-                    Abbrechen
-                </a>
-
-                <button
-                    type="submit"
-                    class="
-                        inline-flex
-                        items-center
-                        justify-center
-                        rounded-xl
-                        px-5
-                        py-3
-                        text-sm
-                        font-medium
-                        text-white
-                        bg-violet-600
-                        hover:bg-violet-700
-                        transition
-                    "
-                >
-                    Änderungen speichern
-                </button>
-
-            </div>
-
+        <div class="fv-card p-5 sm:p-6 space-y-4">
+            <x-field label="Name" for="name" error="name">
+                <input id="name" name="name" type="text" required maxlength="255" value="{{ old('name', $user->name) }}" class="fv-input">
+            </x-field>
+
+            <x-field label="E-Mail-Adresse" for="email" error="email">
+                <input id="email" name="email" type="email" required maxlength="255" value="{{ old('email', $user->email) }}" class="fv-input">
+            </x-field>
         </div>
 
+        <div class="fv-card divide-y divide-slate-100 dark:divide-white/5">
+            <label class="flex items-center justify-between gap-4 px-5 py-3.5 {{ $isSelf ? '' : 'cursor-pointer' }}">
+                <span>
+                    <span class="block font-medium text-slate-900 dark:text-white">Aktiv</span>
+                    <span class="block text-[13px] text-slate-500 dark:text-slate-400">
+                        {{ $isSelf ? 'Du kannst dich nicht selbst deaktivieren.' : 'Deaktivierte Benutzer können sich nicht anmelden.' }}
+                    </span>
+                </span>
+                <input type="hidden" name="is_active" value="{{ $isSelf ? '1' : '0' }}">
+                <input type="checkbox" name="is_active" value="1" class="sr-only peer" @checked(old('is_active', $user->is_active)) @disabled($isSelf)>
+                <span aria-hidden="true" class="{{ $switch }}"></span>
+            </label>
+
+            <label class="flex items-center justify-between gap-4 px-5 py-3.5 {{ $isSelf ? '' : 'cursor-pointer' }}">
+                <span>
+                    <span class="block font-medium text-slate-900 dark:text-white">Administrator</span>
+                    <span class="block text-[13px] text-slate-500 dark:text-slate-400">
+                        {{ $isSelf ? 'Du kannst dir die Adminrechte nicht selbst entziehen.' : 'Darf Benutzer, Registrierung und Anbieter verwalten.' }}
+                    </span>
+                </span>
+                <input type="hidden" name="is_admin" value="{{ $isSelf ? '1' : '0' }}">
+                <input type="checkbox" name="is_admin" value="1" class="sr-only peer" @checked(old('is_admin', $user->is_admin)) @disabled($isSelf)>
+                <span aria-hidden="true" class="{{ $switch }}"></span>
+            </label>
+        </div>
+
+        <section>
+            <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Neues Passwort setzen</h3>
+
+            <div class="fv-card p-5 sm:p-6 space-y-4">
+                <p class="text-[13px] text-slate-500 dark:text-slate-400">Leer lassen, um das Passwort nicht zu ändern.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <x-field label="Neues Passwort" for="password" error="password">
+                        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" class="fv-input">
+                    </x-field>
+
+                    <x-field label="Wiederholen" for="password_confirmation">
+                        <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" class="fv-input">
+                    </x-field>
+                </div>
+            </div>
+        </section>
+
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('admin.index') }}" class="fv-btn fv-btn-secondary">Abbrechen</a>
+            <button type="submit" class="fv-btn fv-btn-primary">Speichern</button>
+        </div>
     </form>
 
 </div>

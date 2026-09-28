@@ -117,6 +117,15 @@
                 isDark
             );
 
+            // Für die Anmeldeseiten merken (dort ist kein Benutzer bekannt).
+            try {
+                if (theme === 'system') {
+                    localStorage.removeItem('finanzview-theme');
+                } else {
+                    localStorage.setItem('finanzview-theme', theme);
+                }
+            } catch (e) {}
+
         })();
     </script>
 

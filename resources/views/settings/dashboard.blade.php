@@ -1,511 +1,181 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard-Einstellungen')
+@section('title', 'Dashboard anpassen – FinanzView')
+@section('eyebrow', 'Einstellungen')
+@section('page_title', 'Dashboard')
+
+@php
+    $icons = [
+        'summary' => 'wallet',
+        'income' => 'trending-up',
+        'expenses' => 'trending-down',
+        'savings_rate' => 'percent',
+        'monthly_balance' => 'arrows',
+        'yearly' => 'calendar',
+        'income_expense_chart' => 'chart',
+        'wealth_chart' => 'trending-up',
+        'budgets' => 'target',
+        'credit_cards' => 'card',
+        'loans' => 'banknote',
+        'accounts' => 'landmark',
+        'categories' => 'tag',
+        'recent_transactions' => 'arrows',
+        'quick_actions' => 'plus',
+    ];
+
+    $enabled = old(
+        'widgets',
+        collect($selectedWidgets)->filter()->keys()->all()
+    );
+
+    $displayMode = old('display_mode', $settings->display_mode ?? 'standard');
+@endphp
 
 @section('content')
-<div class="mx-auto max-w-5xl space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <div class="flex items-center gap-3">
-                <a
-                    href="{{ route('dashboard') }}"
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-xl
-                           bg-white text-slate-600 shadow-sm ring-1 ring-slate-200
-                           transition hover:bg-slate-50 hover:text-slate-900
-                           dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800
-                           dark:hover:bg-slate-800 dark:hover:text-white"
-                    title="Zurück zum Dashboard"
-                >
-                    ←
-                </a>
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Dashboard
-                    </h1>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        Passe dein Dashboard an deine persönlichen Bedürfnisse an.
-                    </p>
-                </div>
-            </div>
-        </div>
+    <x-back-link :href="route('settings.index')" label="Einstellungen" />
 
-        <a
-            href="{{ route('dashboard') }}"
-            class="inline-flex items-center justify-center rounded-xl
-                   bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white
-                   shadow-sm transition hover:bg-slate-800
-                   dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-        >
-            ← Zum Dashboard
-        </a>
-    </div>
+    <x-page-header title="Dashboard" subtitle="Wähle aus, was auf deiner Übersicht erscheint, und in welcher Reihenfolge." />
 
-    {{-- Success --}}
-    @if(session('success'))
-        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3
-                    text-sm text-emerald-800 dark:border-emerald-900/60
-                    dark:bg-emerald-950/30 dark:text-emerald-300">
-            <div class="flex items-center gap-2">
-                <span class="text-lg">✓</span>
-                <span>{{ session('success') }}</span>
-            </div>
+    <x-flash />
+
+    @if ($errors->any())
+        <div class="flex gap-3 rounded-2xl bg-red-50 dark:bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300" role="alert">
+            <x-icon name="alert" class="w-5 h-5" />
+            <p>{{ $errors->first() }}</p>
         </div>
     @endif
 
-    {{-- Validation errors --}}
-    @if($errors->any())
-        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3
-                    text-sm text-red-800 dark:border-red-900/60
-                    dark:bg-red-950/30 dark:text-red-300">
-            <div class="font-semibold">Bitte überprüfe deine Eingaben.</div>
-            <ul class="mt-2 list-disc space-y-1 pl-5">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('settings.dashboard.update') }}" class="space-y-6">
+    <form method="POST" action="{{ route('settings.dashboard.update') }}" class="space-y-6" id="dashboard-settings-form">
         @csrf
         @method('PUT')
 
-        {{-- Display mode --}}
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm
-                        dark:border-slate-800 dark:bg-slate-900">
+        {{-- DARSTELLUNG --}}
 
-            <div class="border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:px-6">
-                <div class="flex items-start gap-4">
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
-                                bg-indigo-50 text-xl dark:bg-indigo-950/40">
-                        🎨
-                    </div>
+        <section>
+            <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Darstellung</h3>
 
-                    <div>
-                        <h2 class="font-semibold text-slate-900 dark:text-white">
-                            Darstellungsmodus
-                        </h2>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            Bestimme, wie kompakt die Inhalte auf deinem Dashboard dargestellt werden.
-                        </p>
-                    </div>
+            <div class="fv-card p-4">
+                <div class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 dark:bg-white/5 p-1" role="radiogroup" aria-label="Darstellung">
+                    @foreach (['standard' => 'Standard', 'compact' => 'Kompakt'] as $value => $label)
+                        <label class="cursor-pointer rounded-lg py-2 text-center text-sm font-medium text-slate-600 dark:text-slate-300 transition has-[:checked]:bg-white has-[:checked]:text-slate-900 has-[:checked]:shadow-sm dark:has-[:checked]:bg-slate-700 dark:has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-500">
+                            <input type="radio" name="display_mode" value="{{ $value }}" class="sr-only" @checked($displayMode === $value)>
+                            {{ $label }}
+                        </label>
+                    @endforeach
                 </div>
-            </div>
-
-            <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
-
-                {{-- Standard --}}
-                <label class="relative cursor-pointer">
-                    <input
-                        type="radio"
-                        name="display_mode"
-                        value="standard"
-                        class="peer sr-only"
-                        {{ old('display_mode', $settings->display_mode) === 'standard' ? 'checked' : '' }}
-                    >
-
-                    <div class="rounded-2xl border-2 border-slate-200 p-5 transition
-                                peer-checked:border-indigo-500 peer-checked:bg-indigo-50/50
-                                hover:border-slate-300
-                                dark:border-slate-700 dark:bg-slate-950/30
-                                dark:peer-checked:border-indigo-500 dark:peer-checked:bg-indigo-950/20
-                                dark:hover:border-slate-600">
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">▦</span>
-                                <span class="font-semibold text-slate-900 dark:text-white">
-                                    Standard
-                                </span>
-                            </div>
-
-                            <span class="flex h-5 w-5 items-center justify-center rounded-full
-                                         border border-slate-300
-                                         peer-checked:bg-indigo-500 peer-checked:border-indigo-500
-                                         dark:border-slate-600">
-                                <span class="hidden text-xs text-white peer-checked:block">✓</span>
-                            </span>
-                        </div>
-
-                        <p class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                            Größere Karten und mehr Informationen auf einmal.
-                            Ideal für Desktop und große Bildschirme.
-                        </p>
-                    </div>
-                </label>
-
-                {{-- Compact --}}
-                <label class="relative cursor-pointer">
-                    <input
-                        type="radio"
-                        name="display_mode"
-                        value="compact"
-                        class="peer sr-only"
-                        {{ old('display_mode', $settings->display_mode) === 'compact' ? 'checked' : '' }}
-                    >
-
-                    <div class="rounded-2xl border-2 border-slate-200 p-5 transition
-                                peer-checked:border-indigo-500 peer-checked:bg-indigo-50/50
-                                hover:border-slate-300
-                                dark:border-slate-700 dark:bg-slate-950/30
-                                dark:peer-checked:border-indigo-500 dark:peer-checked:bg-indigo-950/20
-                                dark:hover:border-slate-600">
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">▤</span>
-                                <span class="font-semibold text-slate-900 dark:text-white">
-                                    Kompakt
-                                </span>
-                            </div>
-
-                            <span class="flex h-5 w-5 items-center justify-center rounded-full
-                                         border border-slate-300
-                                         dark:border-slate-600">
-                                <span class="hidden text-xs text-white">✓</span>
-                            </span>
-                        </div>
-
-                        <p class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                            Weniger Abstände und kleinere Karten.
-                            So bekommst du mehr Informationen auf den Bildschirm.
-                        </p>
-                    </div>
-                </label>
-
+                <p class="mt-2 px-1 text-[13px] text-slate-500 dark:text-slate-400">„Kompakt“ zeigt kleinere Abstände und Zahlen – praktisch auf kleinen Bildschirmen.</p>
             </div>
         </section>
 
-        {{-- Widgets --}}
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm
-                        dark:border-slate-800 dark:bg-slate-900">
 
-            <div class="border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:px-6">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {{-- WIDGETS --}}
 
-                    <div class="flex items-start gap-4">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl
-                                    bg-emerald-50 text-xl dark:bg-emerald-950/40">
-                            🧩
-                        </div>
+        <section>
+            <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Widgets</h3>
 
-                        <div>
-                            <h2 class="font-semibold text-slate-900 dark:text-white">
-                                Dashboard-Inhalte
-                            </h2>
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                Wähle aus, welche Bereiche auf deinem Dashboard angezeigt werden.
-                            </p>
-                        </div>
-                    </div>
+            <input type="hidden" name="widget_order" id="widget-order" value="{{ implode(',', array_keys($widgets)) }}">
 
-                    <div class="flex gap-2">
-                        <button
-                            type="button"
-                            id="select-all-widgets"
-                            class="rounded-lg border border-slate-200 px-3 py-2 text-xs
-                                   font-semibold text-slate-600 transition hover:bg-slate-50
-                                   dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                            Alle auswählen
-                        </button>
+            <ul id="widget-list" class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                @foreach ($widgets as $key => $widget)
+                    <li class="flex items-center gap-3 px-3 py-2.5 bg-white dark:bg-slate-900" data-widget="{{ $key }}" draggable="true">
+                        <span class="hidden sm:flex w-6 cursor-grab active:cursor-grabbing justify-center text-slate-300 dark:text-slate-600" aria-hidden="true" title="Ziehen zum Sortieren">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+                        </span>
 
-                        <button
-                            type="button"
-                            id="deselect-all-widgets"
-                            class="rounded-lg border border-slate-200 px-3 py-2 text-xs
-                                   font-semibold text-slate-600 transition hover:bg-slate-50
-                                   dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                            Alle abwählen
-                        </button>
-                    </div>
-                </div>
-            </div>
+                        <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                            <x-icon :name="$icons[$key] ?? 'layout'" class="w-[18px] h-[18px]" />
+                        </span>
 
-                          <input
-                  type="hidden"
-                  name="widget_order"
-                  id="dashboard-widget-order"
-                  value="{{ implode(',', $settings->effectiveWidgetOrder()) }}"
-              >
+                        <span class="flex-1 min-w-0">
+                            <span class="block font-medium text-slate-900 dark:text-white truncate">{{ $widget['label'] }}</span>
+                            @if (! empty($widget['description']))
+                                <span class="block text-[13px] text-slate-500 dark:text-slate-400 truncate">{{ $widget['description'] }}</span>
+                            @endif
+                        </span>
 
-<div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3" id="dashboard-widget-list">
+                        {{-- Sortieren per Knopf (funktioniert auch auf dem iPhone) --}}
+                        <span class="flex flex-col">
+                            <button type="button" data-move="up" class="w-7 h-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10" aria-label="{{ $widget['label'] }} nach oben">
+                                <x-icon name="chevron-right" class="w-4 h-4 -rotate-90" />
+                            </button>
+                            <button type="button" data-move="down" class="w-7 h-6 rounded flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-white/10" aria-label="{{ $widget['label'] }} nach unten">
+                                <x-icon name="chevron-right" class="w-4 h-4 rotate-90" />
+                            </button>
+                        </span>
 
-                @foreach($widgets as $key => $widget)
-                    @php
-                        $enabled = old(
-                            'widgets',
-                            collect($selectedWidgets)
-                                ->filter(fn ($enabled) => $enabled)
-                                ->keys()
-                                ->all()
-                        );
-
-                        $checked = in_array($key, $enabled, true);
-                    @endphp
-
-                    <label
-                          class="dashboard-widget-item group relative cursor-pointer"
-                          data-widget="{{ $key }}"
-                          draggable="true"
-                      >
-                        <input
-                            type="checkbox"
-                            name="widgets[]"
-                            value="{{ $key }}"
-                            class="widget-checkbox peer sr-only"
-                            {{ $checked ? 'checked' : '' }}
-                        >
-
-                        <div class="flex min-h-[104px] items-start gap-3 rounded-xl border-2
-                                    border-slate-200 p-4 transition
-                                    peer-checked:border-indigo-500
-                                    peer-checked:bg-indigo-50/40
-                                    hover:border-slate-300
-                                    dark:border-slate-700 dark:bg-slate-950/30
-                                    dark:peer-checked:border-indigo-500
-                                    dark:peer-checked:bg-indigo-950/20
-                                    dark:hover:border-slate-600">
-
-                              {{-- Drag Handle --}}
-                              <span
-                                  class="dashboard-drag-handle flex h-10 w-7 shrink-0 cursor-grab
-                                         items-center justify-center rounded-lg
-                                         text-slate-400 transition
-                                         hover:bg-slate-100 hover:text-slate-600
-                                         active:cursor-grabbing
-                                         dark:text-slate-500
-                                         dark:hover:bg-slate-800 dark:hover:text-slate-300"
-                                  title="Widget verschieben"
-                                  aria-label="Widget verschieben"
-                              >
-                                  <svg
-                                      viewBox="0 0 20 20"
-                                      fill="currentColor"
-                                      class="h-5 w-5"
-                                      aria-hidden="true"
-                                  >
-                                      <path d="M6.25 2.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM13.75 2.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm0 6.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 1 1 0-2.5Z"/>
-                                  </svg>
-                              </span>
-
-                            <div class="flex h-10 w-10 shrink-0 items-center justify-center
-                                        rounded-lg bg-slate-100 text-lg
-                                        dark:bg-slate-800">
-                                {{ $widget['icon'] }}
-                            </div>
-
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="font-semibold text-slate-900 dark:text-white">
-                                        {{ $widget['label'] }}
-                                    </span>
-
-                                    <span class="widget-check hidden shrink-0 text-sm font-bold
-                                                 text-indigo-600 dark:text-indigo-400">
-                                        ✓
-                                    </span>
-                                </div>
-
-                                <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                                    {{ $widget['description'] }}
-                                </p>
-                            </div>
-                        </div>
-                    </label>
+                        <label class="cursor-pointer">
+                            <span class="sr-only">{{ $widget['label'] }} anzeigen</span>
+                            <input type="checkbox" name="widgets[]" value="{{ $key }}" class="sr-only peer" @checked(in_array($key, $enabled, true))>
+                            <span aria-hidden="true" class="relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 transition peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 after:absolute after:top-[2px] after:left-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-[20px]"></span>
+                        </label>
+                    </li>
                 @endforeach
-
-            </div>
-
-            <div class="border-t border-slate-200 bg-slate-50 px-5 py-4
-                        dark:border-slate-800 dark:bg-slate-950/40">
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    💡 Tipp: Deaktiviere Bereiche, die du nicht benötigst.
-                    Das Dashboard wird dadurch übersichtlicher.
-                </p>
-            </div>
+            </ul>
         </section>
 
-        {{-- Save --}}
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-
-            <a
-                href="{{ route('dashboard') }}"
-                class="inline-flex items-center justify-center rounded-xl border
-                       border-slate-200 px-5 py-3 text-sm font-semibold
-                       text-slate-700 transition hover:bg-slate-50
-                       dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-                Abbrechen
-            </a>
-
-            <button
-                type="submit"
-                class="inline-flex items-center justify-center rounded-xl
-                       bg-indigo-600 px-5 py-3 text-sm font-semibold text-white
-                       shadow-sm transition hover:bg-indigo-700 focus:outline-none
-                       focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                       dark:focus:ring-offset-slate-950"
-            >
-                Einstellungen speichern
-            </button>
-
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('dashboard') }}" class="fv-btn fv-btn-secondary">Zum Dashboard</a>
+            <button type="submit" class="fv-btn fv-btn-primary">Speichern</button>
         </div>
     </form>
+
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    (function () {
+        const list = document.getElementById('widget-list');
+        const order = document.getElementById('widget-order');
+        let dragged = null;
 
-    /*
-     * =====================================================
-     * Dashboard Widget Drag & Drop
-     * =====================================================
-     */
+        const items = () => Array.from(list.querySelectorAll('[data-widget]'));
+        const sync = () => order.value = items().map(item => item.dataset.widget).join(',');
 
-    const widgetList = document.getElementById('dashboard-widget-list');
-    const widgetOrder = document.getElementById('dashboard-widget-order');
+        // Hoch/Runter-Knöpfe
+        list.addEventListener('click', event => {
+            const button = event.target.closest('[data-move]');
+            if (!button) return;
 
-    let draggedWidget = null;
+            const item = button.closest('[data-widget]');
 
-    const widgetItems = () => Array.from(
-        widgetList?.querySelectorAll('.dashboard-widget-item') ?? []
-    );
+            if (button.dataset.move === 'up' && item.previousElementSibling) {
+                list.insertBefore(item, item.previousElementSibling);
+            } else if (button.dataset.move === 'down' && item.nextElementSibling) {
+                list.insertBefore(item.nextElementSibling, item);
+            }
 
-    const updateWidgetOrder = () => {
-        if (!widgetOrder) {
-            return;
-        }
+            button.focus();
+            sync();
+        });
 
-        widgetOrder.value = widgetItems()
-            .map((item) => item.dataset.widget)
-            .filter(Boolean)
-            .join(',');
-    };
-
-    if (widgetList) {
-
-        widgetItems().forEach((item) => {
-
-            item.addEventListener('dragstart', (event) => {
-
-                draggedWidget = item;
-
-                item.classList.add(
-                    'opacity-50',
-                    'ring-2',
-                    'ring-indigo-500',
-                    'dark:ring-indigo-400'
-                );
-
+        // Ziehen und Ablegen (Desktop)
+        items().forEach(item => {
+            item.addEventListener('dragstart', event => {
+                dragged = item;
+                item.classList.add('opacity-50');
                 event.dataTransfer.effectAllowed = 'move';
-
-                event.dataTransfer.setData(
-                    'text/plain',
-                    item.dataset.widget || ''
-                );
             });
 
             item.addEventListener('dragend', () => {
-
-                item.classList.remove(
-                    'opacity-50',
-                    'ring-2',
-                    'ring-indigo-500',
-                    'dark:ring-indigo-400'
-                );
-
-                draggedWidget = null;
-
-                updateWidgetOrder();
+                item.classList.remove('opacity-50');
+                dragged = null;
+                sync();
             });
 
-            item.addEventListener('dragover', (event) => {
-
+            item.addEventListener('dragover', event => {
                 event.preventDefault();
-
-                if (!draggedWidget || draggedWidget === item) {
-                    return;
-                }
+                if (!dragged || dragged === item) return;
 
                 const rect = item.getBoundingClientRect();
-
-                const before =
-                    event.clientY < rect.top + rect.height / 2;
-
-                if (before) {
-
-                    item.parentNode.insertBefore(
-                        draggedWidget,
-                        item
-                    );
-
-                } else {
-
-                    item.parentNode.insertBefore(
-                        draggedWidget,
-                        item.nextSibling
-                    );
-                }
-
-                updateWidgetOrder();
+                const before = event.clientY < rect.top + rect.height / 2;
+                list.insertBefore(dragged, before ? item : item.nextSibling);
             });
         });
 
-        updateWidgetOrder();
-    }
-
-    /*
-     * =====================================================
-     * Bestehende Checkbox-Logik
-     * =====================================================
-     */
-
-    const checkboxes = () => Array.from(
-        document.querySelectorAll('.widget-checkbox')
-    );
-
-    const updateVisualState = () => {
-        checkboxes().forEach((checkbox) => {
-            const check = checkbox
-                .closest('label')
-                ?.querySelector('.widget-check');
-
-            if (check) {
-                check.classList.toggle('hidden', !checkbox.checked);
-            }
-        });
-    };
-
-    document
-        .getElementById('select-all-widgets')
-        ?.addEventListener('click', () => {
-            checkboxes().forEach((checkbox) => {
-                checkbox.checked = true;
-            });
-
-            updateVisualState();
-        });
-
-    document
-        .getElementById('deselect-all-widgets')
-        ?.addEventListener('click', () => {
-            checkboxes().forEach((checkbox) => {
-                checkbox.checked = false;
-            });
-
-            updateVisualState();
-        });
-
-    checkboxes().forEach((checkbox) => {
-        checkbox.addEventListener('change', updateVisualState);
-    });
-
-    updateVisualState();
-});
+        sync();
+    })();
 </script>
+
 @endsection
