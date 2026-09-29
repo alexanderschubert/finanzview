@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\CreditCard;
+use App\Models\Tag;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
+use App\Services\TagService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -32,6 +34,7 @@ class TransactionController extends Controller
                 'account',
                 'category',
                 'transferAccount',
+                'tags',
             ])
             ->orderByDesc('transaction_date')
             ->orderByDesc('id');
@@ -113,6 +116,21 @@ class TransactionController extends Controller
         if ($request->filled('category_id')) {
 
             $query->where('category_id', (int) $request->input('category_id'));
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tag
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('tag')) {
+
+            $tagId = (int) $request->input('tag');
+
+            $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
 
         }
 
@@ -202,10 +220,16 @@ class TransactionController extends Controller
             ->get();
 
 
+        $tags = Tag::query()
+            ->where('user_id', $user->id)
+            ->orderBy('name')
+            ->get();
+
         return view('transactions.index', compact(
             'transactions',
             'accounts',
             'categories',
+            'tags',
             'totalIncome',
             'totalExpense'
         ));
@@ -248,10 +272,13 @@ class TransactionController extends Controller
             ? $setting->default_category_id
             : null;
 
+        $tags = $this->tagSuggestions($user->id);
+
         return view('transactions.create', compact(
             'accounts',
             'categories',
             'creditCards',
+            'tags',
             'defaultAccountId',
             'defaultCategoryId'
         ));
@@ -323,6 +350,13 @@ class TransactionController extends Controller
             'notes' => [
                 'nullable',
                 'string',
+            ],
+
+            // Kommagetrennt, z. B. „Urlaub 2026, geschäftlich“.
+            'tags' => [
+                'nullable',
+                'string',
+                'max:500',
             ],
 
             'is_pending' => [
@@ -507,6 +541,8 @@ class TransactionController extends Controller
 
         $transaction->save();
 
+        app(TagService::class)->sync($transaction, $user->id, $request->input('tags'));
+
 
         return redirect()
             ->route('transactions.index')
@@ -551,11 +587,14 @@ class TransactionController extends Controller
             $transaction->credit_card_id
         );
 
+        $tags = $this->tagSuggestions($user->id);
+
         return view('transactions.edit', compact(
             'transaction',
             'accounts',
             'categories',
-            'creditCards'
+            'creditCards',
+            'tags'
         ));
     }
 
@@ -625,6 +664,13 @@ class TransactionController extends Controller
             'notes' => [
                 'nullable',
                 'string',
+            ],
+
+            // Kommagetrennt, z. B. „Urlaub 2026, geschäftlich“.
+            'tags' => [
+                'nullable',
+                'string',
+                'max:500',
             ],
 
             'is_pending' => [
@@ -795,6 +841,8 @@ class TransactionController extends Controller
 
         $transaction->save();
 
+        app(TagService::class)->sync($transaction, $user->id, $request->input('tags'));
+
 
         return redirect()
             ->route('transactions.index')
@@ -844,5 +892,19 @@ class TransactionController extends Controller
         return redirect()
             ->route('transactions.index')
             ->with('success', 'Buchung wurde gelöscht.');
+    }
+
+    /**
+     * Häufig benutzte Tags als Vorschläge im Formular.
+     */
+    private function tagSuggestions(int $userId)
+    {
+        return Tag::query()
+            ->where('user_id', $userId)
+            ->withCount('transactions')
+            ->orderByDesc('transactions_count')
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
     }
 }
