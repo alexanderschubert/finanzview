@@ -39,6 +39,7 @@ class Transaction extends Model
             'transaction_date' => 'date',
             'is_pending' => 'boolean',
             'is_recurring' => 'boolean',
+            'transfer_dismissed' => 'boolean',
         ];
     }
 

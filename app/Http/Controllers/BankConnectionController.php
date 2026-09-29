@@ -577,6 +577,14 @@ class BankConnectionController extends Controller
 
         $message = implode(' · ', $messages) ?: 'Keine neuen Umsätze.';
 
+        $transfers = app(\App\Services\TransferMatcher::class)->count(Auth::id());
+
+        if ($transfers > 0) {
+            $message .= $transfers === 1
+                ? ' · 1 mögliche Umbuchung gefunden (unter Buchungen prüfen)'
+                : " · {$transfers} mögliche Umbuchungen gefunden (unter Buchungen prüfen)";
+        }
+
         $connection->update([
             'last_synced_at' => now(),
             'last_result' => $message,

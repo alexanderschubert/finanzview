@@ -415,7 +415,9 @@ class CsvImportService
             return $items;
         }
 
-        $imported = Transaction::query()
+        // Auch gelöschte Buchungen, z. B. die weggefallene Hälfte
+        // einer zusammengefassten Umbuchung, nicht erneut importieren.
+        $imported = Transaction::withTrashed()
             ->where('user_id', $userId)
             ->whereIn('external_id', $valid->pluck('external_id'))
             ->pluck('external_id')

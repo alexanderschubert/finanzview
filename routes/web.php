@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionImportController;
+use App\Http\Controllers\TransferSuggestionController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\RecurringTransactionController;
@@ -389,6 +390,18 @@ Route::get('/settings/dashboard', [
 
     Route::delete('/transactions/import/{token}', [TransactionImportController::class, 'destroy'])
         ->name('transactions.import.destroy');
+
+    Route::get('/transactions/transfers', [TransferSuggestionController::class, 'index'])
+        ->name('transactions.transfers');
+
+    Route::post('/transactions/transfers', [TransferSuggestionController::class, 'merge'])
+        ->name('transactions.transfers.merge');
+
+    Route::post('/transactions/transfers/all', [TransferSuggestionController::class, 'mergeAll'])
+        ->name('transactions.transfers.merge-all');
+
+    Route::post('/transactions/transfers/dismiss', [TransferSuggestionController::class, 'dismiss'])
+        ->name('transactions.transfers.dismiss');
 
     Route::resource('transactions', TransactionController::class)->except('show');
 

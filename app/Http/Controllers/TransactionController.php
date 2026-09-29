@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
 use App\Services\TagService;
+use App\Services\TransferMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -225,7 +226,10 @@ class TransactionController extends Controller
             ->orderBy('name')
             ->get();
 
+        $transferSuggestions = app(TransferMatcher::class)->count($user->id);
+
         return view('transactions.index', compact(
+            'transferSuggestions',
             'transactions',
             'accounts',
             'categories',

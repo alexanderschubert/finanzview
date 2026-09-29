@@ -59,6 +59,17 @@
     {{-- MELDUNGEN --}}
     {{-- ========================================================= --}}
 
+    @if ($transferSuggestions > 0)
+        <a href="{{ route('transactions.transfers') }}" class="flex items-center gap-3 rounded-2xl bg-sky-50 dark:bg-sky-500/10 p-4 text-sm text-sky-800 dark:text-sky-300">
+            <x-icon name="arrows" class="w-5 h-5" />
+            <span class="flex-1">
+                {{ $transferSuggestions === 1 ? '1 mögliche Umbuchung gefunden' : $transferSuggestions . ' mögliche Umbuchungen gefunden' }}
+                – z. B. Kreditkarten-Abrechnung. Sonst zählen sie doppelt.
+            </span>
+            <span class="font-medium whitespace-nowrap">Prüfen ›</span>
+        </a>
+    @endif
+
     @if (session('success'))
         <div class="flex gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-300" role="status">
             <x-icon name="check-circle" class="w-5 h-5" />
