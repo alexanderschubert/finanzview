@@ -25,7 +25,7 @@ class LogoutOtherDevicesTest extends TestCase
         ]);
     }
 
-    private function session(string $id, int $userId, string $agent, string $ip = '192.168.40.20'): void
+    private function storedSession(string $id, int $userId, string $agent, string $ip = '192.168.40.20'): void
     {
         DB::table('sessions')->insert([
             'id' => $id, 'user_id' => $userId, 'ip_address' => $ip, 'user_agent' => $agent,
@@ -56,7 +56,7 @@ class LogoutOtherDevicesTest extends TestCase
     {
         config(['session.driver' => 'database']);
 
-        $this->session('anderes-geraet-1', $this->user->id, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1');
+        $this->storedSession('anderes-geraet-1', $this->user->id, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1');
 
         $token = $this->user->remember_token;
 
@@ -80,9 +80,9 @@ class LogoutOtherDevicesTest extends TestCase
 
         $other = User::factory()->create(['is_active' => true]);
 
-        $this->session('mac', $this->user->id, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/130.0 Safari/537.36');
-        $this->session('iphone', $this->user->id, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1');
-        $this->session('fremd', $other->id, 'Mozilla/5.0 (Windows NT 10.0) Firefox/131.0');
+        $this->storedSession('mac', $this->user->id, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/130.0 Safari/537.36');
+        $this->storedSession('iphone', $this->user->id, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1');
+        $this->storedSession('fremd', $other->id, 'Mozilla/5.0 (Windows NT 10.0) Firefox/131.0');
 
         $this->actingAs($this->user)
             ->get(route('settings.security'))
