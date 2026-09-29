@@ -83,7 +83,7 @@ class BankConnectionController extends Controller
 
         return view('bank-connections.edit', [
             'connection' => $bankConnection,
-            'accounts' => $this->accounts(),
+            'accounts' => $this->userAccounts(),
         ]);
     }
 
@@ -241,7 +241,7 @@ class BankConnectionController extends Controller
         return view('bank-connections.accounts', [
             'connection' => $bankConnection,
             'bankAccounts' => $pending['accounts'],
-            'accounts' => $this->accounts(),
+            'accounts' => $this->userAccounts(),
         ]);
     }
 
@@ -259,7 +259,7 @@ class BankConnectionController extends Controller
 
         $validated = $request->validate([
             'iban' => ['required', 'string', Rule::in($bankAccounts->pluck('iban')->filter()->all())],
-            'account_id' => ['required', 'integer', Rule::in($this->accounts()->pluck('id')->all())],
+            'account_id' => ['required', 'integer', Rule::in($this->userAccounts()->pluck('id')->all())],
         ], [
             'iban.in' => 'Bitte ein Bankkonto auswählen.',
             'account_id.in' => 'Bitte ein FinanzView-Konto auswählen.',
@@ -530,7 +530,7 @@ class BankConnectionController extends Controller
         ];
 
         if ($withAccount) {
-            $rules['account_id'] = ['nullable', 'integer', Rule::in($this->accounts()->pluck('id')->all())];
+            $rules['account_id'] = ['nullable', 'integer', Rule::in($this->userAccounts()->pluck('id')->all())];
         }
 
         $validated = $request->validate($rules, [
@@ -545,7 +545,7 @@ class BankConnectionController extends Controller
         return $validated;
     }
 
-    private function accounts()
+    private function userAccounts()
     {
         return Account::query()
             ->where('user_id', Auth::id())
