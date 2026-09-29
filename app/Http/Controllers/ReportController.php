@@ -35,6 +35,21 @@ class ReportController extends Controller
     }
 
     /**
+     * Monatsbericht: ein Monat im Vergleich zu Vormonat und üblichem Monat.
+     */
+    public function month(Request $request, \App\Services\MonthlyReportService $monthly)
+    {
+        $month = preg_match('/^\d{4}-\d{2}$/', (string) $request->query('month'))
+            ? \Carbon\Carbon::createFromFormat('!Y-m', $request->query('month'))
+            : now()->startOfMonth();
+
+        return view('reports.month', [
+            'report' => $monthly->build($request->user(), $month),
+            'monthKey' => $month->format('Y-m'),
+        ]);
+    }
+
+    /**
      * Auswertung als CSV herunterladen (Semikolon, UTF-8 mit
      * BOM, deutsches Zahlenformat – direkt in Excel lesbar).
      */
