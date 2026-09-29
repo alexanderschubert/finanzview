@@ -192,6 +192,25 @@
             <span aria-hidden="true" class="relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 transition peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 after:absolute after:top-[2px] after:left-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-[20px]"></span>
         </label>
 
+        @php
+            $tagValue = old('tags', $transaction->exists ? $transaction->tags->pluck('name')->implode(', ') : '');
+        @endphp
+
+        <x-field label="Tags" for="tags" error="tags" hint="Mehrere mit Komma trennen, z. B. „Urlaub 2026, geschäftlich“.">
+            <input id="tags" name="tags" type="text" maxlength="500" value="{{ $tagValue }}" placeholder="Optional" autocomplete="off" class="fv-input" data-tag-input>
+
+            @if (($tags ?? collect())->isNotEmpty())
+                <div class="mt-2 flex flex-wrap gap-1.5" aria-label="Vorhandene Tags">
+                    @foreach ($tags as $tag)
+                        <button type="button" data-tag-suggestion="{{ $tag->name }}" aria-pressed="false"
+                            class="rounded-full ring-1 ring-transparent transition aria-pressed:ring-emerald-500 hover:opacity-80">
+                            <x-tag-chip :tag="$tag" class="text-xs px-2.5 py-1" />
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </x-field>
+
         <x-field label="Notizen" for="notes" error="notes">
             <textarea id="notes" name="notes" rows="3" placeholder="Optional" class="fv-input">{{ $value('notes') }}</textarea>
         </x-field>
@@ -235,6 +254,33 @@
 
 
 <script>
+    // Tag-Vorschläge per Antippen hinzufügen bzw. entfernen.
+    (function () {
+        const input = document.querySelector('[data-tag-input]');
+        if (!input) return;
+
+        const names = () => input.value.split(',').map(name => name.trim().replace(/^#/, '')).filter(Boolean);
+        const buttons = document.querySelectorAll('[data-tag-suggestion]');
+
+        const refresh = () => {
+            const current = names().map(name => name.toLowerCase());
+            buttons.forEach(button => button.setAttribute('aria-pressed', current.includes(button.dataset.tagSuggestion.toLowerCase())));
+        };
+
+        buttons.forEach(button => button.addEventListener('click', () => {
+            const tag = button.dataset.tagSuggestion;
+            const list = names();
+            const index = list.findIndex(name => name.toLowerCase() === tag.toLowerCase());
+
+            index === -1 ? list.push(tag) : list.splice(index, 1);
+            input.value = list.join(', ');
+            refresh();
+        }));
+
+        input.addEventListener('input', refresh);
+        refresh();
+    })();
+
     // Felder je nach Art der Buchung ein-/ausblenden und nur passende
     // Kategorien anbieten (Ausgabe/Einnahme/beides).
     (function () {

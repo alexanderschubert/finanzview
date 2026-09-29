@@ -9,7 +9,8 @@
         || request()->filled('month')
         || request()->filled('type')
         || request()->filled('account_id')
-        || request()->filled('category_id');
+        || request()->filled('category_id')
+        || request()->filled('tag');
 
     /*
      * Buchungen der aktuellen Seite nach Tag gruppieren.
@@ -131,6 +132,15 @@
             </select>
         </div>
 
+        @if ($tags->isNotEmpty())
+            <select name="tag" aria-label="Tag" onchange="this.form.submit()" class="fv-input text-sm py-2.5">
+                <option value="">Alle Tags</option>
+                @foreach ($tags as $tag)
+                    <option value="{{ $tag->id }}" @selected((string) request('tag') === (string) $tag->id)># {{ $tag->name }}</option>
+                @endforeach
+            </select>
+        @endif
+
         @if ($filtersActive)
             <div class="flex items-center justify-between text-sm">
                 <p class="text-slate-500 dark:text-slate-400">
@@ -233,6 +243,14 @@
                                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
                                             {{ $details ?: ($isTransfer ? 'Umbuchung' : 'Ohne Kategorie') }}
                                         </p>
+
+                                        @if ($transaction->tags->isNotEmpty())
+                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                @foreach ($transaction->tags as $tag)
+                                                    <x-tag-chip :tag="$tag" />
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <div class="text-right shrink-0">
