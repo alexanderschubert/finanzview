@@ -42,8 +42,21 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         $this->createDefaultCategories($user);
+        $this->promoteIfFirstUser($user);
 
         return $user;
+    }
+
+    /**
+     * Neue Installation: Der erste Benutzer wird Administrator, damit
+     * jemand die Administration öffnen kann. Wird auch bei der
+     * Registrierung über OIDC verwendet.
+     */
+    public function promoteIfFirstUser(User $user): void
+    {
+        if (! User::query()->where('is_admin', true)->exists()) {
+            $user->forceFill(['is_admin' => true])->save();
+        }
     }
 
     /**

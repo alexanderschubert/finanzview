@@ -183,6 +183,7 @@ class OidcController extends Controller
             ])->save();
 
             app(CreateNewUser::class)->createDefaultCategories($user);
+            app(CreateNewUser::class)->promoteIfFirstUser($user);
 
             return $user->fresh();
         });
