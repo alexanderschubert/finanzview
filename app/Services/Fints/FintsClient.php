@@ -22,8 +22,9 @@ interface FintsClient
      * Anmelden und eine Aktion ausführen.
      *
      * „accounts“ → list<array{iban, bic, account_number, sub_account, blz}>
-     * „statement“ (params: account, from, to) →
-     *     list<array{date, amount, name, description, booking_text, end_to_end_id}>
+     * „sync“ (params: accounts[] mit id/iban/…, from, to) → je Konto-ID
+     *     ['transactions' => list<array{date, amount, name, description, booking_text, end_to_end_id}>,
+     *      'balance' => ?array{amount, date}, 'errors' => list<string>]
      */
     public function begin(FintsConfig $config, string $pin, string $operation, array $params = []): FintsResult;
 

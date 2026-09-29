@@ -2,6 +2,7 @@
 
 namespace App\Services\Fints;
 
+use Fhp\Action\GetBalance;
 use Fhp\Action\GetSEPAAccounts;
 use Fhp\Action\GetStatementOfAccount;
 use Fhp\BaseAction;
@@ -11,6 +12,7 @@ use Fhp\Model\StatementOfAccount\Transaction as FintsTransaction;
 use Fhp\Options\Credentials;
 use Fhp\Options\FinTsOptions;
 use Fhp\Protocol\ServerException;
+use Fhp\UnsupportedException;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -89,6 +91,14 @@ class PhpFintsClient implements FintsClient
                 return $this->runOperation($fints, $saved['operation'], $saved['params']);
             }
 
+            if ($saved['operation'] === 'sync') {
+                $params = $saved['params'];
+                $params['results'] = $this->record($params['results'] ?? [], $this->syncSteps($params)[$params['step']], $params, $action);
+                $params['step']++;
+
+                return $this->runSync($fints, $params);
+            }
+
             return FintsResult::done($this->collect($fints, $action, $saved['operation']));
         });
     }
@@ -114,15 +124,12 @@ class PhpFintsClient implements FintsClient
 
     private function runOperation(FinTs $fints, string $operation, array $params): FintsResult
     {
+        if ($operation === 'sync') {
+            return $this->runSync($fints, $params + ['step' => 0, 'results' => []]);
+        }
+
         $action = match ($operation) {
             'accounts' => GetSEPAAccounts::create(),
-            'statement' => GetStatementOfAccount::create(
-                $this->sepaAccount($params['account']),
-                new \DateTime($params['from']),
-                new \DateTime($params['to']),
-                false,
-                false
-            ),
             default => throw new \InvalidArgumentException("Unbekannte Aktion {$operation}"),
         };
 
@@ -145,7 +152,6 @@ class PhpFintsClient implements FintsClient
                 'sub_account' => $account->getSubAccount(),
                 'blz' => $account->getBlz(),
             ], $action->getAccounts()),
-            'statement' => $this->transactions($action),
         };
 
         try {
@@ -155,6 +161,99 @@ class PhpFintsClient implements FintsClient
         }
 
         return array_values($data);
+    }
+
+    /**
+     * Abruf für mehrere Konten in einem Dialog: je Konto Umsätze und
+     * Kontostand. Verlangt die Bank zwischendurch eine Freigabe, wird
+     * der Fortschritt (Schritt + bisherige Ergebnisse) mitgesichert.
+     *
+     * Ergebnis: [Konto-ID => ['transactions' => [...], 'balance' => ?[...], 'errors' => [...]]]
+     */
+    private function runSync(FinTs $fints, array $params): FintsResult
+    {
+        $steps = $this->syncSteps($params);
+
+        for ($step = $params['step']; $step < count($steps); $step++) {
+            [$type, $index] = $steps[$step];
+            $account = $this->sepaAccount($params['accounts'][$index]);
+
+            $action = $type === 'statement'
+                ? GetStatementOfAccount::create($account, new \DateTime($params['from']), new \DateTime($params['to']), false, false)
+                : GetBalance::create($account, false);
+
+            try {
+                $fints->execute($action);
+            } catch (ServerException|UnsupportedException $e) {
+                // Z. B. Sparbuch ohne Umsatzabruf: Fehler merken, mit dem nächsten Schritt weitermachen.
+                $id = $params['accounts'][$index]['id'];
+                $params['results'][$id] ??= ['transactions' => [], 'balance' => null, 'errors' => []];
+                $params['results'][$id]['errors'][] = $this->stepError($type, $e);
+                continue;
+            }
+
+            if ($action->needsTan()) {
+                $params['step'] = $step;
+
+                return $this->suspend($fints, $action, 'sync', 'sync', $params);
+            }
+
+            $params['results'] = $this->record($params['results'], $steps[$step], $params, $action);
+        }
+
+        try {
+            $fints->close();
+        } catch (\Throwable) {
+            // Abmelden ist optional.
+        }
+
+        return FintsResult::done($params['results']);
+    }
+
+    /**
+     * @return list<array{0: string, 1: int}>
+     */
+    private function syncSteps(array $params): array
+    {
+        $steps = [];
+
+        foreach (array_keys($params['accounts']) as $index) {
+            $steps[] = ['statement', $index];
+            $steps[] = ['balance', $index];
+        }
+
+        return $steps;
+    }
+
+    private function record(array $results, array $step, array $params, BaseAction $action): array
+    {
+        [$type, $index] = $step;
+        $id = $params['accounts'][$index]['id'];
+
+        $results[$id] ??= ['transactions' => [], 'balance' => null, 'errors' => []];
+
+        if ($type === 'statement') {
+            $results[$id]['transactions'] = $this->transactions($action);
+        } else {
+            $balance = $action->getBalances()[0] ?? null;
+            $saldo = $balance?->getGebuchterSaldo();
+
+            $results[$id]['balance'] = $saldo ? [
+                'amount' => round($saldo->getAmount(), 2),
+                'date' => $saldo->getTimestamp()->format('Y-m-d'),
+            ] : null;
+        }
+
+        return $results;
+    }
+
+    private function stepError(string $type, \Throwable $e): string
+    {
+        $what = $type === 'statement' ? 'Umsätze' : 'Kontostand';
+
+        return $e instanceof UnsupportedException
+            ? "{$what}: von der Bank für dieses Konto nicht angeboten"
+            : "{$what}: " . mb_strimwidth(trim($e->getMessage()), 0, 200, '…');
     }
 
     private function transactions(GetStatementOfAccount $action): array

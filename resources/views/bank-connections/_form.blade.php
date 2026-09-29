@@ -1,4 +1,4 @@
-{{-- Erwartet: $connection, optional $accounts (beim Bearbeiten) --}}
+{{-- Erwartet: $connection --}}
 
 @php
     $isEdit = $connection->exists;
@@ -35,16 +35,6 @@
             <input id="username" name="username" type="text" maxlength="100" required value="{{ $value('username') }}" class="fv-input" autocomplete="username">
         </x-field>
 
-        @if ($isEdit)
-            <x-field label="Importieren in" for="account_id" error="account_id">
-                <select id="account_id" name="account_id" class="fv-input">
-                    <option value="">Kein Konto</option>
-                    @foreach ($accounts as $account)
-                        <option value="{{ $account->id }}" @selected((string) $value('account_id') === (string) $account->id)>{{ $account->name }}</option>
-                    @endforeach
-                </select>
-            </x-field>
-        @endif
     </div>
 
     <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">

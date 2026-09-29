@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * FinTS-Zugang zu einer Bank. Die Online-Banking-PIN wird nie
@@ -13,7 +14,6 @@ class BankConnection extends Model
 {
     protected $fillable = [
         'user_id',
-        'account_id',
         'name',
         'bank_code',
         'url',
@@ -21,10 +21,6 @@ class BankConnection extends Model
         'tan_mode',
         'tan_mode_name',
         'tan_medium',
-        'iban',
-        'bic',
-        'bank_account_number',
-        'bank_sub_account',
         'last_synced_at',
         'last_result',
     ];
@@ -47,9 +43,14 @@ class BankConnection extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function account(): BelongsTo
+    /**
+     * Verknüpfte Bankkonten (nur solche, deren FinanzView-Konto noch existiert).
+     */
+    public function linkedAccounts(): HasMany
     {
-        return $this->belongsTo(Account::class);
+        return $this->hasMany(BankConnectionAccount::class)
+            ->whereHas('account')
+            ->orderBy('id');
     }
 
     public function hasTanMode(): bool
@@ -58,19 +59,10 @@ class BankConnection extends Model
     }
 
     /**
-     * Bereit zum Abruf: TAN-Verfahren, Bankkonto und Zielkonto gewählt.
+     * Bereit zum Abruf: TAN-Verfahren gewählt und mindestens ein Konto verknüpft.
      */
     public function isReady(): bool
     {
-        return $this->hasTanMode() && $this->iban !== null && $this->account_id !== null;
-    }
-
-    public function maskedIban(): ?string
-    {
-        if ($this->iban === null) {
-            return null;
-        }
-
-        return substr($this->iban, 0, 4) . ' •••• ' . substr($this->iban, -4);
+        return $this->hasTanMode() && $this->linkedAccounts()->exists();
     }
 }

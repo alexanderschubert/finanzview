@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\BankConnection;
+use App\Models\BankConnectionAccount;
 use App\Services\Fints\BankTransactionImporter;
 use App\Services\Fints\FintsClient;
 use App\Services\Fints\FintsConfig;
@@ -14,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -41,7 +43,7 @@ class BankConnectionController extends Controller
     {
         $connections = BankConnection::query()
             ->where('user_id', Auth::id())
-            ->with('account')
+            ->with('linkedAccounts.account')
             ->orderBy('name')
             ->get();
 
@@ -82,8 +84,7 @@ class BankConnectionController extends Controller
         $this->authorizeConnection($bankConnection);
 
         return view('bank-connections.edit', [
-            'connection' => $bankConnection,
-            'accounts' => $this->userAccounts(),
+            'connection' => $bankConnection->load('linkedAccounts.account'),
         ]);
     }
 
@@ -91,7 +92,7 @@ class BankConnectionController extends Controller
     {
         $this->authorizeConnection($bankConnection);
 
-        $validated = $this->validated($request, withAccount: true);
+        $validated = $this->validated($request);
 
         // Andere Bank oder anderer Zugang: TAN-Verfahren und Konto neu wählen.
         $changedAccess = $validated['bank_code'] !== $bankConnection->bank_code
@@ -99,10 +100,9 @@ class BankConnectionController extends Controller
             || $validated['username'] !== $bankConnection->username;
 
         if ($changedAccess) {
-            $validated += [
-                'tan_mode' => null, 'tan_mode_name' => null, 'tan_medium' => null,
-                'iban' => null, 'bic' => null, 'bank_account_number' => null, 'bank_sub_account' => null,
-            ];
+            $validated += ['tan_mode' => null, 'tan_mode_name' => null, 'tan_medium' => null];
+
+            BankConnectionAccount::where('bank_connection_id', $bankConnection->id)->delete();
         }
 
         $bankConnection->update($validated);
@@ -238,10 +238,28 @@ class BankConnectionController extends Controller
             return $this->expired($bankConnection);
         }
 
+        $accounts = $this->userAccounts();
+
+        // Vorbelegung: bisherige Zuordnung, sonst FinanzView-Konto mit gleicher IBAN.
+        $links = BankConnectionAccount::where('bank_connection_id', $bankConnection->id)->pluck('account_id', 'iban');
+        $defaults = [];
+
+        foreach ($pending['accounts'] as $bankAccount) {
+            $iban = $bankAccount['iban'];
+            $defaults[$iban] = $links[$iban]
+                ?? $accounts->first(fn ($account) => $account->iban && str_replace(' ', '', strtoupper($account->iban)) === $iban)?->id;
+        }
+
+        // Nichts zugeordnet: erstes Bankkonto → erstes FinanzView-Konto.
+        if (array_filter($defaults) === [] && $accounts->isNotEmpty()) {
+            $defaults[$pending['accounts'][0]['iban']] = $accounts->first()->id;
+        }
+
         return view('bank-connections.accounts', [
             'connection' => $bankConnection,
             'bankAccounts' => $pending['accounts'],
-            'accounts' => $this->userAccounts(),
+            'accounts' => $accounts,
+            'defaults' => $defaults,
         ]);
     }
 
@@ -255,31 +273,84 @@ class BankConnectionController extends Controller
             return $this->expired($bankConnection);
         }
 
-        $bankAccounts = collect($pending['accounts']);
+        $bankAccounts = collect($pending['accounts'])->keyBy('iban');
+        $accountIds = $this->userAccounts()->pluck('id')->map(fn ($id) => (string) $id)->all();
 
-        $validated = $request->validate([
-            'iban' => ['required', 'string', Rule::in($bankAccounts->pluck('iban')->filter()->all())],
-            'account_id' => ['required', 'integer', Rule::in($this->userAccounts()->pluck('id')->all())],
-        ], [
-            'iban.in' => 'Bitte ein Bankkonto auswählen.',
-            'account_id.in' => 'Bitte ein FinanzView-Konto auswählen.',
-        ]);
+        $links = collect((array) $request->input('link', []))
+            ->only($bankAccounts->keys()->all())
+            ->map(fn ($value) => (string) $value)
+            ->filter(fn ($value) => $value !== '');
 
-        $bankAccount = $bankAccounts->firstWhere('iban', $validated['iban']);
+        $invalid = $links->reject(fn ($value) => in_array($value, [...$accountIds, 'new:checking', 'new:savings'], true));
+        $existing = $links->reject(fn ($value) => str_starts_with($value, 'new:'));
 
-        $bankConnection->update([
-            'account_id' => (int) $validated['account_id'],
-            'iban' => $bankAccount['iban'],
-            'bic' => $bankAccount['bic'] ?? null,
-            'bank_account_number' => $bankAccount['account_number'] ?? null,
-            'bank_sub_account' => $bankAccount['sub_account'] ?? null,
-        ]);
+        if ($links->isEmpty() || $invalid->isNotEmpty()) {
+            return back()->withInput()->withErrors(['link' => 'Bitte mindestens ein Bankkonto einem FinanzView-Konto zuordnen.']);
+        }
+
+        if ($existing->count() !== $existing->unique()->count()) {
+            return back()->withInput()->withErrors(['link' => 'Jedes FinanzView-Konto kann nur einem Bankkonto zugeordnet werden.']);
+        }
+
+        DB::transaction(function () use ($bankConnection, $bankAccounts, $links) {
+            BankConnectionAccount::where('bank_connection_id', $bankConnection->id)
+                ->whereNotIn('iban', $links->keys()->all())
+                ->delete();
+
+            foreach ($links as $iban => $value) {
+                $bankAccount = $bankAccounts[$iban];
+                $isNew = str_starts_with($value, 'new:');
+
+                $accountId = $isNew ? $this->createAccount($bankConnection, $bankAccount, substr($value, 4))->id : (int) $value;
+
+                $link = BankConnectionAccount::firstOrNew([
+                    'bank_connection_id' => $bankConnection->id,
+                    'iban' => $iban,
+                ]);
+
+                $link->fill([
+                    'account_id' => $accountId,
+                    'bic' => $bankAccount['bic'] ?? null,
+                    'account_number' => $bankAccount['account_number'] ?? null,
+                    'sub_account' => $bankAccount['sub_account'] ?? null,
+                ]);
+
+                if ($isNew) {
+                    $link->adopt_balance = true;
+                }
+
+                $link->save();
+            }
+        });
 
         $this->pending->forget(Auth::id());
 
         return redirect()
             ->route('bank-connections.index')
             ->with('success', 'Bankverbindung ist eingerichtet. Mit „Umsätze abrufen“ holst du die Buchungen.');
+    }
+
+    /**
+     * Saldo angleichen: Startsaldo des FinanzView-Kontos so ändern,
+     * dass der Kontostand dem der Bank entspricht.
+     */
+    public function reconcile(BankConnectionAccount $link)
+    {
+        $link->load('connection', 'account');
+
+        abort_unless($link->connection && (int) $link->connection->user_id === (int) Auth::id(), 404);
+
+        $difference = $link->balanceDifference();
+
+        if ($difference === null || abs($difference) < 0.005) {
+            return back()->with('success', 'Der Kontostand stimmt bereits.');
+        }
+
+        $account = $link->account;
+        $account->opening_balance = round((float) $account->opening_balance + $difference, 2);
+        $account->save();
+
+        return back()->with('success', "Startsaldo von „{$account->name}“ wurde um " . number_format($difference, 2, ',', '.') . ' € angepasst.');
     }
 
 
@@ -301,7 +372,7 @@ class BankConnectionController extends Controller
             return redirect()->route('bank-connections.setup', $bankConnection);
         }
 
-        return view('bank-connections.sync', ['connection' => $bankConnection->load('account')]);
+        return view('bank-connections.sync', ['connection' => $bankConnection->load('linkedAccounts.account')]);
     }
 
     public function sync(Request $request, BankConnection $bankConnection)
@@ -322,24 +393,21 @@ class BankConnectionController extends Controller
         ]);
 
         $params = [
-            'account' => [
-                'iban' => $bankConnection->iban,
-                'bic' => $bankConnection->bic,
-                'account_number' => $bankConnection->bank_account_number,
-                'sub_account' => $bankConnection->bank_sub_account,
-                'blz' => $bankConnection->bank_code,
-            ],
+            'accounts' => $bankConnection->linkedAccounts
+                ->map(fn (BankConnectionAccount $link) => $link->fintsAccount($bankConnection->bank_code))
+                ->values()
+                ->all(),
             'from' => $this->syncStart($bankConnection, $validated['period'])->toDateString(),
             'to' => now()->toDateString(),
         ];
 
         try {
-            $result = $this->client->begin(FintsConfig::fromConnection($bankConnection), $validated['pin'], 'statement', $params);
+            $result = $this->client->begin(FintsConfig::fromConnection($bankConnection), $validated['pin'], 'sync', $params);
         } catch (FintsException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return $this->handle($bankConnection, $validated['pin'], 'statement', $params, $result);
+        return $this->handle($bankConnection, $validated['pin'], 'sync', $params, $result);
     }
 
 
@@ -461,18 +529,53 @@ class BankConnectionController extends Controller
             return redirect()->route('bank-connections.accounts', $connection);
         }
 
-        $summary = $this->importer->import($connection, $data);
+        $messages = [];
+        $totalImported = 0;
+
+        foreach ($connection->linkedAccounts()->with('account')->get() as $link) {
+            $result = $data[$link->id] ?? $data[(string) $link->id] ?? null;
+
+            if ($result === null) {
+                continue;
+            }
+
+            $summary = $this->importer->import($connection->user_id, $link->account_id, $link->iban, $result['transactions'] ?? []);
+            $totalImported += $summary['imported'];
+
+            $link->last_synced_at = now();
+            $link->last_error = ($result['errors'] ?? []) === [] ? null : implode(' · ', $result['errors']);
+
+            if (($result['balance'] ?? null) !== null) {
+                $link->bank_balance = $result['balance']['amount'];
+                $link->balance_date = $result['balance']['date'];
+            }
+
+            $link->save();
+
+            // Neu angelegtes Konto: Startsaldo so setzen, dass es zur Bank passt.
+            if ($link->adopt_balance && $link->bank_balance !== null) {
+                $difference = $link->fresh('account')->balanceDifference();
+                $link->account->opening_balance = round((float) $link->account->opening_balance + (float) $difference, 2);
+                $link->account->save();
+                $link->update(['adopt_balance' => false]);
+            }
+
+            $part = $link->account->name . ': ' . match ($summary['imported']) {
+                0 => 'keine neuen Umsätze',
+                1 => '1 neue Buchung',
+                default => "{$summary['imported']} neue Buchungen",
+            };
+
+            if ($summary['possible'] > 0) {
+                $part .= " ({$summary['possible']} schon erfasst, übersprungen)";
+            }
+
+            $messages[] = $part;
+        }
+
         $this->pending->forget(Auth::id());
 
-        $message = match ($summary['imported']) {
-            0 => 'Keine neuen Umsätze.',
-            1 => '1 neue Buchung wurde abgerufen.',
-            default => "{$summary['imported']} neue Buchungen wurden abgerufen.",
-        };
-
-        if ($summary['possible'] > 0) {
-            $message .= " {$summary['possible']} übersprungen, weil sie schon erfasst waren (gleiches Datum und gleicher Betrag).";
-        }
+        $message = implode(' · ', $messages) ?: 'Keine neuen Umsätze.';
 
         $connection->update([
             'last_synced_at' => now(),
@@ -480,8 +583,28 @@ class BankConnectionController extends Controller
         ]);
 
         return redirect()
-            ->route('transactions.index', ['account_id' => $connection->account_id])
+            ->route('bank-connections.index')
             ->with('success', $message);
+    }
+
+    /**
+     * Neues FinanzView-Konto für ein Bankkonto (z. B. Sparbuch).
+     */
+    private function createAccount(BankConnection $connection, array $bankAccount, string $type): Account
+    {
+        $label = $type === 'savings' ? 'Sparkonto' : 'Girokonto';
+
+        return Account::create([
+            'user_id' => Auth::id(),
+            'name' => $label . ' ' . substr($bankAccount['iban'], -4),
+            'institution' => $connection->name,
+            'type' => $type === 'savings' ? 'savings' : 'checking',
+            'currency' => 'EUR',
+            'opening_balance' => 0,
+            'iban' => $bankAccount['iban'],
+            'include_in_total' => true,
+            'is_active' => true,
+        ]);
     }
 
     /**
@@ -520,7 +643,7 @@ class BankConnectionController extends Controller
             : redirect()->route('bank-connections.index');
     }
 
-    private function validated(Request $request, bool $withAccount = false): array
+    private function validated(Request $request): array
     {
         $rules = [
             'name' => ['required', 'string', 'max:100'],
@@ -528,10 +651,6 @@ class BankConnectionController extends Controller
             'url' => ['required', 'url:https', 'max:255'],
             'username' => ['required', 'string', 'max:100'],
         ];
-
-        if ($withAccount) {
-            $rules['account_id'] = ['nullable', 'integer', Rule::in($this->userAccounts()->pluck('id')->all())];
-        }
 
         $validated = $request->validate($rules, [
             'bank_code.regex' => 'Die Bankleitzahl hat 8 Ziffern.',
