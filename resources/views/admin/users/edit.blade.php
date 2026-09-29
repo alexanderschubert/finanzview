@@ -12,6 +12,10 @@
         ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
         ->join('');
 
+    $twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
+    $twoFactorPending = $user->two_factor_secret !== null && ! $twoFactorEnabled;
+    $passkeyCount = $user->passkeys()->count();
+
     $switch = 'relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 transition peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-disabled:opacity-50 after:absolute after:top-[2px] after:left-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-[20px]';
 @endphp
 
@@ -99,6 +103,77 @@
             <button type="submit" class="fv-btn fv-btn-primary">Speichern</button>
         </div>
     </form>
+
+
+    {{-- ========================================================= --}}
+    {{-- ANMELDUNG & SICHERHEIT --}}
+    {{-- ========================================================= --}}
+
+    <section id="security">
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Anmeldung &amp; Sicherheit</h3>
+
+        <ul class="fv-card divide-y divide-slate-100 dark:divide-white/5">
+            <li class="flex items-center gap-3 px-5 py-3.5">
+                <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 {{ $twoFactorEnabled ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400' }}">
+                    <x-icon name="shield" class="w-[18px] h-[18px]" />
+                </span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-900 dark:text-white">Zwei-Faktor-Authentifizierung</p>
+                    <p class="text-[13px] text-slate-500 dark:text-slate-400">
+                        {{ $twoFactorEnabled ? 'Aktiv seit ' . $user->two_factor_confirmed_at?->format('d.m.Y') : ($twoFactorPending ? 'Einrichtung begonnen, nicht abgeschlossen' : 'Nicht aktiv') }}
+                    </p>
+                </div>
+
+                @if (! $isSelf && ($twoFactorEnabled || $twoFactorPending))
+                    <form method="POST" action="{{ route('admin.users.two-factor.destroy', $user) }}"
+                        onsubmit="return confirm('Zwei-Faktor-Authentifizierung von {{ addslashes($user->name) }} zurücksetzen? Die Anmeldung ist danach nur mit Passwort möglich.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="fv-btn text-sm py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">Zurücksetzen</button>
+                    </form>
+                @endif
+            </li>
+
+            <li class="flex items-center gap-3 px-5 py-3.5">
+                <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 {{ $passkeyCount > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400' }}">
+                    <x-icon name="passkey" class="w-[18px] h-[18px]" />
+                </span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-900 dark:text-white">Passkeys</p>
+                    <p class="text-[13px] text-slate-500 dark:text-slate-400">
+                        {{ $passkeyCount === 0 ? 'Keine' : ($passkeyCount === 1 ? '1 Passkey' : $passkeyCount . ' Passkeys') }}
+                    </p>
+                </div>
+
+                @if (! $isSelf && $passkeyCount > 0)
+                    <form method="POST" action="{{ route('admin.users.passkeys.destroy', $user) }}"
+                        onsubmit="return confirm('Alle Passkeys von {{ addslashes($user->name) }} entfernen?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="fv-btn text-sm py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10">Alle entfernen</button>
+                    </form>
+                @endif
+            </li>
+
+            <li class="flex items-center gap-3 px-5 py-3.5">
+                <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400">
+                    <x-icon name="key" class="w-[18px] h-[18px]" />
+                </span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-900 dark:text-white">Single Sign-On</p>
+                    <p class="text-[13px] text-slate-500 dark:text-slate-400">{{ $user->oidc_sub !== null ? 'Verknüpft' : 'Nicht verknüpft' }}</p>
+                </div>
+            </li>
+        </ul>
+
+        <p class="mt-2 px-1 text-[13px] text-slate-500 dark:text-slate-400">
+            @if ($isSelf)
+                Deine eigene Anmeldung verwaltest du unter <a href="{{ route('settings.security') }}" class="fv-link">Einstellungen → Sicherheit</a>.
+            @else
+                Für den Fall, dass jemand sein Handy verliert. Danach kann sich der Benutzer mit Passwort anmelden und alles neu einrichten – ggf. vorher oben ein neues Passwort setzen.
+            @endif
+        </p>
+    </section>
 
 </div>
 

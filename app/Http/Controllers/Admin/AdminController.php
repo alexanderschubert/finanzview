@@ -225,6 +225,41 @@ class AdminController extends Controller
     }
 
     /**
+     * Zwei-Faktor-Authentifizierung eines Benutzers zurücksetzen,
+     * z. B. wenn das Handy mit der Authenticator-App verloren ist.
+     */
+    public function resetTwoFactor(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return back()->with('error', 'Deine eigene Zwei-Faktor-Authentifizierung verwaltest du unter Einstellungen → Sicherheit.');
+        }
+
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+
+        return back()->with('success', "Die Zwei-Faktor-Authentifizierung von {$user->name} wurde zurückgesetzt. Die Anmeldung ist jetzt nur mit Passwort möglich.");
+    }
+
+    /**
+     * Alle Passkeys eines Benutzers entfernen.
+     */
+    public function resetPasskeys(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return back()->with('error', 'Deine eigenen Passkeys verwaltest du unter Einstellungen → Sicherheit.');
+        }
+
+        $count = $user->passkeys()->delete();
+
+        return back()->with('success', $count === 1
+            ? "1 Passkey von {$user->name} wurde entfernt."
+            : "{$count} Passkeys von {$user->name} wurden entfernt.");
+    }
+
+    /**
      * Benutzer löschen.
      */
     public function destroy(Request $request, User $user): RedirectResponse
