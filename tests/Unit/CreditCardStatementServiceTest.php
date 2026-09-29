@@ -110,4 +110,17 @@ class CreditCardStatementServiceTest extends TestCase
         $this->assertSame('2026-09-15', $result['period_end']->toDateString());
         $this->assertNull($result['due_date']);
     }
+
+    public function test_billing_day_31_periods_do_not_overlap_after_short_month(): void
+    {
+        $service = new \App\Services\CreditCardStatementService();
+        $card = $this->card(31, 5);
+
+        $january = $service->periodFor($card, \Carbon\Carbon::create(2026, 1, 20));
+        $february = $service->periodFor($card, \Carbon\Carbon::create(2026, 2, 10));
+
+        $this->assertSame('2026-01-31', $january['period_end']->toDateString());
+        $this->assertSame('2026-02-01', $february['period_start']->toDateString());
+        $this->assertSame('2026-02-28', $february['period_end']->toDateString());
+    }
 }

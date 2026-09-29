@@ -58,44 +58,44 @@ class ReportController extends Controller
                 ? ''
                 : number_format($value, 1, ',', '');
 
-            fputcsv($handle, [
+            fputcsv($handle, \App\Support\CsvCell::row([
                 'Auswertung',
                 $report['start']->format('d.m.Y') . ' – ' . $report['end']->format('d.m.Y'),
-            ], ';');
+            ]), ';');
 
             fputcsv($handle, [], ';');
-            fputcsv($handle, ['Übersicht', 'Betrag (EUR)', 'Vorperiode (EUR)', 'Veränderung (%)'], ';');
+            fputcsv($handle, \App\Support\CsvCell::row(['Übersicht', 'Betrag (EUR)', 'Vorperiode (EUR)', 'Veränderung (%)']), ';');
 
             foreach ([
                 'income' => 'Einnahmen',
                 'expense' => 'Ausgaben',
                 'balance' => 'Saldo',
             ] as $key => $label) {
-                fputcsv($handle, [
+                fputcsv($handle, \App\Support\CsvCell::row([
                     $label,
                     $money($report['totals'][$key]),
                     $money($report['previous_totals'][$key]),
                     $percent($report['changes'][$key]),
-                ], ';');
+                ]), ';');
             }
 
-            fputcsv($handle, [
+            fputcsv($handle, \App\Support\CsvCell::row([
                 'Sparquote (%)',
                 $percent($report['totals']['savings_rate']),
                 $percent($report['previous_totals']['savings_rate']),
                 '',
-            ], ';');
+            ]), ';');
 
             fputcsv($handle, [], ';');
-            fputcsv($handle, ['Monat', 'Einnahmen (EUR)', 'Ausgaben (EUR)', 'Saldo (EUR)'], ';');
+            fputcsv($handle, \App\Support\CsvCell::row(['Monat', 'Einnahmen (EUR)', 'Ausgaben (EUR)', 'Saldo (EUR)']), ';');
 
             foreach ($report['monthly'] as $month) {
-                fputcsv($handle, [
+                fputcsv($handle, \App\Support\CsvCell::row([
                     $month['label'],
                     $money($month['income']),
                     $money($month['expense']),
                     $money($month['balance']),
-                ], ';');
+                ]), ';');
             }
 
             foreach ([
@@ -103,30 +103,30 @@ class ReportController extends Controller
                 'income_categories' => 'Einnahmen nach Kategorie',
             ] as $key => $title) {
                 fputcsv($handle, [], ';');
-                fputcsv($handle, [$title, 'Betrag (EUR)', 'Anteil (%)', 'Buchungen', 'Vorperiode (EUR)', 'Veränderung (%)'], ';');
+                fputcsv($handle, \App\Support\CsvCell::row([$title, 'Betrag (EUR)', 'Anteil (%)', 'Buchungen', 'Vorperiode (EUR)', 'Veränderung (%)']), ';');
 
                 foreach ($report[$key] as $category) {
-                    fputcsv($handle, [
+                    fputcsv($handle, \App\Support\CsvCell::row([
                         $category['name'],
                         $money($category['amount']),
                         $percent($category['share']),
                         $category['count'],
                         $money($category['previous_amount']),
                         $percent($category['change']),
-                    ], ';');
+                    ]), ';');
                 }
             }
 
             fputcsv($handle, [], ';');
-            fputcsv($handle, ['Top-Händler', 'Betrag (EUR)', 'Buchungen', 'Durchschnitt (EUR)'], ';');
+            fputcsv($handle, \App\Support\CsvCell::row(['Top-Händler', 'Betrag (EUR)', 'Buchungen', 'Durchschnitt (EUR)']), ';');
 
             foreach ($report['top_merchants'] as $merchant) {
-                fputcsv($handle, [
+                fputcsv($handle, \App\Support\CsvCell::row([
                     $merchant['name'],
                     $money($merchant['amount']),
                     $merchant['count'],
                     $money($merchant['average']),
-                ], ';');
+                ]), ';');
             }
 
             fclose($handle);

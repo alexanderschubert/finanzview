@@ -88,7 +88,7 @@ class DataExportController extends Controller
             // UTF-8 BOM für Excel
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, [
+            fputcsv($handle, \App\Support\CsvCell::row([
                 'ID',
                 'Datum',
                 'Typ',
@@ -102,11 +102,11 @@ class DataExportController extends Controller
                 'Status',
                 'Wiederkehrend',
                 'Wiederkehrende Buchung',
-            ], ';');
+            ]), ';');
 
             $query->chunk(500, function ($transactions) use ($handle) {
                 foreach ($transactions as $transaction) {
-                    fputcsv($handle, [
+                    fputcsv($handle, \App\Support\CsvCell::row([
                         $transaction->id,
                         $transaction->transaction_date instanceof \DateTimeInterface
                             ? $transaction->transaction_date->format('Y-m-d')
@@ -122,7 +122,7 @@ class DataExportController extends Controller
                         $transaction->is_pending ? 'Ausstehend' : 'Gebucht',
                         $transaction->is_recurring ? 'Ja' : 'Nein',
                         $transaction->recurringTransaction?->description,
-                    ], ';');
+                    ]), ';');
                 }
             });
 
