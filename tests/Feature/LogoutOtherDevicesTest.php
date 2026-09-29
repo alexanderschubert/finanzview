@@ -96,9 +96,11 @@ class LogoutOtherDevicesTest extends TestCase
         $this->actingAs($this->user)
             ->delete(route('settings.security.sessions.destroy'))
             ->assertRedirect(route('settings.security') . '#devices')
-            ->assertSessionHas('success', '2 andere Geräte wurden abgemeldet.');
+            // Mac, iPhone und die Sitzung des vorherigen Seitenaufrufs im Test.
+            ->assertSessionHas('success', '3 andere Geräte wurden abgemeldet.');
 
         $this->assertSame(0, DB::table('sessions')->whereIn('id', ['mac', 'iphone'])->count());
+        $this->assertSame(0, DB::table('sessions')->where('user_id', $this->user->id)->where('id', '!=', session()->getId())->count());
         $this->assertTrue(DB::table('sessions')->where('id', 'fremd')->exists());
     }
 
