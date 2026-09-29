@@ -206,4 +206,14 @@
           Required="false"
           Mask="false">false</Config>
 
+  <Config Name="FinTS Produktregistrierung"
+          Target="FINTS_PRODUCT_ID"
+          Default=""
+          Mode=""
+          Description="Optional. Kostenlose FinTS-Produktregistrierungsnummer der Deutschen Kreditwirtschaft (hbci-zka.de). Damit lassen sich Umsätze direkt von der Bank abrufen (Einstellungen → Bankverbindungen). Nicht öffentlich teilen."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="true"></Config>
+
 </Container>

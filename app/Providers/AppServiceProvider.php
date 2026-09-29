@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Fints\FintsClient;
+use App\Services\Fints\PhpFintsClient;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bankabruf per FinTS; in Tests durch eine simulierte Bank ersetzt.
+        $this->app->bind(FintsClient::class, PhpFintsClient::class);
     }
 
     /**

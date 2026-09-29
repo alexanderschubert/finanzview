@@ -61,4 +61,20 @@ return [
         'trust_email' => (bool) env('OIDC_TRUST_EMAIL', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | FinTS (Umsatzabruf direkt bei der Bank)
+    |--------------------------------------------------------------------------
+    |
+    | Die Produktregistrierungsnummer vergibt die Deutsche Kreditwirtschaft
+    | kostenlos (hbci-zka.de). Ohne Nummer bleibt der Bankabruf ausgeblendet.
+    | Die Nummer gehört dem jeweiligen Betreiber und nicht ins Repository.
+    |
+    */
+
+    'fints' => [
+        'product_id' => env('FINTS_PRODUCT_ID'),
+        'product_version' => env('FINTS_PRODUCT_VERSION', '1.0'),
+    ],
+
 ];

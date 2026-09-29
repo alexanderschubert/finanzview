@@ -14,6 +14,14 @@
 
     <x-flash />
 
+    @if (\App\Services\Fints\FintsConfig::enabled())
+        <a href="{{ route('bank-connections.index') }}" class="flex items-center gap-3 rounded-2xl bg-teal-50 dark:bg-teal-500/10 p-4 text-sm text-teal-800 dark:text-teal-300">
+            <x-icon name="landmark" class="w-5 h-5" />
+            <span class="flex-1">Tipp: Umsätze ohne CSV-Datei direkt von der Bank abrufen</span>
+            <x-icon name="chevron-right" class="w-4 h-4" />
+        </a>
+    @endif
+
     @if ($accounts->isEmpty())
         <div class="fv-card">
             <x-empty-state icon="landmark" title="Noch kein Konto" :href="route('accounts.create')" action="Konto anlegen">

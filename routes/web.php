@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\BankConnectionController;
 use App\Http\Controllers\Auth\OidcController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRuleController;
@@ -335,6 +336,36 @@ Route::get('/settings/dashboard', [
      */
 
     Route::resource('accounts', AccountController::class)->except('show');
+
+
+    /*
+     * =========================================================
+     * BANKVERBINDUNGEN (FinTS)
+     * =========================================================
+     */
+
+    Route::controller(BankConnectionController::class)->prefix('bank-connections')->name('bank-connections.')->group(function () {
+        // Freigabe zuerst, damit „challenge“ nicht als Verbindungs-ID gilt.
+        Route::get('/challenge', 'challenge')->name('challenge');
+        Route::post('/challenge', 'confirm')->middleware('throttle:30,1')->name('confirm');
+        Route::delete('/challenge', 'cancel')->name('cancel');
+
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{bankConnection}/edit', 'edit')->name('edit');
+        Route::put('/{bankConnection}', 'update')->name('update');
+        Route::delete('/{bankConnection}', 'destroy')->name('destroy');
+
+        Route::get('/{bankConnection}/setup', 'setup')->name('setup');
+        Route::post('/{bankConnection}/tan-modes', 'tanModes')->middleware('throttle:10,1')->name('tan-modes');
+        Route::post('/{bankConnection}/tan-mode', 'selectTanMode')->middleware('throttle:10,1')->name('tan-mode');
+        Route::get('/{bankConnection}/accounts', 'accounts')->name('accounts');
+        Route::post('/{bankConnection}/accounts', 'saveAccount')->name('accounts.store');
+
+        Route::get('/{bankConnection}/sync', 'syncForm')->name('sync');
+        Route::post('/{bankConnection}/sync', 'sync')->middleware('throttle:10,1')->name('sync.start');
+    });
 
 
     /*
