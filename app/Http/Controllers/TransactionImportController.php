@@ -95,7 +95,11 @@ class TransactionImportController extends Controller
         }
 
         $analysis = $this->csv->analyze($content, (array) $request->query('map', []));
-        $items = $this->csv->parse($analysis, $user->id, $account->id);
+
+        // Ohne Angabe: Vorschlag aus der Kopfzeile (z. B. American Express).
+        $invert = $request->has('invert') ? $request->boolean('invert') : $analysis['invert_suggested'];
+
+        $items = $this->csv->parse($analysis, $user->id, $account->id, $invert);
 
         $categories = Category::query()
             ->where('user_id', $user->id)
@@ -118,6 +122,8 @@ class TransactionImportController extends Controller
             'categories' => $categories,
             'truncated' => count($analysis['rows']) > CsvImportService::MAX_ROWS,
             'fieldLabels' => CsvImportService::FIELD_LABELS,
+            'invert' => $invert,
+            'invertSuggested' => $analysis['invert_suggested'],
         ]);
     }
 
@@ -169,7 +175,7 @@ class TransactionImportController extends Controller
             ->pluck('type', 'id');
 
         $analysis = $this->csv->analyze($content, (array) $request->input('map', []));
-        $items = $this->csv->parse($analysis, $user->id, $account->id)
+        $items = $this->csv->parse($analysis, $user->id, $account->id, $request->boolean('invert'))
             ->filter(fn ($item) => $item['error'] === null
                 && $item['duplicate'] !== 'imported'
                 && $selected->has($item['index']));

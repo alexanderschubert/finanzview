@@ -225,4 +225,47 @@ class TransactionImportTest extends TestCase
             ])
             ->assertSessionHasErrors('file');
     }
+
+    public function test_amex_export_is_detected_and_sign_can_be_inverted(): void
+    {
+        $csv = "Datum,Beschreibung,Karteninhaber,Konto #,Betrag\n"
+            . "01/09/2026,REWE BERLIN,MAX MUSTER,-11005,\"45,90\"\n"
+            . "03/09/2026,ZAHLUNG ERHALTEN. BESTEN DANK.,MAX MUSTER,-11005,\"-200,00\"\n";
+
+        $token = $this->upload($csv);
+
+        // Automatisch erkannt: Ausgaben positiv → umgekehrt.
+        $this->actingAs($this->user)
+            ->get($this->previewUrl($token))
+            ->assertOk()
+            ->assertSee('Vorzeichen umgekehrt')
+            ->assertSee('−45,90 €')
+            ->assertSee('+200,00 €');
+
+        // Manuell abgeschaltet.
+        $this->actingAs($this->user)
+            ->get($this->previewUrl($token) . '&invert=0')
+            ->assertOk()
+            ->assertSee('+45,90 €');
+
+        $this->actingAs($this->user)
+            ->post(route('transactions.import.store', $token), [
+                'account_id' => $this->account->id,
+                'invert' => '1',
+                'selected' => '0,1',
+            ])
+            ->assertSessionHas('success', '2 Buchungen wurden importiert.');
+
+        $this->assertSame('expense', Transaction::where('description', 'REWE BERLIN')->value('type'));
+        $this->assertSame('income', Transaction::where('description', 'ZAHLUNG ERHALTEN. BESTEN DANK.')->value('type'));
+    }
+
+    public function test_sparkasse_export_is_not_inverted(): void
+    {
+        $this->actingAs($this->user)
+            ->get($this->previewUrl($this->upload()))
+            ->assertOk()
+            ->assertDontSee('Vorzeichen umgekehrt')
+            ->assertSee('+2.500,00 €');
+    }
 }

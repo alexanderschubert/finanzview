@@ -63,6 +63,7 @@
                 <span class="block text-[13px] text-slate-500 dark:text-slate-400 truncate">
                     {{ $account->name }}
                     · {{ $mappingComplete ? 'Spalten automatisch erkannt' : 'Bitte Spalten zuordnen' }}
+                    @if ($invert) · Vorzeichen umgekehrt @endif
                 </span>
             </span>
             <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
@@ -94,6 +95,19 @@
                 Entweder eine Spalte „Betrag“ (negativ = Ausgabe) oder getrennte Spalten für Soll und Haben.
             </p>
 
+            <label class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 dark:bg-white/5 px-4 py-3 cursor-pointer">
+                <span>
+                    <span class="block text-sm font-medium text-slate-900 dark:text-white">Vorzeichen umkehren</span>
+                    <span class="block text-[13px] text-slate-500 dark:text-slate-400">
+                        Für Kreditkarten-Exporte, in denen Ausgaben positiv stehen (z. B. American Express).
+                        @if ($invertSuggested) Automatisch erkannt. @endif
+                    </span>
+                </span>
+                <input type="hidden" name="invert" value="0">
+                <input type="checkbox" name="invert" value="1" class="sr-only peer" @checked($invert) onchange="this.form.requestSubmit()">
+                <span aria-hidden="true" class="relative inline-flex h-[31px] w-[51px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 transition peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 after:absolute after:top-[2px] after:left-[2px] after:h-[27px] after:w-[27px] after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-[20px]"></span>
+            </label>
+
             <div class="flex justify-end">
                 <button type="submit" class="fv-btn fv-btn-secondary">Vorschau aktualisieren</button>
             </div>
@@ -115,6 +129,7 @@
         <form method="POST" action="{{ route('transactions.import.store', $token) }}" id="import-form" class="space-y-3">
             @csrf
             <input type="hidden" name="account_id" value="{{ $account->id }}">
+            <input type="hidden" name="invert" value="{{ $invert ? '1' : '0' }}">
             @foreach ($mapping as $field => $column)
                 <input type="hidden" name="map[{{ $field }}]" value="{{ $column }}">
             @endforeach
