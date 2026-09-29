@@ -1,7 +1,8 @@
 {{--
     Gemeinsames Formular für "Neue Kreditkarte" und "Kreditkarte bearbeiten".
 
-    Erwartet: $creditCard (neu oder bestehend), $providers, $accounts
+    Erwartet: $creditCard (neu oder bestehend), $providers, $accounts,
+    optional $suggestedCardAccountId
 --}}
 
 @php
@@ -12,6 +13,8 @@
     $color = $value('color');
     $hasOwnColor = is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) && strtolower($color) !== '#334155';
     $defaultColor = '#3f3f45';
+
+    $cardAccountId = (string) old('card_account_id', $creditCard->card_account_id ?? ($suggestedCardAccountId ?? ''));
 @endphp
 
 <form
@@ -89,10 +92,22 @@
 
     <div class="fv-card p-5 sm:p-6 space-y-4">
 
+        <x-field label="Umsätze im Konto" for="card_account_id" error="card_account_id"
+            hint="Konto, in dem die Kartenumsätze liegen (z. B. „AMEX“ aus dem CSV-Import). Saldo und Abrechnungen werden daraus berechnet.">
+            <select id="card_account_id" name="card_account_id" class="fv-input" data-card-account>
+                <option value="" data-balance="">Keins – Saldo von Hand eintragen</option>
+                @foreach ($accounts as $account)
+                    <option value="{{ $account->id }}" data-balance="{{ number_format(round(-$account->current_balance, 2) + 0.0, 2, '.', '') }}" @selected($cardAccountId === (string) $account->id)>
+                        {{ $account->name }}
+                    </option>
+                @endforeach
+            </select>
+        </x-field>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <x-field label="Aktueller Saldo" for="current_balance" error="current_balance" hint="Offener Betrag auf der Karte.">
-                <input id="current_balance" name="current_balance" type="number" step="0.01" min="0" inputmode="decimal" required
-                    value="{{ $value('current_balance', '0.00') }}" class="fv-input tabular-nums" data-preview-amount>
+            <x-field label="Aktueller Saldo" for="current_balance" error="current_balance" hint="Offener Betrag auf der Karte." data-manual-balance>
+                <input id="current_balance" name="current_balance" type="number" step="0.01" min="0" inputmode="decimal"
+                    value="{{ old('current_balance', number_format((float) ($creditCard->getRawOriginal('current_balance') ?? 0), 2, '.', '')) }}" class="fv-input tabular-nums" data-preview-amount>
             </x-field>
 
             <x-field label="Kreditlimit" for="credit_limit" error="credit_limit">
@@ -226,7 +241,24 @@
         document.querySelector('[data-preview-title]').addEventListener('input', e => title.textContent = e.target.value || 'Neue Kreditkarte');
         document.querySelector('[data-preview-subtitle]').addEventListener('input', e => subtitle.textContent = e.target.value || 'Kreditkarte');
         document.querySelector('[data-preview-number]').addEventListener('input', e => number.textContent = '•••• ' + (e.target.value || '····'));
-        document.querySelector('[data-preview-amount]').addEventListener('input', e => amount.textContent = format(e.target.value));
+        const balanceInput = document.querySelector('[data-preview-amount]');
+        const cardAccount = document.querySelector('[data-card-account]');
+        const manualBalance = document.querySelector('[data-manual-balance]');
+
+        balanceInput.addEventListener('input', e => amount.textContent = format(e.target.value));
+
+        // Mit Kartenkonto: Saldo daraus berechnen, Handfeld ausblenden.
+        const syncCardAccount = () => {
+            const option = cardAccount.selectedOptions[0];
+            const linked = cardAccount.value !== '';
+
+            manualBalance.hidden = linked;
+            balanceInput.required = !linked;
+            amount.textContent = format(linked ? option.dataset.balance : balanceInput.value);
+        };
+
+        cardAccount.addEventListener('change', syncCardAccount);
+        syncCardAccount();
 
         colorInput.addEventListener('input', () => {
             colorValue.value = colorInput.value;

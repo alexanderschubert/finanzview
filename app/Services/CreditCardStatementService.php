@@ -172,21 +172,27 @@ class CreditCardStatementService
     public function calculateAmount(
         CreditCardStatement $statement
     ): string {
-        $expenseAmount = Transaction::query()
-            ->where('credit_card_id', $statement->credit_card_id)
-            ->whereDate('transaction_date', '>=', $statement->period_start->toDateString())
-            ->whereDate('transaction_date', '<=', $statement->period_end->toDateString())
-            ->where('is_pending', false)
-            ->where('type', 'expense')
-            ->sum('amount');
+        $creditCard = $statement->creditCard;
 
-        $incomeAmount = Transaction::query()
-            ->where('credit_card_id', $statement->credit_card_id)
+        /*
+         * Buchungen der Karte: ausdrücklich der Karte zugeordnet oder
+         * im Kartenkonto (z. B. per CSV importierte Amex-Umsätze).
+         * Umbuchungen (bezahlte Abrechnungen) zählen nicht.
+         */
+        $base = fn () => Transaction::query()
+            ->where(function ($query) use ($statement, $creditCard) {
+                $query->where('credit_card_id', $statement->credit_card_id);
+
+                if ($creditCard?->card_account_id) {
+                    $query->orWhere('account_id', $creditCard->card_account_id);
+                }
+            })
             ->whereDate('transaction_date', '>=', $statement->period_start->toDateString())
             ->whereDate('transaction_date', '<=', $statement->period_end->toDateString())
-            ->where('is_pending', false)
-            ->where('type', 'income')
-            ->sum('amount');
+            ->where('is_pending', false);
+
+        $expenseAmount = $base()->where('type', 'expense')->sum('amount');
+        $incomeAmount = $base()->where('type', 'income')->sum('amount');
 
         $amount = (float) $expenseAmount - (float) $incomeAmount;
 

@@ -283,17 +283,19 @@ class DataExportController extends Controller
                     $item->only([
                         'id',
                         'account_id',
+                        'card_account_id',
                         'name',
                         'issuer',
                         'provider_id',
                         'last_four',
                         'credit_limit',
-                        'current_balance',
                         'billing_day',
                         'payment_due_day',
                         'color',
                         'is_active',
                     ]),
+                    // Handwert, nicht der aus dem Kartenkonto berechnete Saldo.
+                    ['current_balance' => $item->getRawOriginal('current_balance')],
                     [
                         'statements' => $item->statements
                             ->map(fn ($statement) => $statement->only([
@@ -1241,19 +1243,33 @@ class DataExportController extends Controller
                 continue;
             }
 
-            $accountId =
-                $accountMap[$item['account_id'] ?? 0] ?? null;
+            /*
+             * Abbuchungskonto ist optional (Karten ohne Konto brachen
+             * die Wiederherstellung früher ab).
+             */
+            $accountId = null;
 
-            if (!$accountId) {
-                throw new \RuntimeException(
-                    'Eine Kreditkarte verweist auf ein unbekanntes Konto.'
-                );
+            if ($isFilled($item['account_id'] ?? null)) {
+                $accountId = $accountMap[$item['account_id']] ?? null;
+
+                if (!$accountId) {
+                    throw new \RuntimeException(
+                        'Eine Kreditkarte verweist auf ein unbekanntes Konto.'
+                    );
+                }
             }
+
+            $cardAccountId = $isFilled($item['card_account_id'] ?? null)
+                ? ($accountMap[$item['card_account_id']] ?? null)
+                : null;
 
             $query = DB::table('credit_cards')
                 ->where('user_id', $user->id)
-                ->where('account_id', $accountId)
                 ->where('name', $item['name'] ?? '');
+
+            $accountId === null
+                ? $query->whereNull('account_id')
+                : $query->where('account_id', $accountId);
 
             if ($isFilled($item['last_four'] ?? null)) {
                 $query->where('last_four', $item['last_four']);
@@ -1265,11 +1281,16 @@ class DataExportController extends Controller
 
             if ($existing) {
                 $creditCardId = $existing->id;
+
+                if ($cardAccountId !== null && $existing->card_account_id === null) {
+                    DB::table('credit_cards')->where('id', $existing->id)->update(['card_account_id' => $cardAccountId]);
+                }
             } else {
                 $creditCardId = DB::table('credit_cards')
                     ->insertGetId([
                         'user_id' => $user->id,
                         'account_id' => $accountId,
+                        'card_account_id' => $cardAccountId,
                         'name' =>
                             $item['name'] ?? 'Kreditkarte',
                         'issuer' => $item['issuer'] ?? null,
