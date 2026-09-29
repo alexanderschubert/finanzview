@@ -36,7 +36,8 @@
             ['credit-cards.index', 'credit-cards.*', 'card', 'Kreditkarten'],
         ],
         'Auswertung' => [
-            ['reports.index', 'reports.*', 'chart', 'Analysen'],
+            ['reports.month', 'reports.month', 'calendar', 'Monatsbericht'],
+            ['reports.index', 'reports.index', 'chart', 'Analysen'],
         ],
     ];
 

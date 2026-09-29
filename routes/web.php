@@ -201,6 +201,11 @@ Route::delete('/credit-cards/{creditCard}', [
         'index',
     ])->name('reports.index');
 
+    Route::get('/reports/month', [
+        ReportController::class,
+        'month',
+    ])->name('reports.month');
+
     Route::get('/reports/export', [
         ReportController::class,
         'export',
