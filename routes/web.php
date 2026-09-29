@@ -362,6 +362,7 @@ Route::get('/settings/dashboard', [
         Route::post('/{bankConnection}/tan-mode', 'selectTanMode')->middleware('throttle:10,1')->name('tan-mode');
         Route::get('/{bankConnection}/accounts', 'accounts')->name('accounts');
         Route::post('/{bankConnection}/accounts', 'saveAccount')->name('accounts.store');
+        Route::post('/links/{link}/reconcile', 'reconcile')->name('reconcile');
 
         Route::get('/{bankConnection}/sync', 'syncForm')->name('sync');
         Route::post('/{bankConnection}/sync', 'sync')->middleware('throttle:10,1')->name('sync.start');

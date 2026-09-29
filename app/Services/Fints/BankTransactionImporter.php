@@ -2,7 +2,6 @@
 
 namespace App\Services\Fints;
 
-use App\Models\BankConnection;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
 use App\Services\CsvImportService;
@@ -29,12 +28,9 @@ class BankTransactionImporter
      * @param  list<array{date: ?string, amount: float, name: string, description: string, booking_text: string}>  $rows
      * @return array{imported: int, known: int, possible: int}
      */
-    public function import(BankConnection $connection, array $rows): array
+    public function import(int $userId, int $accountId, string $iban, array $rows): array
     {
-        $userId = $connection->user_id;
-        $accountId = $connection->account_id;
-
-        $items = $this->prepare($connection, $rows);
+        $items = $this->prepare($iban, $rows);
 
         $summary = ['imported' => 0, 'known' => 0, 'possible' => 0];
 
@@ -101,7 +97,7 @@ class BankTransactionImporter
     /**
      * Umsätze vereinheitlichen und mit Fingerabdruck versehen.
      */
-    private function prepare(BankConnection $connection, array $rows): array
+    private function prepare(string $iban, array $rows): array
     {
         $items = [];
         $occurrences = [];
@@ -119,7 +115,7 @@ class BankTransactionImporter
             $bookingText = Str::limit(Str::squish((string) ($row['booking_text'] ?? '')), 250, '');
 
             // Gleiche Umsätze am selben Tag werden durchgezählt.
-            $key = implode('|', [$connection->iban, $date, $amount, mb_strtolower($merchant), mb_strtolower($description)]);
+            $key = implode('|', [$iban, $date, $amount, mb_strtolower($merchant), mb_strtolower($description)]);
             $occurrences[$key] = ($occurrences[$key] ?? 0) + 1;
 
             $items[] = [

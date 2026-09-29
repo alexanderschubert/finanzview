@@ -10,7 +10,7 @@
 
     <x-back-link :href="route('bank-connections.index')" label="Bankverbindungen" />
 
-    <x-page-header title="Umsätze abrufen" :subtitle="$connection->name . ' · ' . $connection->maskedIban() . ' → ' . ($connection->account?->name ?? '')" />
+    <x-page-header title="Umsätze abrufen" :subtitle="$connection->name . ' · ' . $connection->linkedAccounts->map(fn ($link) => $link->account->name)->implode(', ')" />
 
     <x-flash />
 

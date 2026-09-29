@@ -16,10 +16,16 @@
 
     @include('bank-connections._form')
 
+    @if ($connection->linkedAccounts->isNotEmpty())
+        <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
+            Verknüpft: {{ $connection->linkedAccounts->map(fn ($link) => $link->account->name . ' (' . $link->maskedIban() . ')')->implode(', ') }}
+        </p>
+    @endif
+
     @if ($connection->tan_mode_name)
         <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
             TAN-Verfahren: {{ $connection->tan_mode_name }}@if ($connection->tan_medium) ({{ $connection->tan_medium }})@endif ·
-            <a href="{{ route('bank-connections.setup', $connection) }}" class="fv-link">neu einrichten</a>
+            <a href="{{ route('bank-connections.setup', $connection) }}" class="fv-link">Verfahren oder Konten ändern</a>
         </p>
     @endif
 

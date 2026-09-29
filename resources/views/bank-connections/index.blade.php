@@ -61,8 +61,7 @@
                             <p class="font-medium text-slate-900 dark:text-white truncate">{{ $connection->name }}</p>
                             <p class="text-[13px] text-slate-500 dark:text-slate-400 truncate">
                                 BLZ {{ $connection->bank_code }}
-                                @if ($connection->iban) · {{ $connection->maskedIban() }} @endif
-                                @if ($connection->account) → {{ $connection->account->name }} @endif
+                                @if ($connection->tan_mode_name) · {{ $connection->tan_mode_name }} @endif
                             </p>
                             <p class="text-[13px] text-slate-500 dark:text-slate-400">
                                 @if (! $connection->isReady())
@@ -79,6 +78,41 @@
                             <x-icon name="pencil" class="w-4 h-4" />
                         </a>
                     </div>
+
+                    @if ($connection->linkedAccounts->isNotEmpty())
+                        <ul class="rounded-xl bg-slate-50 dark:bg-white/5 divide-y divide-slate-200/70 dark:divide-white/5">
+                            @foreach ($connection->linkedAccounts as $link)
+                                @php $difference = $link->balanceDifference(); @endphp
+                                <li class="px-4 py-3 space-y-1">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $link->account->name }}</p>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ $link->maskedIban() }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">{{ number_format($link->account->current_balance, 2, ',', '.') }} €</p>
+                                            @if ($link->bank_balance !== null)
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">Bank {{ $link->balance_date?->format('d.m.') }}: {{ number_format((float) $link->bank_balance, 2, ',', '.') }} €</p>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if ($difference !== null && abs($difference) >= 0.005)
+                                        <form method="POST" action="{{ route('bank-connections.reconcile', $link) }}" class="flex items-center justify-between gap-3 pt-1"
+                                            onsubmit="return confirm('Startsaldo von „{{ addslashes($link->account->name) }}“ um {{ number_format($difference, 2, ',', '.') }} € anpassen, damit der Kontostand zur Bank passt?')">
+                                            @csrf
+                                            <span class="text-xs text-amber-700 dark:text-amber-400">Abweichung {{ $difference > 0 ? '+' : '−' }}{{ number_format(abs($difference), 2, ',', '.') }} €</span>
+                                            <button type="submit" class="fv-link text-xs">Angleichen</button>
+                                        </form>
+                                    @endif
+
+                                    @if ($link->last_error)
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $link->last_error }}</p>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
 
                     @if ($enabled)
                         @if ($connection->isReady())

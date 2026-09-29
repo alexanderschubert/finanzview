@@ -10,33 +10,42 @@
 
     <x-back-link :href="route('bank-connections.index')" label="Bankverbindungen" />
 
-    <x-page-header :title="$connection->name" subtitle="Schritt 3 von 3: Welches Bankkonto soll in welches FinanzView-Konto?" />
+    <x-page-header :title="$connection->name" subtitle="Schritt 3 von 3: Welche Bankkonten sollen in welche FinanzView-Konten?" />
 
     <x-flash />
 
-    <form method="POST" action="{{ route('bank-connections.accounts.store', $connection) }}" class="space-y-5">
+    <form method="POST" action="{{ route('bank-connections.accounts.store', $connection) }}" class="space-y-4">
         @csrf
 
-        <fieldset class="fv-card divide-y divide-slate-100 dark:divide-white/5 overflow-hidden">
-            <legend class="sr-only">Bankkonto</legend>
+        <ul class="fv-card divide-y divide-slate-100 dark:divide-white/5 overflow-hidden">
             @foreach ($bankAccounts as $bankAccount)
-                <label class="flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5">
-                    <input type="radio" name="iban" value="{{ $bankAccount['iban'] }}" class="w-4 h-4 accent-emerald-600" @checked(old('iban', $loop->first ? $bankAccount['iban'] : null) === $bankAccount['iban']) required>
-                    <span class="flex-1 font-mono text-sm text-slate-900 dark:text-white">{{ trim(chunk_split($bankAccount['iban'], 4, ' ')) }}</span>
-                </label>
+                @php
+                    $iban = $bankAccount['iban'];
+                    $selected = (string) old('link.' . $iban, $defaults[$iban] ?? '');
+                @endphp
+                <li class="px-5 py-4 space-y-2">
+                    <label for="link_{{ $loop->index }}" class="block font-mono text-sm text-slate-900 dark:text-white">{{ trim(chunk_split($iban, 4, ' ')) }}</label>
+                    <select id="link_{{ $loop->index }}" name="link[{{ $iban }}]" class="fv-input">
+                        <option value="">Nicht abrufen</option>
+                        <optgroup label="In vorhandenes Konto">
+                            @foreach ($accounts as $account)
+                                <option value="{{ $account->id }}" @selected($selected === (string) $account->id)>{{ $account->name }}</option>
+                            @endforeach
+                        </optgroup>
+                        <optgroup label="Neues Konto anlegen">
+                            <option value="new:checking" @selected($selected === 'new:checking')>+ Neues Girokonto</option>
+                            <option value="new:savings" @selected($selected === 'new:savings')>+ Neues Sparkonto (z. B. Sparbuch)</option>
+                        </optgroup>
+                    </select>
+                </li>
             @endforeach
-        </fieldset>
-        @error('iban') <p class="px-1 text-[13px] text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+        </ul>
 
-        <div class="fv-card p-5 sm:p-6">
-            <x-field label="Importieren in FinanzView-Konto" for="account_id" error="account_id">
-                <select id="account_id" name="account_id" class="fv-input" required>
-                    @foreach ($accounts as $account)
-                        <option value="{{ $account->id }}" @selected((string) old('account_id') === (string) $account->id || (! old('account_id') && $account->iban && str_replace(' ', '', $account->iban) === ($bankAccounts[0]['iban'] ?? null)))>{{ $account->name }}</option>
-                    @endforeach
-                </select>
-            </x-field>
-        </div>
+        @error('link') <p class="px-1 text-[13px] text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+
+        <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
+            Alle gewählten Konten werden mit einem Abruf aktualisiert. Bei einem neuen Konto übernimmt FinanzView beim ersten Abruf den Kontostand der Bank.
+        </p>
 
         <div class="flex justify-end">
             <button type="submit" class="fv-btn fv-btn-primary">Fertig</button>
