@@ -219,9 +219,15 @@
                                 $isTransfer = $transaction->type === 'transfer';
                                 $isIncome = $transaction->type === 'income';
 
+                                /*
+                                 * Empfänger als Titel (wie in Apple Wallet), der oft
+                                 * lange Verwendungszweck klein darunter.
+                                 */
+                                $title = $transaction->merchant ?: $transaction->description;
+
                                 $details = collect([
                                     $isTransfer ? null : $transaction->category?->name,
-                                    $transaction->merchant,
+                                    $transaction->merchant && $transaction->description !== $transaction->merchant ? $transaction->description : null,
                                     $isTransfer
                                         ? ($transaction->account?->name ?: 'Gelöschtes Konto') . ' → ' . ($transaction->transferAccount?->name ?: 'Gelöschtes Konto')
                                         : $transaction->account?->name,
@@ -242,7 +248,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-1.5 min-w-0">
                                             <p class="font-medium text-slate-900 dark:text-white truncate">
-                                                {{ $transaction->description }}
+                                                {{ $title }}
                                             </p>
 
                                             @if ($transaction->recurring_transaction_id)
@@ -281,11 +287,7 @@
             @endforeach
         </div>
 
-        @if ($transactions->hasPages())
-            <div class="pt-2">
-                {{ $transactions->links() }}
-            </div>
-        @endif
+        <x-pagination :paginator="$transactions" class="pt-2" />
 
     @endif
 

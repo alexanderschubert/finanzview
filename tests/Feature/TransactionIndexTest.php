@@ -147,4 +147,33 @@ class TransactionIndexTest extends TestCase
             ->assertSee('Gesamtvermögen')
             ->assertSee('aria-label="Nächster Monat"', false);
     }
+
+    public function test_pagination_is_german_and_styled(): void
+    {
+        foreach (range(1, 30) as $i) {
+            $this->transaction(['description' => "Buchung {$i}"]);
+        }
+
+        $this->actingAs($this->user)
+            ->get(route('transactions.index'))
+            ->assertOk()
+            ->assertSee('1–25 von 30')
+            ->assertSee('aria-label="Seite 2"', false)
+            ->assertSee('aria-label="Nächste Seite"', false)
+            ->assertDontSee('Showing')
+            ->assertDontSee('Previous');
+    }
+
+    public function test_merchant_is_title_and_reference_is_subtitle(): void
+    {
+        $this->transaction([
+            'merchant' => 'PayPal (Europe)',
+            'description' => '1053091439295 PP.3757.PP Ihr Einkauf bei PayPal',
+        ]);
+
+        $content = $this->actingAs($this->user)->get(route('transactions.index'))->getContent();
+
+        $this->assertMatchesRegularExpression('/truncate">\s*PayPal \(Europe\)\s*<\/p>/', $content);
+        $this->assertStringContainsString('1053091439295 PP.3757.PP Ihr Einkauf bei PayPal · Giro', $content);
+    }
 }
