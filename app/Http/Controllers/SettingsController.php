@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Services\SessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -76,9 +77,29 @@ class SettingsController extends Controller
     /**
      * Sicherheit anzeigen
      */
-    public function security(Request $request)
+    public function security(Request $request, SessionService $sessions)
     {
-        return view('settings.security');
+        return view('settings.security', [
+            'sessions' => $sessions->forUser($request),
+            'sessionsAvailable' => $sessions->available(),
+        ]);
+    }
+
+    /**
+     * Auf allen anderen Geräten abmelden
+     */
+    public function logoutOtherDevices(Request $request, SessionService $sessions)
+    {
+        $count = $sessions->logoutOtherDevices($request);
+
+        return redirect()
+            ->to(route('settings.security') . '#devices')
+            ->with('success', match (true) {
+                ! $sessions->available() => 'Andere Geräte werden bei ihrer nächsten Anfrage abgemeldet.',
+                $count === 0 => 'Es war kein anderes Gerät angemeldet.',
+                $count === 1 => '1 anderes Gerät wurde abgemeldet.',
+                default => "{$count} andere Geräte wurden abgemeldet.",
+            });
     }
 
 
@@ -119,11 +140,15 @@ class SettingsController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Wer das alte Passwort kannte, soll nicht angemeldet bleiben.
+        $count = app(SessionService::class)->logoutOtherDevices($request);
+
         return redirect()
             ->route('settings.security')
             ->with(
                 'success',
                 'Dein Passwort wurde erfolgreich geändert.'
+                    . ($count > 0 ? ' ' . ($count === 1 ? '1 anderes Gerät wurde' : "{$count} andere Geräte wurden") . ' abgemeldet.' : '')
             );
     }
 

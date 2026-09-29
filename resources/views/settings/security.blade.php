@@ -264,6 +264,58 @@
 
 
     {{-- ========================================================= --}}
+    {{-- ANGEMELDETE GERÄTE --}}
+    {{-- ========================================================= --}}
+
+    <section id="devices">
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Angemeldete Geräte</h3>
+
+        <div class="fv-card overflow-hidden">
+            @if ($sessionsAvailable && $sessions->isNotEmpty())
+                <ul class="divide-y divide-slate-100 dark:divide-white/5">
+                    @foreach ($sessions as $session)
+                        <li class="flex items-center gap-3 px-5 sm:px-6 py-3">
+                            <span class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center {{ $session['current'] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400' }}">
+                                <x-icon name="{{ str_contains($session['device'], 'iPhone') || str_contains($session['device'], 'Android') ? 'card' : 'layout' }}" class="w-[18px] h-[18px]" />
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-slate-900 dark:text-white truncate">
+                                    {{ $session['device'] }}
+                                    @if ($session['current'])
+                                        <span class="ml-1 rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Dieses Gerät</span>
+                                    @endif
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                    {{ $session['ip'] ?? 'Unbekannte IP' }} · {{ $session['current'] ? 'jetzt aktiv' : 'zuletzt aktiv ' . $session['last_active']->diffForHumans() }}
+                                </p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="px-5 sm:px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    Hier kannst du alle anderen Geräte abmelden, z. B. wenn du dich auf einem fremden Rechner angemeldet hast.
+                </p>
+            @endif
+
+            <form method="POST" action="{{ route('settings.security.sessions.destroy') }}" class="border-t border-slate-100 dark:border-white/5 p-5 sm:p-6"
+                onsubmit="return confirm('Auf allen anderen Geräten abmelden? Dieses Gerät bleibt angemeldet.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="fv-btn fv-btn-secondary" @disabled($sessionsAvailable && $sessions->count() <= 1)>
+                    <x-icon name="logout" class="w-4 h-4" />
+                    Auf allen anderen Geräten abmelden
+                </button>
+            </form>
+        </div>
+
+        <p class="mt-2 px-1 text-[13px] text-slate-500 dark:text-slate-400">
+            Nach einer Passwortänderung werden andere Geräte automatisch abgemeldet.
+        </p>
+    </section>
+
+
+    {{-- ========================================================= --}}
     {{-- PASSWORT --}}
     {{-- ========================================================= --}}
 
