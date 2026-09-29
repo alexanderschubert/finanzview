@@ -124,7 +124,7 @@ class OidcController extends Controller
         $user = User::where('oidc_sub', $claims['sub'])->first();
 
         if (! $user) {
-            $email = $claims['email'] ?? null;
+            $email = is_string($claims['email'] ?? null) ? mb_strtolower(trim($claims['email'])) : null;
 
             if (! is_string($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return 'Der Anmeldedienst hat keine gültige E-Mail-Adresse übermittelt.';

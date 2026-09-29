@@ -54,10 +54,19 @@ class CreditCardStatementService
             $periodEnd = $billingDate;
         }
 
-        $periodStart = $periodEnd
-            ->copy()
-            ->subMonthNoOverflow()
-            ->addDay();
+        /*
+         * Beginn = Tag nach dem vorherigen Abrechnungstag. Nicht einfach
+         * „Ende minus ein Monat“: Bei Abrechnungstag 29.–31. würde der
+         * Zeitraum nach einem kurzen Monat sonst mit dem vorherigen
+         * überlappen (z. B. 29.01.–28.02. statt 01.02.–28.02.).
+         */
+        $previousMonth = $periodEnd->copy()->startOfMonth()->subMonth();
+
+        $periodStart = $this->billingDateForMonth(
+            $previousMonth->year,
+            $previousMonth->month,
+            $billingDay
+        )->addDay();
 
         $dueDate = $this->dueDateAfterPeriod(
             $periodEnd,
