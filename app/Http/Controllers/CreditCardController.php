@@ -15,7 +15,7 @@ class CreditCardController extends Controller
     {
         $creditCards = $request->user()
             ->creditCards()
-            ->with(['provider', 'account'])
+            ->with(['provider', 'account', 'cardAccount'])
             ->orderByDesc('is_active')
             ->orderBy('name')
             ->get();
@@ -27,9 +27,12 @@ class CreditCardController extends Controller
 
     public function create(Request $request): View
     {
+        $accounts = $this->activeAccounts($request);
+
         return view('credit-cards.create', [
             'providers' => $this->activeProviders(),
-            'accounts' => $this->activeAccounts($request),
+            'accounts' => $accounts,
+            'suggestedCardAccountId' => $accounts->firstWhere('type', 'credit_card')?->id,
         ]);
     }
 
@@ -41,6 +44,12 @@ class CreditCardController extends Controller
 
         $this->validateProvider($validated['provider_id'] ?? null);
         $this->validateAccount($user, $validated['account_id'] ?? null);
+        $this->validateAccount($user, $validated['card_account_id'] ?? null);
+
+        // Mit Kartenkonto wird der Saldo berechnet, das Handfeld entfällt.
+        if (! empty($validated['card_account_id'])) {
+            $validated['current_balance'] = 0;
+        }
 
         $validated['user_id'] = $user->id;
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -59,6 +68,7 @@ class CreditCardController extends Controller
         $creditCard->load([
             'provider',
             'account',
+            'cardAccount',
             'statements' => fn ($query) => $query
                 ->orderByDesc('period_end')
                 ->orderByDesc('due_date'),
@@ -73,10 +83,13 @@ class CreditCardController extends Controller
     {
         $this->authorizeOwner($request, $creditCard);
 
+        $accounts = $this->activeAccounts($request);
+
         return view('credit-cards.edit', [
             'creditCard' => $creditCard,
             'providers' => $this->activeProviders(),
-            'accounts' => $this->activeAccounts($request),
+            'accounts' => $accounts,
+            'suggestedCardAccountId' => $creditCard->card_account_id ?? $this->suggestCardAccount($creditCard, $accounts),
         ]);
     }
 
@@ -93,10 +106,22 @@ class CreditCardController extends Controller
             $request->user(),
             $validated['account_id'] ?? null
         );
+        $this->validateAccount($request->user(), $validated['card_account_id'] ?? null);
+
+        // Mit Kartenkonto bleibt der zuletzt eingetragene Handwert unverändert.
+        if (! empty($validated['card_account_id'])) {
+            unset($validated['current_balance']);
+        }
 
         $validated['is_active'] = $request->boolean('is_active', false);
 
         $creditCard->update($validated);
+
+        // Offene Abrechnungen mit der neuen Zuordnung neu berechnen.
+        $statements = app(\App\Services\CreditCardStatementService::class);
+
+        $creditCard->statements()->where('status', 'open')->get()
+            ->each(fn ($statement) => $statements->updateAmount($statement->setRelation('creditCard', $creditCard->fresh())));
 
         return redirect()
             ->route('credit-cards.show', $creditCard)
@@ -133,12 +158,39 @@ class CreditCardController extends Controller
             ],
             'last_four' => ['nullable', 'digits:4'],
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
-            'current_balance' => ['required', 'numeric', 'min:0'],
+            'card_account_id' => [
+                'nullable',
+                'integer',
+                'exists:accounts,id',
+                'different:account_id',
+            ],
+            'current_balance' => ['required_without:card_account_id', 'nullable', 'numeric', 'min:0'],
             'billing_day' => ['nullable', 'integer', 'between:1,31'],
             'payment_due_day' => ['nullable', 'integer', 'between:1,31'],
             'color' => ['nullable', 'string', 'max:50'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+    }
+
+    /**
+     * Kartenkonto für bestehende Karten vorschlagen: gleicher Name bzw.
+     * Herausgeber (z. B. Karte „Amex Gold“ → Konto „AMEX“), sonst ein
+     * Konto vom Typ Kreditkarte.
+     */
+    private function suggestCardAccount(CreditCard $creditCard, $accounts): ?int
+    {
+        $words = collect(preg_split('/[^\pL\pN]+/u', mb_strtolower($creditCard->name . ' ' . $creditCard->issuer)))
+            ->filter(fn ($word) => mb_strlen($word) >= 3);
+
+        $candidates = $accounts->reject(fn ($account) => $account->id === $creditCard->account_id);
+
+        $byName = $candidates->first(function ($account) use ($words) {
+            $name = mb_strtolower($account->name);
+
+            return $words->contains(fn ($word) => str_contains($name, $word));
+        });
+
+        return ($byName ?? $candidates->firstWhere('type', 'credit_card'))?->id;
     }
 
     private function activeProviders()

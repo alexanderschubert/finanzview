@@ -20,6 +20,7 @@
     $details = [
         'Herausgeber' => $creditCard->issuer,
         'Anbieter' => $creditCard->provider?->name,
+        'Umsätze im Konto' => $creditCard->cardAccount ? $creditCard->cardAccount->name . ' (Saldo wird berechnet)' : 'keins – Saldo von Hand eingetragen',
         'Abbuchung vom Konto' => $creditCard->account?->name,
         'Abrechnungstag' => $creditCard->billing_day ? $creditCard->billing_day . '. des Monats' : null,
         'Fällig am' => $creditCard->payment_due_day ? $creditCard->payment_due_day . '. des Monats' : null,

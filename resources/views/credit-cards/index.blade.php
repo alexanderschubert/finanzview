@@ -89,6 +89,10 @@
                         @else
                             <p class="text-xs text-slate-500 dark:text-slate-400">Kein Limit hinterlegt</p>
                         @endif
+
+                        @unless ($creditCard->hasCardAccount())
+                            <p class="mt-1 text-xs text-amber-700 dark:text-amber-400">Saldo von Hand eingetragen – Kartenkonto verknüpfen, damit er automatisch stimmt.</p>
+                        @endunless
                     </div>
 
                 </a>
