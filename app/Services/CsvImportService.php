@@ -295,7 +295,25 @@ class CsvImportService
             'headers' => $headers,
             'rows' => $dataRows,
             'mapping' => $resolved,
+            'invert_suggested' => $this->suggestsInvertedSign($headers),
         ];
+    }
+
+    /**
+     * Kreditkarten-Exporte (z. B. American Express) führen Ausgaben
+     * als positive Beträge. Erkennung an typischen Spaltennamen.
+     */
+    public function suggestsInvertedSign(array $headers): bool
+    {
+        $normalized = implode('|', array_map(fn ($header) => mb_strtolower(trim((string) $header)), $headers));
+
+        foreach (['karteninhaber', 'erscheint auf ihrer abrechnung', 'card member', 'appears on your statement'] as $keyword) {
+            if (str_contains($normalized, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -304,7 +322,7 @@ class CsvImportService
      *
      * @return Collection<int, array>
      */
-    public function parse(array $analysis, int $userId, int $accountId): Collection
+    public function parse(array $analysis, int $userId, int $accountId, bool $invert = false): Collection
     {
         $mapping = $analysis['mapping'];
         $rows = array_slice($analysis['rows'], 0, self::MAX_ROWS);
@@ -321,7 +339,7 @@ class CsvImportService
         $rules = $ruleService->rulesFor($userId);
         $occurrences = [];
 
-        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $categorySuggestions, $ruleService, $rules, &$occurrences) {
+        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $invert, $categorySuggestions, $ruleService, $rules, &$occurrences) {
 
             $date = $this->parseDate($cell($row, $mapping['date']));
 
@@ -334,6 +352,11 @@ class CsvImportService
                 $amount = ($debit === null && $credit === null)
                     ? null
                     : round(abs($credit ?? 0) - abs($debit ?? 0), 2);
+            }
+
+            // Vorzeichen umkehren: positiv = Ausgabe (Kreditkarten-Export).
+            if ($invert && $amount !== null) {
+                $amount = -$amount;
             }
 
             $merchant = Str::limit(Str::squish($cell($row, $mapping['merchant'])), 250, '');
