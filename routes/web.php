@@ -56,7 +56,8 @@ Route::middleware(['guest', 'throttle:20,1'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'active'])->group(function () {
+// auth.session: Nach einer Passwortänderung werden andere Geräte abgemeldet.
+Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
 
     /*
      * =========================================================
@@ -294,6 +295,11 @@ Route::get('/settings/dashboard', [
         SettingsController::class,
         'updatePassword',
     ])->name('settings.security.password');
+
+    Route::delete('/settings/security/sessions', [
+        SettingsController::class,
+        'logoutOtherDevices',
+    ])->name('settings.security.sessions.destroy');
 
     // Passwort bestätigen und zurück zu den Passkeys (für Hinzufügen/Löschen).
     Route::get('/settings/security/passkeys', fn () => redirect()->to(route('settings.security') . '#passkeys'))
