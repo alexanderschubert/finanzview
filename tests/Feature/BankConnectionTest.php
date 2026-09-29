@@ -77,7 +77,7 @@ class BankConnectionTest extends TestCase
         return BankConnectionAccount::where('bank_connection_id', $connection->id)->where('iban', $iban)->firstOrFail();
     }
 
-    private function result(array $transactions, ?float $balance = null, array $errors = []): array
+    private function syncResult(array $transactions, ?float $balance = null, array $errors = []): array
     {
         return [
             'transactions' => $transactions,
@@ -236,7 +236,7 @@ class BankConnectionTest extends TestCase
 
         $linkId = $this->link($connection)->id;
 
-        $this->bank->beginResults[] = FintsResult::done([$linkId => $this->result($rows, 2406.01)]);
+        $this->bank->beginResults[] = FintsResult::done([$linkId => $this->syncResult($rows, 2406.01)]);
 
         $this->actingAs($this->user)
             ->post(route('bank-connections.sync.start', $connection), ['pin' => 'geheim', 'period' => 'auto'])
@@ -264,7 +264,7 @@ class BankConnectionTest extends TestCase
         $this->assertNotNull($connection->last_synced_at);
 
         // Zweiter Abruf mit denselben Umsätzen: nichts doppelt, Zeitraum ab letztem Abruf − 14 Tage.
-        $this->bank->beginResults[] = FintsResult::done([$linkId => $this->result($rows)]);
+        $this->bank->beginResults[] = FintsResult::done([$linkId => $this->syncResult($rows)]);
 
         $this->actingAs($this->user)
             ->post(route('bank-connections.sync.start', $connection), ['pin' => 'geheim', 'period' => 'auto'])
@@ -279,7 +279,7 @@ class BankConnectionTest extends TestCase
         $connection = $this->readyConnection(['tan_mode' => 921, 'tan_mode_name' => 'TAN2go']);
 
         $this->bank->beginResults[] = FintsResult::needsTan('state-x', 'TAN für Umsatzabruf eingeben', null, false);
-        $this->bank->resumeResults[] = FintsResult::done([$this->link($connection)->id => $this->result([$this->row('2026-09-10', -5, 'Bäckerei')])]);
+        $this->bank->resumeResults[] = FintsResult::done([$this->link($connection)->id => $this->syncResult([$this->row('2026-09-10', -5, 'Bäckerei')])]);
 
         $this->actingAs($this->user)
             ->post(route('bank-connections.sync.start', $connection), ['pin' => 'geheim', 'period' => '30'])
@@ -382,8 +382,8 @@ class BankConnectionTest extends TestCase
         ]);
 
         $this->bank->beginResults[] = FintsResult::done([
-            $this->link($connection)->id => $this->result([$this->row('2026-09-20', -20, 'Kiosk')], 500),
-            $savingsLink->id => $this->result([$this->row('2026-09-15', 1.23, '', 'Zinsen')], 5001.23),
+            $this->link($connection)->id => $this->syncResult([$this->row('2026-09-20', -20, 'Kiosk')], 500),
+            $savingsLink->id => $this->syncResult([$this->row('2026-09-15', 1.23, '', 'Zinsen')], 5001.23),
         ]);
 
         $this->actingAs($this->user)
@@ -407,7 +407,7 @@ class BankConnectionTest extends TestCase
 
         // Nächster Abruf: Sparbuch ohne Umsatzabruf → Fehler je Konto merken.
         $this->bank->beginResults[] = FintsResult::done([
-            $savingsLink->id => $this->result([], 5001.23, ['Umsätze: von der Bank für dieses Konto nicht angeboten']),
+            $savingsLink->id => $this->syncResult([], 5001.23, ['Umsätze: von der Bank für dieses Konto nicht angeboten']),
         ]);
 
         $this->actingAs($this->user)->post(route('bank-connections.sync.start', $connection), ['pin' => 'geheim', 'period' => 'auto']);
