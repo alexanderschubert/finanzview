@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
+use App\Models\Category;
+use App\Models\CategoryRule;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -305,5 +307,76 @@ class DataExportRestoreTest extends TestCase
                 ->where('user_id', $target->id)
                 ->count()
         );
+    }
+
+    public function test_category_rules_color_and_import_fingerprint_round_trip(): void
+    {
+        $owner = $this->createUser();
+        $account = $this->createAccount($owner);
+
+        $category = Category::create([
+            'user_id' => $owner->id, 'name' => 'Abos', 'type' => 'expense',
+            'icon' => '📺', 'color' => '#ff2d55', 'is_active' => true,
+        ]);
+
+        CategoryRule::create([
+            'user_id' => $owner->id, 'category_id' => $category->id,
+            'pattern' => 'Netflix', 'match_field' => 'merchant', 'is_active' => false,
+        ]);
+
+        $this->createTransaction($owner, $account, [
+            'category_id' => $category->id,
+            'merchant' => 'NETFLIX',
+            'external_id' => 'csv:abc123',
+        ]);
+
+        $backup = $this->exportBackup($owner);
+
+        $this->assertStringContainsString('"category_rules"', $backup);
+
+        $target = $this->createUser();
+
+        $this->restoreBackupFor($target, $backup)
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', fn ($message) => str_contains($message, '1 Regeln'));
+
+        $restoredCategory = Category::where('user_id', $target->id)->firstOrFail();
+        $this->assertSame('#ff2d55', $restoredCategory->color);
+
+        $rule = CategoryRule::where('user_id', $target->id)->firstOrFail();
+        $this->assertSame($restoredCategory->id, $rule->category_id);
+        $this->assertSame('Netflix', $rule->pattern);
+        $this->assertSame('merchant', $rule->match_field);
+        $this->assertFalse($rule->is_active);
+
+        $this->assertSame('csv:abc123', Transaction::where('user_id', $target->id)->value('external_id'));
+
+        // Zweite Wiederherstellung legt nichts doppelt an.
+        $this->restoreBackupFor($target, $backup)->assertSessionHasNoErrors();
+
+        $this->assertSame(1, CategoryRule::where('user_id', $target->id)->count());
+        $this->assertSame(1, Transaction::where('user_id', $target->id)->count());
+    }
+
+    public function test_backup_without_category_rules_section_still_restores(): void
+    {
+        $owner = $this->createUser();
+        $this->createTransaction($owner, $this->createAccount($owner));
+
+        $payload = json_decode($this->exportBackup($owner), true, 512, JSON_THROW_ON_ERROR);
+        unset($payload['category_rules']);
+
+        foreach ($payload['transactions'] as &$item) {
+            unset($item['external_id']);
+        }
+        unset($item);
+
+        $target = $this->createUser();
+
+        $this->restoreBackupFor($target, json_encode($payload, JSON_THROW_ON_ERROR))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('settings.data-export'));
+
+        $this->assertSame(1, Transaction::where('user_id', $target->id)->count());
     }
 }

@@ -8,6 +8,7 @@
     $labels = [
         'accounts' => 'Konten',
         'categories' => 'Kategorien',
+        'category_rules' => 'Kategorie-Regeln',
         'tags' => 'Tags',
         'transactions' => 'Buchungen',
         'budgets' => 'Budgets',
