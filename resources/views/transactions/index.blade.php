@@ -42,12 +42,12 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5">
 
     <x-page-header title="Buchungen" subtitle="Deine Einnahmen, Ausgaben und Umbuchungen.">
-        <a href="{{ route('transactions.import.create') }}" class="fv-btn fv-btn-secondary text-sm py-2.5" title="Kontoauszug importieren">
+        {{-- Auf dem Handy nebeneinander, jeweils halbe Breite mit Beschriftung. --}}
+        <a href="{{ route('transactions.import.create') }}" class="fv-btn fv-btn-secondary text-sm py-2.5 flex-1 sm:flex-none" title="Kontoauszug importieren">
             <x-icon name="upload" class="w-4 h-4" />
-            <span class="hidden sm:inline">Importieren</span>
-            <span class="sr-only sm:hidden">Kontoauszug importieren</span>
+            Importieren
         </a>
-        <a href="{{ route('transactions.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
+        <a href="{{ route('transactions.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5 flex-1 sm:flex-none">
             <x-icon name="plus" class="w-4 h-4" />
             Neue Buchung
         </a>
