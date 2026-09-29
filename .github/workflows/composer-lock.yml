@@ -1,0 +1,56 @@
+name: composer.lock aktualisieren
+
+# Lokal gibt es kein PHP/Composer. Wird auf einem Feature-Branch ein
+# neues Paket in composer.json eingetragen, ergänzt dieser Workflow die
+# composer.lock (nur neue Pakete, alle anderen Versionen bleiben) und
+# committet sie auf denselben Branch.
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - composer.json
+
+permissions:
+  contents: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      - name: Neue Pakete ermitteln
+        id: packages
+        run: |
+          packages=$(php -r '
+            $json = json_decode(file_get_contents("composer.json"), true);
+            $lock = json_decode(file_get_contents("composer.lock"), true);
+            $locked = array_map(fn ($p) => strtolower($p["name"]), array_merge($lock["packages"], $lock["packages-dev"] ?? []));
+            $required = array_keys(array_merge($json["require"] ?? [], $json["require-dev"] ?? []));
+            $new = array_filter($required, fn ($name) => str_contains($name, "/") && ! in_array(strtolower($name), $locked, true));
+            echo implode(" ", $new);
+          ')
+          echo "list=$packages" >> "$GITHUB_OUTPUT"
+          echo "Neue Pakete: ${packages:-keine}"
+
+      - name: composer.lock aktualisieren
+        if: steps.packages.outputs.list != ''
+        run: composer update ${{ steps.packages.outputs.list }} --with-dependencies --no-install --no-scripts --no-interaction
+
+      - name: Committen
+        if: steps.packages.outputs.list != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add composer.lock
+          git diff --cached --quiet && exit 0
+          git commit -m "Update composer.lock for ${{ steps.packages.outputs.list }}"
+          git push
