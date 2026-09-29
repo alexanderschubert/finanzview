@@ -29,6 +29,7 @@
         ],
         'Daten' => [
             ['settings.data-export', 'download', 'bg-blue-500', 'Daten & Export', 'Exportieren, Sichern und Wiederherstellen'],
+            ['bank-connections.index', 'landmark', 'bg-teal-600', 'Bankverbindungen', \App\Services\Fints\FintsConfig::enabled() ? 'Umsätze direkt von der Bank abrufen' : 'FinTS – wartet auf Produktregistrierung'],
         ],
     ];
 

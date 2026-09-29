@@ -441,7 +441,7 @@ class CsvImportService
      * Lernt aus den bisherigen Buchungen: Empfänger bzw. Beschreibung
      * → zuletzt verwendete Kategorie.
      */
-    private function categorySuggestions(int $userId): array
+    public function categorySuggestions(int $userId): array
     {
         $suggestions = [];
 
@@ -467,7 +467,7 @@ class CsvImportService
         return $suggestions;
     }
 
-    private function suggestCategory(array $suggestions, string $type, string $merchant, string $description): ?int
+    public function suggestCategory(array $suggestions, string $type, string $merchant, string $description): ?int
     {
         foreach ([$merchant, $description] as $text) {
             $key = $this->suggestionKey($text);
