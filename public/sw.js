@@ -6,7 +6,7 @@
  * (CSS/JS mit Hash im Namen, Icons, Logo) und eine Offline-Seite.
  */
 
-const VERSION = 'fv-v1';
+const VERSION = 'fv-v2'; // erhöhen, wenn sich Icons o. Ä. ändern
 const STATIC_CACHE = `${VERSION}-static`;
 const OFFLINE_URL = '/offline.html';
 
