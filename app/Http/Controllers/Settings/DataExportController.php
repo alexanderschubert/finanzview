@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\CategoryRule;
 use App\Models\CreditCard;
 use App\Models\Loan;
 use App\Models\Tag;
@@ -169,7 +170,19 @@ class DataExportController extends Controller
                 'name',
                 'type',
                 'icon',
+                'color',
                 'description',
+                'is_active',
+            ]));
+
+        $categoryRules = CategoryRule::query()
+            ->where('user_id', $user->id)
+            ->get()
+            ->map(fn ($item) => $item->only([
+                'id',
+                'category_id',
+                'pattern',
+                'match_field',
                 'is_active',
             ]));
 
@@ -203,6 +216,7 @@ class DataExportController extends Controller
                         'is_pending',
                         'is_recurring',
                         'recurring_transaction_id',
+                        'external_id',
                     ]),
                     [
                         'tags' => $item->tags
@@ -356,6 +370,7 @@ class DataExportController extends Controller
 
             'accounts' => $accounts->values()->all(),
             'categories' => $categories->values()->all(),
+            'category_rules' => $categoryRules->values()->all(),
             'tags' => $tags->values()->all(),
             'transactions' => $transactions->values()->all(),
             'budgets' => $budgets->values()->all(),
@@ -507,10 +522,11 @@ class DataExportController extends Controller
             ->with(
                 'success',
                 sprintf(
-                    'Backup erfolgreich wiederhergestellt: %d Konten, %d Transaktionen, %d Kategorien, %d Budgets, %d wiederkehrende Buchungen, %d Kreditkarten und %d Kredite.',
+                    'Backup erfolgreich wiederhergestellt: %d Konten, %d Transaktionen, %d Kategorien, %d Regeln, %d Budgets, %d wiederkehrende Buchungen, %d Kreditkarten und %d Kredite.',
                     $result['accounts'],
                     $result['transactions'],
                     $result['categories'],
+                    $result['category_rules'],
                     $result['budgets'],
                     $result['recurring_transactions'],
                     $result['credit_cards'],
@@ -569,6 +585,16 @@ class DataExportController extends Controller
             }
         }
 
+        // Seit den Kategorie-Regeln; ältere Backups enthalten den Bereich nicht.
+        if (
+            array_key_exists('category_rules', $payload) &&
+            !is_array($payload['category_rules'])
+        ) {
+            throw ValidationException::withMessages([
+                'backup' => "Der Bereich 'category_rules' ist ungültig.",
+            ]);
+        }
+
         if (
             array_key_exists('dashboard_settings', $payload) &&
             $payload['dashboard_settings'] !== null &&
@@ -599,6 +625,7 @@ class DataExportController extends Controller
         return [
             'accounts' => count($payload['accounts'] ?? []),
             'categories' => count($payload['categories'] ?? []),
+            'category_rules' => count($payload['category_rules'] ?? []),
             'tags' => count($payload['tags'] ?? []),
             'transactions' => count($payload['transactions'] ?? []),
             'budgets' => count($payload['budgets'] ?? []),
@@ -632,6 +659,7 @@ class DataExportController extends Controller
         $result = [
             'accounts' => 0,
             'categories' => 0,
+            'category_rules' => 0,
             'tags' => 0,
             'transactions' => 0,
             'budgets' => 0,
@@ -797,6 +825,7 @@ class DataExportController extends Controller
                 'name' => $item['name'] ?? 'Kategorie',
                 'type' => $item['type'] ?? null,
                 'icon' => $item['icon'] ?? null,
+                'color' => $item['color'] ?? null,
                 'description' => $item['description'] ?? null,
                 'is_active' => $item['is_active'] ?? true,
                 'created_at' => now(),
@@ -805,6 +834,53 @@ class DataExportController extends Controller
 
             $categoryMap[$item['id']] = $newId;
             $result['categories']++;
+        }
+
+        /*
+         * =========================================================
+         * CATEGORY RULES
+         * =========================================================
+         *
+         * Gleiche Regel (Suchbegriff + Kategorie) wird nicht doppelt
+         * angelegt. Regeln ohne zugeordnete Kategorie entfallen.
+         */
+
+        foreach ($payload['category_rules'] ?? [] as $item) {
+            if (!is_array($item) || !$isFilled($item['pattern'] ?? null)) {
+                continue;
+            }
+
+            $categoryId = $categoryMap[$item['category_id'] ?? 0] ?? null;
+
+            if (!$categoryId) {
+                continue;
+            }
+
+            $pattern = mb_substr(trim((string) $item['pattern']), 0, 100);
+
+            $exists = DB::table('category_rules')
+                ->where('user_id', $user->id)
+                ->where('category_id', $categoryId)
+                ->where('pattern', $pattern)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            DB::table('category_rules')->insert([
+                'user_id' => $user->id,
+                'category_id' => $categoryId,
+                'pattern' => $pattern,
+                'match_field' => array_key_exists($item['match_field'] ?? '', CategoryRule::FIELDS)
+                    ? $item['match_field']
+                    : 'any',
+                'is_active' => (bool) ($item['is_active'] ?? true),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $result['category_rules']++;
         }
 
         /*
@@ -991,7 +1067,18 @@ class DataExportController extends Controller
 
             $existing = $query->orderBy('id')->first();
 
+            $externalId = $isFilled($item['external_id'] ?? null)
+                ? mb_substr((string) $item['external_id'], 0, 255)
+                : null;
+
             if ($existing) {
+                // Fingerabdruck des CSV-Imports ergänzen, falls er fehlt.
+                if ($externalId !== null && $existing->external_id === null) {
+                    DB::table('transactions')
+                        ->where('id', $existing->id)
+                        ->update(['external_id' => $externalId]);
+                }
+
                 $transactionMap[$item['id']] = $existing->id;
                 $matchedTransactionIds[$existing->id] = true;
                 continue;
@@ -1013,6 +1100,7 @@ class DataExportController extends Controller
                 'is_recurring' => $item['is_recurring'] ?? false,
                 'recurring_transaction_id' => $recurringId,
                 'transfer_account_id' => $transferAccountId,
+                'external_id' => $externalId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
