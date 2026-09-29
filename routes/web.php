@@ -126,6 +126,16 @@ Route::middleware(['auth', 'active'])->group(function () {
             'update',
         ])->name('users.update');
 
+        Route::delete('/users/{user}/two-factor', [
+            AdminController::class,
+            'resetTwoFactor',
+        ])->name('users.two-factor.destroy');
+
+        Route::delete('/users/{user}/passkeys', [
+            AdminController::class,
+            'resetPasskeys',
+        ])->name('users.passkeys.destroy');
+
         Route::patch('/users/{user}/toggle-admin', [
             AdminController::class,
             'toggleAdmin',
