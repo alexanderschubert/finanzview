@@ -144,10 +144,14 @@ class CategoryHierarchyTest extends TestCase
 
         $content = $this->actingAs($this->user)->get(route('transactions.create'))->assertOk()->getContent();
 
-        $positions = array_map(fn ($label) => strpos($content, $label), ['Lebensmittel</option>', 'Lebensmittel › Bäckerei', 'Lebensmittel › Supermarkt', 'Wohnen</option>']);
+        // Einträge der Kategorie-Auswahl in Anzeigereihenfolge.
+        preg_match('/<select id="category_id".*?<\/select>/s', $content, $select);
+        preg_match_all('/<option\s+value="\d+"[^>]*>\s*(.*?)\s*<\/option>/s', $select[0], $labels);
 
-        $this->assertNotContains(false, $positions);
-        $this->assertSame($positions, collect($positions)->sort()->values()->all());
+        $this->assertSame(
+            ['🛒 Lebensmittel', '🛒 Lebensmittel › Bäckerei', '🛒 Lebensmittel › Supermarkt', '🛒 Wohnen'],
+            $labels[1]
+        );
     }
 
     public function test_transaction_filter_by_parent_includes_children(): void
