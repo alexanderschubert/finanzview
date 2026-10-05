@@ -446,4 +446,24 @@ class PayeeTest extends TestCase
         $this->assertSame(2, $top['count']);
         $this->assertEqualsWithDelta(100, $top['amount'], 0.001);
     }
+
+    public function test_all_payees_are_shown_on_one_page(): void
+    {
+        foreach (range(1, 70) as $i) {
+            $this->spend(sprintf('Händler %03d', $i), 1 + $i / 100);
+        }
+
+        $page = $this->actingAs($this->user)->get(route('payees.index'))->assertOk();
+
+        $page->assertSee('Händler 001')
+            ->assertSee('Händler 070')
+            ->assertSee('Alle 70 Empfänger werden angezeigt.')
+            ->assertDontSee('aria-label="Seite 2"', false);
+
+        $this->actingAs($this->user)
+            ->get(route('payees.index', ['q' => 'händler 07']))
+            ->assertSee('Händler 070')
+            ->assertDontSee('Händler 001')
+            ->assertSee('1 von 70 Empfängern (Suche).');
+    }
 }

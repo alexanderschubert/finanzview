@@ -156,10 +156,10 @@
             </form>
 
             <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
-                Wähle mindestens zwei Empfänger aus, um sie zusammenzuführen – z. B. „PayPal *Patreon“ und „PAYPAL *PATREONIREL“.
+                {{ $rows->count() === $total ? 'Alle ' . $total . ' Empfänger werden angezeigt.' : $rows->count() . ' von ' . $total . ' Empfängern (Suche).' }}
+                Wähle mindestens zwei aus, um sie zusammenzuführen – z. B. „PayPal *Patreon“ und „PAYPAL *PATREONIREL“.
             </p>
 
-            <x-pagination :paginator="$rows" />
         @endif
 
     @endif
