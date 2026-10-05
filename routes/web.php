@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BankConnectionController;
+use App\Http\Controllers\FintsInstituteController;
 use App\Http\Controllers\Auth\OidcController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRuleController;
@@ -361,6 +362,9 @@ Route::get('/settings/dashboard', [
         Route::get('/challenge', 'challenge')->name('challenge');
         Route::post('/challenge', 'confirm')->middleware('throttle:30,1')->name('confirm');
         Route::delete('/challenge', 'cancel')->name('cancel');
+
+        Route::get('/institutes', [FintsInstituteController::class, 'search'])->middleware('throttle:60,1')->name('institutes.search');
+        Route::post('/institutes', [FintsInstituteController::class, 'import'])->name('institutes.import');
 
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
