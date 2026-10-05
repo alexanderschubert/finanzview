@@ -352,12 +352,17 @@ class PayeeTest extends TestCase
         $this->assertSame(2, Transaction::where('user_id', $target->id)->where('payee_id', $restored->id)->count());
     }
 
-    public function test_categories_page_links_to_payees_and_form_offers_suggestions(): void
+    public function test_form_offers_payee_suggestions_and_categories_page_has_no_duplicate_button(): void
     {
         $this->spend('Rewe');
         $this->actingAs($this->user)->get(route('payees.index'));
 
-        $this->actingAs($this->user)->get(route('categories.index'))->assertSee(route('payees.index'), false);
+        // Der Zugang steht in der Seitenleiste – nicht zusätzlich als Knopf auf der Kategorien-Seite.
+        $content = $this->actingAs($this->user)->get(route('categories.index'))->getContent();
+        $link = 'href="' . route('payees.index') . '"';
+
+        $this->assertStringContainsString($link, $content);
+        $this->assertStringNotContainsString($link, preg_replace('/<aside.*?<\/aside>|<nav.*?<\/nav>/s', '', $content));
 
         $this->actingAs($this->user)
             ->get(route('transactions.create'))

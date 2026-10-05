@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Empfänger – FinanzView')
-@section('eyebrow', 'Kategorien')
+@section('eyebrow', 'Finanzverwaltung')
 @section('page_title', 'Empfänger')
 
 @php
@@ -12,8 +12,6 @@
 @section('content')
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-32">
-
-    <x-back-link :href="route('categories.index')" label="Kategorien" />
 
     <x-page-header title="Empfänger" subtitle="Einheitliche Namen für Händler und Auftraggeber – mit Standardkategorie, die bei neuen Buchungen automatisch greift. Der Buchungstext der Bank bleibt dabei unverändert." />
 
