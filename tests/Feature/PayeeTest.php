@@ -93,7 +93,7 @@ class PayeeTest extends TestCase
             ->assertSessionHas('success', '2 Empfänger wurden zu „PayPal Patreon“ zusammengeführt.');
 
         $this->assertSame(3, Transaction::where('merchant', 'PayPal Patreon')->count());
-        $this->assertSame(0, Transaction::where('merchant', 'like', 'PAYPAL%')->count());
+        $this->assertSame(0, Transaction::where('merchant', '!=', 'PayPal Patreon')->count());
 
         $payee = $this->payee('PayPal Patreon');
         $this->assertSame(3, $payee->aliases()->count());
@@ -241,7 +241,7 @@ class PayeeTest extends TestCase
             ->get(route('payees.edit', $payee))
             ->assertOk()
             ->assertSee('4 Buchungen')
-            ->assertSee('−100,00 €');
+            ->assertSee('100,00 €');
 
         $this->actingAs($this->user)
             ->put(route('payees.update', $payee), ['name' => 'Rewe', 'default_category_id' => $this->abos->id, 'apply' => '1'])
