@@ -1,7 +1,7 @@
 {{--
     Gemeinsames Formular für "Neue Kategorie" und "Kategorie bearbeiten".
 
-    Erwartet: $category (neu oder bestehend)
+    Erwartet: $category (neu oder bestehend), $parentOptions, optional $childCount
 --}}
 
 @php
@@ -59,12 +59,27 @@
         </div>
 
         <div class="mt-6 space-y-4">
+            {{-- Unterkategorie: Auswahl der übergeordneten Kategorie (eine Ebene). --}}
+            @php $hasChildren = ($childCount ?? 0) > 0; @endphp
+
+            <x-field label="Übergeordnete Kategorie" for="parent_id" error="parent_id"
+                :hint="$hasChildren ? 'Diese Kategorie hat ' . $childCount . ' Unterkategorie' . ($childCount === 1 ? '' : 'n') . ' und kann deshalb keiner anderen untergeordnet werden.' : 'Optional – z. B. „Supermarkt“ unter „Lebensmittel“. Budgets und Filter der Hauptkategorie schließen Unterkategorien ein.'">
+                <select id="parent_id" name="parent_id" class="fv-input" data-parent-select @disabled($hasChildren)>
+                    <option value="" data-type="">Keine – Hauptkategorie</option>
+                    @foreach ($parentOptions as $option)
+                        <option value="{{ $option->id }}" data-type="{{ $option->type }}" @selected((string) $value('parent_id') === (string) $option->id)>
+                            {{ $option->icon }} {{ $option->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </x-field>
+
             <x-field label="Name" for="name" error="name">
                 <input id="name" name="name" type="text" required maxlength="255" autofocus
                     value="{{ $value('name') }}" placeholder="z. B. Lebensmittel" class="fv-input">
             </x-field>
 
-            <div>
+            <div data-type-group>
                 <span class="fv-label">Verwendet für</span>
                 <div class="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 dark:bg-white/5 p-1" role="radiogroup" aria-label="Verwendet für">
                     @foreach ($types as $key => $label)
@@ -194,6 +209,24 @@
         const swatches = document.querySelectorAll('[data-color]');
 
         nameInput.addEventListener('input', () => name.textContent = nameInput.value || 'Neue Kategorie');
+
+        // Unterkategorie: Die Art folgt der übergeordneten Kategorie („Beides“ erlaubt jede Art).
+        const parentSelect = document.querySelector('[data-parent-select]');
+        const typeGroup = document.querySelector('[data-type-group]');
+
+        const syncParent = () => {
+            const type = parentSelect.selectedOptions[0]?.dataset.type || '';
+            const fixed = type !== '' && type !== 'both';
+
+            typeGroup.hidden = fixed;
+
+            if (fixed) {
+                document.querySelector(`input[name="type"][value="${type}"]`).checked = true;
+            }
+        };
+
+        parentSelect.addEventListener('change', syncParent);
+        syncParent();
         iconInput.addEventListener('input', () => tile.textContent = iconInput.value || '🏷️');
 
         document.querySelectorAll('[data-emoji]').forEach(button => {

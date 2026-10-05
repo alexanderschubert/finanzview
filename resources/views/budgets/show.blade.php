@@ -126,7 +126,7 @@
                     @foreach ($budget->categories as $category)
                         <a href="{{ route('transactions.index', ['category_id' => $category->id]) }}"
                             class="rounded-full bg-white dark:bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition">
-                            {{ $category->icon }} {{ $category->name }}
+                            {{ $category->icon }} {{ $category->display_name }}
                         </a>
                     @endforeach
                 </div>
@@ -164,7 +164,7 @@
                                         <div class="flex-1 min-w-0">
                                             <p class="font-medium text-slate-900 dark:text-white truncate">{{ $transaction->description }}</p>
                                             <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                                {{ collect([$transaction->category?->name, $transaction->merchant, $transaction->account?->name])->filter()->implode(' · ') }}
+                                                {{ collect([$transaction->category?->display_name, $transaction->merchant, $transaction->account?->name])->filter()->implode(' · ') }}
                                             </p>
                                         </div>
 

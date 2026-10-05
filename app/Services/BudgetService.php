@@ -357,8 +357,10 @@ class BudgetService
          * =========================================================
          */
 
-        $categoryIds = $budget->categories
-            ->pluck('id');
+        // Eine Hauptkategorie im Budget schließt ihre Unterkategorien ein.
+        $categoryIds = collect(
+            \App\Models\Category::withDescendantIds($budget->categories->pluck('id'))
+        );
 
 
         /*

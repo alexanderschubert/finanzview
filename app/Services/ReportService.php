@@ -239,7 +239,7 @@ class ReportService
                 $accountId,
                 fn ($query) => $query->where('account_id', $accountId)
             )
-            ->with('category:id,name,icon,color')
+            ->with('category:id,parent_id,name,icon,color')
             ->get([
                 'id',
                 'account_id',
@@ -266,7 +266,7 @@ class ReportService
                         ? (int) $transaction->category_id
                         : null,
                     'category_name' =>
-                        $transaction->category?->name ?? 'Ohne Kategorie',
+                        $transaction->category?->display_name ?? 'Ohne Kategorie',
                     'category_icon' =>
                         $transaction->category?->icon ?? '📦',
                     'category_color' =>

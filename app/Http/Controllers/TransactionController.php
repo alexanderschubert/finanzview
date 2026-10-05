@@ -116,7 +116,8 @@ class TransactionController extends Controller
 
         if ($request->filled('category_id')) {
 
-            $query->where('category_id', (int) $request->input('category_id'));
+            // Eine Hauptkategorie schließt ihre Unterkategorien ein.
+            $query->whereIn('category_id', Category::withDescendantIds([(int) $request->input('category_id')]));
 
         }
 
@@ -218,7 +219,7 @@ class TransactionController extends Controller
             ->where('user_id', $user->id)
             ->where('is_active', true)
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
 
         $tags = Tag::query()
@@ -258,7 +259,7 @@ class TransactionController extends Controller
             ->where('is_active', true)
             ->orderBy('type')
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
         $creditCards = $this->creditCardsFor($user->id);
 
@@ -581,7 +582,7 @@ class TransactionController extends Controller
             ->where('is_active', true)
             ->orderBy('type')
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
 
         // Aktive Kreditkarten plus ggf. die aktuell verknüpfte

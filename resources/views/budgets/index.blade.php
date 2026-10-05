@@ -144,7 +144,7 @@
                         <div class="mt-4 flex flex-wrap gap-1.5">
                             @foreach ($budget->categories->take(4) as $category)
                                 <span class="rounded-full bg-slate-100 dark:bg-white/5 px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
-                                    {{ $category->icon }} {{ $category->name }}
+                                    {{ $category->icon }} {{ $category->display_name }}
                                 </span>
                             @endforeach
                             @if ($budget->categories->count() > 4)

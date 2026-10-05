@@ -212,7 +212,7 @@ class SettingsController extends Controller
         $categories = $user->categories()
             ->where('is_active', true)
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
         return view('settings.financial', [
             'user' => $user,

@@ -106,7 +106,8 @@ class TransactionImportController extends Controller
             ->where('is_active', true)
             ->whereIn('type', ['income', 'expense', 'both'])
             ->orderBy('name')
-            ->get(['id', 'name', 'type', 'icon']);
+            ->get(['id', 'parent_id', 'name', 'type', 'icon'])
+            ->inTreeOrder();
 
         $mappingComplete = $analysis['mapping']['date'] !== null
             && ($analysis['mapping']['amount'] !== null || $analysis['mapping']['debit'] !== null || $analysis['mapping']['credit'] !== null);

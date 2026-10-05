@@ -114,7 +114,7 @@ class DataExportController extends Controller
                         $transaction->type,
                         $transaction->amount,
                         $transaction->account?->name,
-                        $transaction->category?->name,
+                        $transaction->category?->display_name,
                         $transaction->merchant,
                         $transaction->description,
                         $transaction->reference,
@@ -167,6 +167,7 @@ class DataExportController extends Controller
             ->get()
             ->map(fn ($item) => $item->only([
                 'id',
+                'parent_id',
                 'name',
                 'type',
                 'icon',
@@ -836,6 +837,34 @@ class DataExportController extends Controller
 
             $categoryMap[$item['id']] = $newId;
             $result['categories']++;
+        }
+
+        /*
+         * Unterkategorien: erst jetzt zuordnen, weil die übergeordnete
+         * Kategorie im Backup auch hinter der Unterkategorie stehen kann.
+         * Nur eine Ebene; vorhandene Zuordnungen bleiben unverändert.
+         */
+        foreach ($payload['categories'] as $item) {
+            if (!is_array($item) || empty($item['id']) || empty($item['parent_id'])) {
+                continue;
+            }
+
+            $childId = $categoryMap[$item['id']] ?? null;
+            $parentId = $categoryMap[$item['parent_id']] ?? null;
+
+            if (!$childId || !$parentId || $childId === $parentId) {
+                continue;
+            }
+
+            $parentIsRoot = DB::table('categories')->where('id', $parentId)->whereNull('parent_id')->exists();
+            $childHasChildren = DB::table('categories')->where('parent_id', $childId)->exists();
+
+            if ($parentIsRoot && !$childHasChildren) {
+                DB::table('categories')
+                    ->where('id', $childId)
+                    ->whereNull('parent_id')
+                    ->update(['parent_id' => $parentId]);
+            }
         }
 
         /*

@@ -35,7 +35,7 @@
                     @continue($options->isEmpty())
                     <optgroup label="{{ $label }}">
                         @foreach ($options as $category)
-                            <option value="{{ $category->id }}" @selected((string) $value('category_id') === (string) $category->id)>{{ $category->icon }} {{ $category->name }}</option>
+                            <option value="{{ $category->id }}" @selected((string) $value('category_id') === (string) $category->id)>{{ $category->icon }} {{ $category->display_name }}</option>
                         @endforeach
                     </optgroup>
                 @endforeach

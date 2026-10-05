@@ -15,7 +15,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-baseline justify-between gap-3 text-sm">
                             <span class="font-medium text-slate-700 dark:text-slate-200 truncate">
-                                {{ $item['category']?->name ?: 'Ohne Kategorie' }}
+                                {{ $item['category']?->display_name ?: 'Ohne Kategorie' }}
                             </span>
                             <span class="tabular-nums whitespace-nowrap text-slate-900 dark:text-white">
                                 {{ number_format($item['amount'], 2, ',', '.') }} €

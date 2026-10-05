@@ -51,7 +51,7 @@
                                 <p class="font-medium text-slate-900 dark:text-white truncate">
                                     „{{ $rule->pattern }}“
                                     <span class="font-normal text-slate-400">→</span>
-                                    {{ $rule->category?->name ?? 'Kategorie gelöscht' }}
+                                    {{ $rule->category?->display_name ?? 'Kategorie gelöscht' }}
                                 </p>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
                                     {{ \App\Models\CategoryRule::FIELDS[$rule->match_field] ?? '' }}
