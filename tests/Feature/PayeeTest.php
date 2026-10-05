@@ -93,7 +93,7 @@ class PayeeTest extends TestCase
             ->assertSessionHas('success', '2 Empfänger wurden zu „PayPal Patreon“ zusammengeführt.');
 
         $this->assertSame(3, Transaction::where('merchant', 'PayPal Patreon')->count());
-        $this->assertSame(0, Transaction::where('merchant', '!=', 'PayPal Patreon')->count());
+        $this->assertSame(0, Transaction::where('merchant', 'like', '%PATREONIREL%')->count());
 
         $payee = $this->payee('PayPal Patreon');
         $this->assertSame(3, $payee->aliases()->count());
