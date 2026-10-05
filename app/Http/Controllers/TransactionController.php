@@ -8,6 +8,7 @@ use App\Models\CreditCard;
 use App\Models\Tag;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
+use App\Services\PayeeService;
 use App\Services\TagService;
 use App\Services\TransferMatcher;
 use Illuminate\Http\Request;
@@ -544,6 +545,24 @@ class TransactionController extends Controller
             );
         }
 
+        /*
+         * Empfänger: einheitlicher Name (auch bei anderer Schreibweise) und,
+         * falls noch keine Kategorie feststeht, dessen Standardkategorie.
+         */
+        if ($transaction->type !== 'transfer') {
+            $payee = app(PayeeService::class)->ensure($user->id, $transaction->merchant);
+
+            if ($payee) {
+                $transaction->merchant = $payee->name;
+
+                $category = $transaction->category_id === null ? $payee->defaultCategory : null;
+
+                if ($category && $category->is_active && in_array($category->type, ['both', $transaction->type], true)) {
+                    $transaction->category_id = $category->id;
+                }
+            }
+        }
+
         $transaction->save();
 
         app(TagService::class)->sync($transaction, $user->id, $request->input('tags'));
@@ -843,6 +862,12 @@ class TransactionController extends Controller
             $validated['type'] === 'transfer'
                 ? null
                 : ($validated['credit_card_id'] ?? null);
+
+        // Empfänger: einheitlicher Name (die gewählte Kategorie bleibt unverändert).
+        if ($transaction->type !== 'transfer') {
+            $transaction->merchant = app(PayeeService::class)->ensure($user->id, $transaction->merchant)?->name
+                ?? $transaction->merchant;
+        }
 
         $transaction->save();
 

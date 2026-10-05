@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\CsvImportService;
+use App\Services\PayeeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -212,6 +213,8 @@ class TransactionImportController extends Controller
         });
 
         Storage::disk('local')->delete($this->path($user->id, $token));
+
+        app(PayeeService::class)->ensureMany($user->id, $items->pluck('merchant'));
 
         $count = $items->count();
 

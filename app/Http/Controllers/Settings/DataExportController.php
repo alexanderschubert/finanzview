@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\CategoryRule;
+use App\Models\Payee;
+use App\Models\PayeeAlias;
 use App\Models\CreditCard;
 use App\Models\Loan;
 use App\Models\Tag;
@@ -196,6 +198,16 @@ class DataExportController extends Controller
                 'color',
             ]));
 
+        $payees = Payee::query()
+            ->where('user_id', $user->id)
+            ->with('aliases')
+            ->get()
+            ->map(fn (Payee $item) => [
+                'name' => $item->name,
+                'default_category_id' => $item->default_category_id,
+                'aliases' => $item->aliases->pluck('alias')->values()->all(),
+            ]);
+
         $transactions = $user->transactions()
             ->with('tags')
             ->get()
@@ -374,6 +386,7 @@ class DataExportController extends Controller
             'accounts' => $accounts->values()->all(),
             'categories' => $categories->values()->all(),
             'category_rules' => $categoryRules->values()->all(),
+            'payees' => $payees->values()->all(),
             'tags' => $tags->values()->all(),
             'transactions' => $transactions->values()->all(),
             'budgets' => $budgets->values()->all(),
@@ -588,6 +601,16 @@ class DataExportController extends Controller
             }
         }
 
+        // Seit der Empfänger-Verwaltung; ältere Backups enthalten den Bereich nicht.
+        if (
+            array_key_exists('payees', $payload) &&
+            !is_array($payload['payees'])
+        ) {
+            throw ValidationException::withMessages([
+                'backup' => "Der Bereich 'payees' ist ungültig.",
+            ]);
+        }
+
         // Seit den Kategorie-Regeln; ältere Backups enthalten den Bereich nicht.
         if (
             array_key_exists('category_rules', $payload) &&
@@ -629,6 +652,7 @@ class DataExportController extends Controller
             'accounts' => count($payload['accounts'] ?? []),
             'categories' => count($payload['categories'] ?? []),
             'category_rules' => count($payload['category_rules'] ?? []),
+            'payees' => count($payload['payees'] ?? []),
             'tags' => count($payload['tags'] ?? []),
             'transactions' => count($payload['transactions'] ?? []),
             'budgets' => count($payload['budgets'] ?? []),
@@ -663,6 +687,7 @@ class DataExportController extends Controller
             'accounts' => 0,
             'categories' => 0,
             'category_rules' => 0,
+            'payees' => 0,
             'tags' => 0,
             'transactions' => 0,
             'budgets' => 0,
@@ -912,6 +937,58 @@ class DataExportController extends Controller
             ]);
 
             $result['category_rules']++;
+        }
+
+        /*
+         * =========================================================
+         * PAYEES (Empfänger)
+         * =========================================================
+         *
+         * Vorhandene Empfänger (gleicher Name oder gleiche Schreibweise)
+         * werden ergänzt, nicht dupliziert.
+         */
+
+        foreach ($payload['payees'] ?? [] as $item) {
+            if (!is_array($item) || !$isFilled($item['name'] ?? null)) {
+                continue;
+            }
+
+            $name = \Illuminate\Support\Str::limit(\Illuminate\Support\Str::squish((string) $item['name']), 255, '');
+            $key = \App\Services\PayeeService::key($name);
+            $categoryId = $categoryMap[$item['default_category_id'] ?? 0] ?? null;
+
+            $existing = PayeeAlias::query()->where('user_id', $user->id)->where('alias_key', $key)->first();
+
+            if ($existing) {
+                $payee = $existing->payee;
+
+                if ($categoryId && $payee->default_category_id === null) {
+                    $payee->update(['default_category_id' => $categoryId]);
+                }
+            } else {
+                $payee = Payee::create([
+                    'user_id' => $user->id,
+                    'name' => $name,
+                    'default_category_id' => $categoryId,
+                ]);
+
+                $payee->aliases()->create(['user_id' => $user->id, 'alias' => $name, 'alias_key' => $key]);
+                $result['payees']++;
+            }
+
+            foreach ((array) ($item['aliases'] ?? []) as $alias) {
+                $alias = \Illuminate\Support\Str::limit(\Illuminate\Support\Str::squish((string) $alias), 255, '');
+                $aliasKey = \App\Services\PayeeService::key($alias);
+
+                if ($aliasKey === '') {
+                    continue;
+                }
+
+                PayeeAlias::query()->firstOrCreate(
+                    ['user_id' => $user->id, 'alias_key' => $aliasKey],
+                    ['payee_id' => $payee->id, 'alias' => $alias]
+                );
+            }
         }
 
         /*

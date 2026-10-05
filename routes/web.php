@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\OidcController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\PayeeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -446,6 +447,17 @@ Route::get('/settings/dashboard', [
     Route::resource('category-rules', CategoryRuleController::class)->except(['show', 'create']);
 
     Route::resource('tags', TagController::class)->only(['index', 'edit', 'update', 'destroy']);
+
+    Route::controller(PayeeController::class)->prefix('payees')->name('payees.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/merge', 'mergeForm')->name('merge');
+        Route::post('/merge/confirm', 'mergeStore')->name('merge.store');
+        Route::post('/ignore', 'ignore')->name('ignore');
+        Route::get('/{payee}/edit', 'edit')->name('edit');
+        Route::put('/{payee}', 'update')->name('update');
+        Route::delete('/{payee}', 'destroy')->name('destroy');
+        Route::delete('/{payee}/aliases/{alias}', 'destroyAlias')->name('aliases.destroy');
+    });
 
 
     /*

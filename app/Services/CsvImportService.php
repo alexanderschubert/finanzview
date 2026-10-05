@@ -337,9 +337,10 @@ class CsvImportService
         $categorySuggestions = $this->categorySuggestions($userId);
         $ruleService = new CategoryRuleService();
         $rules = $ruleService->rulesFor($userId);
+        $payees = app(PayeeService::class)->lookup($userId);
         $occurrences = [];
 
-        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $invert, $categorySuggestions, $ruleService, $rules, &$occurrences) {
+        $items = collect($rows)->map(function (array $row, int $index) use ($mapping, $cell, $decimal, $accountId, $invert, $categorySuggestions, $ruleService, $rules, $payees, &$occurrences) {
 
             $date = $this->parseDate($cell($row, $mapping['date']));
 
@@ -379,18 +380,23 @@ class CsvImportService
             $occurrences[$key] = ($occurrences[$key] ?? 0) + 1;
             $externalId = 'csv:' . sha1($key . '|' . $occurrences[$key]);
 
+            // Empfänger: einheitlicher Name und Standardkategorie (Fingerabdruck oben bleibt beim Originaltext).
+            $payee = $payees->find($merchant);
+            $displayMerchant = $payee['name'] ?? $merchant;
+
             return [
                 'index' => $index,
                 'date' => $date,
                 'amount' => $amount === null ? null : abs($amount),
                 'type' => $type,
-                'merchant' => $merchant,
+                'merchant' => $displayMerchant,
                 'description' => $description !== '' ? $description : ($merchant !== '' ? $merchant : 'CSV-Import'),
                 'external_id' => $externalId,
-                // Eigene Regeln zuerst, sonst aus bisherigen Buchungen gelernt.
+                // Eigene Regeln zuerst, dann Standardkategorie des Empfängers, sonst aus bisherigen Buchungen gelernt.
                 'category_id' => $error === null
                     ? ($ruleService->match($rules, $type, $merchant, $description)
-                        ?? $this->suggestCategory($categorySuggestions, $type, $merchant, $description))
+                        ?? $payees->categoryFor($payee, $type)
+                        ?? $this->suggestCategory($categorySuggestions, $type, $displayMerchant, $description))
                     : null,
                 'error' => $error,
                 'duplicate' => null,
