@@ -112,7 +112,10 @@ class FintsInstituteListTest extends TestCase
 
         $page = $this->actingAs($this->admin)->get(route('bank-connections.create'))->assertOk();
 
-        $this->assertDoesNotMatchRegularExpression('/data-institute-search[^>]*\bhidden\b/', $page->getContent());
+        // Nur das Suchfeld-Element prüfen (im Skript kommt „hidden“ ebenfalls vor).
+        preg_match('/<div data-institute-search[^>]*>/', $page->getContent(), $tag);
+        $this->assertNotEmpty($tag);
+        $this->assertStringNotContainsString('hidden', $tag[0]);
         $page->assertSee('Du kannst die Felder auch von Hand ändern.');
     }
 
