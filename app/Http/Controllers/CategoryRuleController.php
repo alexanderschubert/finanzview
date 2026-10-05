@@ -166,7 +166,8 @@ class CategoryRuleController extends Controller
             ->where('is_active', true)
             ->orderBy('type')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->inTreeOrder();
     }
 
     private function authorizeRule(CategoryRule $rule): void

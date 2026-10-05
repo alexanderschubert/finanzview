@@ -127,7 +127,7 @@ class BudgetController extends Controller
 
         $categories = $user->categories()
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
 
         return view('budgets.create', [
@@ -478,7 +478,7 @@ class BudgetController extends Controller
 
                         ->whereIn(
                             'category_id',
-                            $categoryIds
+                            \App\Models\Category::withDescendantIds($categoryIds)
                         )
 
                         ->with([
@@ -547,7 +547,7 @@ class BudgetController extends Controller
         $categories =
             $user->categories()
                 ->orderBy('name')
-                ->get();
+                ->get()->inTreeOrder();
 
 
         $budget->load('categories');

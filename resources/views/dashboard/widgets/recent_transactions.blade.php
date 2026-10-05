@@ -30,7 +30,7 @@
                                     @if ($isTransfer)
                                         · Umbuchung
                                     @elseif ($transaction->category)
-                                        · {{ $transaction->category->name }}
+                                        · {{ $transaction->category->display_name }}
                                     @endif
                                     @if ($transaction->account)
                                         · {{ $transaction->account->name }}

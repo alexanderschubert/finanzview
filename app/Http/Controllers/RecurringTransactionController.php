@@ -44,7 +44,7 @@ class RecurringTransactionController extends Controller
         $categories = Category::query()
             ->where('user_id', $request->user()->id)
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
         return view('recurring_transactions.create', [
             'accounts' => $accounts,
@@ -256,7 +256,7 @@ class RecurringTransactionController extends Controller
         $categories = Category::query()
             ->where('user_id', $request->user()->id)
             ->orderBy('name')
-            ->get();
+            ->get()->inTreeOrder();
 
         return view('recurring_transactions.edit', [
             'recurringTransaction' => $recurringTransaction,

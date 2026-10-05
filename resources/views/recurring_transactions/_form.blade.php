@@ -109,7 +109,7 @@
                     <option value="">Keine Kategorie</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" data-type="{{ $category->type }}" @selected((string) $value('category_id') === (string) $category->id)>
-                            {{ $category->icon }} {{ $category->name }}
+                            {{ $category->icon }} {{ $category->display_name }}
                         </option>
                     @endforeach
                 </select>

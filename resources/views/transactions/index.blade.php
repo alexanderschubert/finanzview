@@ -137,7 +137,7 @@
                 <option value="">Alle Kategorien</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>
-                        {{ $category->icon }} {{ $category->name }}
+                        {{ $category->icon }} {{ $category->display_name }}
                     </option>
                 @endforeach
             </select>
@@ -226,7 +226,7 @@
                                 $title = $transaction->merchant ?: $transaction->description;
 
                                 $details = collect([
-                                    $isTransfer ? null : $transaction->category?->name,
+                                    $isTransfer ? null : $transaction->category?->display_name,
                                     $transaction->merchant && $transaction->description !== $transaction->merchant ? $transaction->description : null,
                                     $isTransfer
                                         ? ($transaction->account?->name ?: 'Gelöschtes Konto') . ' → ' . ($transaction->transferAccount?->name ?: 'Gelöschtes Konto')

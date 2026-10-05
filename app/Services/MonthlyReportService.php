@@ -87,7 +87,7 @@ class MonthlyReportService
             ->whereDate('transaction_date', '>=', $from->toDateString())
             ->whereDate('transaction_date', '<=', $to->toDateString())
             ->whereHas('account')
-            ->with('category:id,name,icon,color')
+            ->with('category:id,parent_id,name,icon,color')
             ->get(['id', 'category_id', 'type', 'amount', 'transaction_date', 'description', 'merchant'])
             ->map(fn (Transaction $t) => [
                 'id' => $t->id,
@@ -96,7 +96,7 @@ class MonthlyReportService
                 'date' => $t->transaction_date,
                 'month' => $t->transaction_date->format('Y-m'),
                 'category_id' => $t->category_id,
-                'category_name' => $t->category?->name ?? 'Ohne Kategorie',
+                'category_name' => $t->category?->display_name ?? 'Ohne Kategorie',
                 'category_icon' => $t->category?->icon,
                 'category_color' => $t->category?->color,
                 'title' => $t->merchant ?: $t->description,
