@@ -25,10 +25,6 @@
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Kategorien" subtitle="Ordne deine Einnahmen und Ausgaben.">
-        <a href="{{ route('payees.index') }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
-            <x-icon name="user" class="w-4 h-4" />
-            Empfänger
-        </a>
         <a href="{{ route('tags.index') }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
             <span class="text-base leading-none" aria-hidden="true">#</span>
             Tags

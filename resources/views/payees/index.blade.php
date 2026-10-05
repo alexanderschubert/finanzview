@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Empfänger – FinanzView')
-@section('eyebrow', 'Kategorien')
+@section('eyebrow', 'Finanzverwaltung')
 @section('page_title', 'Empfänger')
 
 @php
@@ -12,8 +12,6 @@
 @section('content')
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-32">
-
-    <x-back-link :href="route('categories.index')" label="Kategorien" />
 
     <x-page-header title="Empfänger" subtitle="Einheitliche Namen für Händler und Auftraggeber – mit Standardkategorie, die bei neuen Buchungen automatisch greift. Der Buchungstext der Bank bleibt dabei unverändert." />
 
@@ -156,10 +154,10 @@
             </form>
 
             <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
-                Wähle mindestens zwei Empfänger aus, um sie zusammenzuführen – z. B. „PayPal *Patreon“ und „PAYPAL *PATREONIREL“.
+                {{ $rows->count() === $total ? 'Alle ' . $total . ' Empfänger werden angezeigt.' : $rows->count() . ' von ' . $total . ' Empfängern (Suche).' }}
+                Wähle mindestens zwei aus, um sie zusammenzuführen – z. B. „PayPal *Patreon“ und „PAYPAL *PATREONIREL“.
             </p>
 
-            <x-pagination :paginator="$rows" />
         @endif
 
     @endif

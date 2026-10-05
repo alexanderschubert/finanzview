@@ -7,13 +7,10 @@ use App\Models\Payee;
 use App\Models\PayeeAlias;
 use App\Services\PayeeService;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 
 class PayeeController extends Controller
 {
-    private const PER_PAGE = 50;
-
     public function __construct(
         private PayeeService $payees
     ) {
@@ -52,18 +49,8 @@ class PayeeController extends Controller
             })
             ->values();
 
-        $page = max(1, (int) $request->query('page', 1));
-
-        $paginator = new LengthAwarePaginator(
-            $rows->forPage($page, self::PER_PAGE)->values(),
-            $rows->count(),
-            self::PER_PAGE,
-            $page,
-            ['path' => route('payees.index'), 'query' => $request->query()]
-        );
-
         return view('payees.index', [
-            'rows' => $paginator,
+            'rows' => $rows,
             'suggestions' => $suggestions,
             'stats' => $stats,
             'showSuggestions' => $showSuggestions,
