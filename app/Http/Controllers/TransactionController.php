@@ -8,6 +8,7 @@ use App\Models\CreditCard;
 use App\Models\Tag;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
+use App\Services\PayeeService;
 use App\Services\TagService;
 use App\Services\TransferMatcher;
 use Illuminate\Http\Request;
@@ -843,6 +844,12 @@ class TransactionController extends Controller
             $validated['type'] === 'transfer'
                 ? null
                 : ($validated['credit_card_id'] ?? null);
+
+        // Empfänger: einheitlicher Name (die gewählte Kategorie bleibt unverändert).
+        if ($transaction->type !== 'transfer') {
+            $transaction->merchant = app(PayeeService::class)->ensure($user->id, $transaction->merchant)?->name
+                ?? $transaction->merchant;
+        }
 
         $transaction->save();
 

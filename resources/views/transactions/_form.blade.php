@@ -91,8 +91,13 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <x-field label="Händler" for="merchant" error="merchant">
-                <input id="merchant" name="merchant" type="text" maxlength="255"
+                <input id="merchant" name="merchant" type="text" maxlength="255" list="payee-names" autocomplete="off"
                     value="{{ $value('merchant') }}" placeholder="z. B. REWE" class="fv-input">
+                <datalist id="payee-names">
+                    @foreach (\App\Models\Payee::query()->where('user_id', auth()->id())->orderBy('name')->limit(500)->pluck('name') as $payeeName)
+                        <option value="{{ $payeeName }}"></option>
+                    @endforeach
+                </datalist>
             </x-field>
 
             <x-field label="Datum" for="transaction_date" error="transaction_date">

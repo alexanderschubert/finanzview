@@ -5,6 +5,7 @@ namespace App\Services\Fints;
 use App\Models\Transaction;
 use App\Services\CategoryRuleService;
 use App\Services\CsvImportService;
+use App\Services\PayeeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -21,6 +22,7 @@ class BankTransactionImporter
     public function __construct(
         private CategoryRuleService $rules,
         private CsvImportService $csv,
+        private PayeeService $payeeService,
     ) {
     }
 
@@ -33,6 +35,7 @@ class BankTransactionImporter
         $items = $this->prepare($iban, $rows);
 
         $summary = ['imported' => 0, 'known' => 0, 'possible' => 0];
+        $created = [];
 
         if ($items === []) {
             return $summary;
@@ -58,8 +61,9 @@ class BankTransactionImporter
 
         $rules = $this->rules->rulesFor($userId);
         $learned = $this->csv->categorySuggestions($userId);
+        $payees = $this->payeeService->lookup($userId);
 
-        DB::transaction(function () use ($items, $known, &$existing, $rules, $learned, $userId, $accountId, &$summary) {
+        DB::transaction(function () use ($items, $known, &$existing, $rules, $learned, $payees, $userId, $accountId, &$summary, &$created) {
             foreach ($items as $item) {
                 if ($known->has($item['external_id'])) {
                     $summary['known']++;
@@ -74,22 +78,30 @@ class BankTransactionImporter
                     continue;
                 }
 
+                // Empfänger: einheitlicher Name und Standardkategorie.
+                $payee = $payees->find($item['merchant']);
+                $merchant = $payee['name'] ?? $item['merchant'];
+
                 Transaction::create([
                     'user_id' => $userId,
                     'account_id' => $accountId,
                     'category_id' => $this->rules->match($rules, $item['type'], $item['merchant'], $item['description'])
-                        ?? $this->csv->suggestCategory($learned, $item['type'], (string) $item['merchant'], $item['description']),
+                        ?? $payees->categoryFor($payee, $item['type'])
+                        ?? $this->csv->suggestCategory($learned, $item['type'], (string) $merchant, $item['description']),
                     'type' => $item['type'],
                     'amount' => $item['amount'],
                     'transaction_date' => $item['date'],
                     'description' => $item['description'],
-                    'merchant' => $item['merchant'],
+                    'merchant' => $merchant,
                     'external_id' => $item['external_id'],
                 ]);
 
+                $created[] = $merchant;
                 $summary['imported']++;
             }
         });
+
+        $this->payeeService->ensureMany($userId, $created);
 
         return $summary;
     }

@@ -9,6 +9,7 @@
         'accounts' => 'Konten',
         'categories' => 'Kategorien',
         'category_rules' => 'Kategorie-Regeln',
+        'payees' => 'Empfänger',
         'tags' => 'Tags',
         'transactions' => 'Buchungen',
         'budgets' => 'Budgets',
