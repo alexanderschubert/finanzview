@@ -139,6 +139,53 @@
         </div>
     @endif
 
+    {{-- BANKENLISTE --}}
+
+    @php
+        $instituteCount = \App\Models\FintsInstitute::query()->count();
+        $importedAt = \App\Models\ApplicationSetting::get('fints_institutes_imported_at');
+    @endphp
+
+    @if ($enabled || auth()->user()->isAdmin())
+        <section>
+            <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Bankenliste</h3>
+
+            <div class="fv-card p-5 space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400 flex items-center justify-center">
+                        <x-icon name="landmark" class="w-5 h-5" />
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-slate-900 dark:text-white">
+                            {{ $instituteCount > 0 ? number_format($instituteCount, 0, ',', '.') . ' Banken' : 'Noch keine Bankenliste' }}
+                        </p>
+                        <p class="text-[13px] text-slate-500 dark:text-slate-400">
+                            @if ($instituteCount > 0 && $importedAt)
+                                Importiert am {{ \Carbon\Carbon::parse($importedAt)->format('d.m.Y') }} – beim Verbinden genügt der Banknamen.
+                            @else
+                                Mit der FinTS-Bankenliste der Deutschen Kreditwirtschaft genügt beim Verbinden der Banknamen.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                @if (auth()->user()->isAdmin())
+                    <form method="POST" action="{{ route('bank-connections.institutes.import') }}" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-2 sm:items-center">
+                        @csrf
+                        <label class="sr-only" for="list">Bankenliste (CSV)</label>
+                        <input id="list" name="list" type="file" accept=".csv,.txt,text/csv" required class="fv-input text-sm flex-1 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 dark:file:bg-white/10 file:px-3 file:py-1.5 file:text-sm">
+                        <button type="submit" class="fv-btn fv-btn-secondary text-sm py-2.5">{{ $instituteCount > 0 ? 'Liste ersetzen' : 'Liste importieren' }}</button>
+                    </form>
+                    @error('list')
+                        <p class="text-[13px] text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                @elseif ($instituteCount === 0)
+                    <p class="text-[13px] text-slate-500 dark:text-slate-400">Ein Administrator kann sie hier importieren.</p>
+                @endif
+            </div>
+        </section>
+    @endif
+
     <p class="px-1 text-[13px] text-slate-500 dark:text-slate-400">
         Deine Online-Banking-PIN wird nie gespeichert, sondern bei jedem Abruf abgefragt. Abgerufene Umsätze laufen durch deine
         <a href="{{ route('category-rules.index') }}" class="fv-link">Kategorie-Regeln</a>; bereits vorhandene Buchungen werden erkannt und übersprungen.
