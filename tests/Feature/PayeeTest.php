@@ -92,10 +92,12 @@ class PayeeTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertSessionHas('success', '2 Empfänger wurden zu „PayPal Patreon“ zusammengeführt.');
 
-        $this->assertSame(3, Transaction::where('merchant', 'PayPal Patreon')->count());
-        $this->assertSame(0, Transaction::where('merchant', 'like', '%PATREONIREL%')->count());
-
         $payee = $this->payee('PayPal Patreon');
+
+        // Buchungstext der Bank bleibt unverändert, die Buchungen gehören jetzt zu einem Empfänger.
+        $this->assertSame(3, Transaction::where('payee_id', $payee->id)->count());
+        $this->assertSame(3, Transaction::where('merchant', 'like', '%PATREONIREL%')->count());
+        $this->assertSame(0, Transaction::where('merchant', 'PayPal Patreon')->count());
         $this->assertSame(3, $payee->aliases()->count());
 
         $this->actingAs($this->user)->get(route('payees.index', ['view' => 'suggestions']))->assertSee('Keine ähnlichen Namen');
@@ -137,8 +139,11 @@ class PayeeTest extends TestCase
             ->post(route('payees.merge.store'), ['ids' => $ids, 'name' => 'Amazon', 'default_category_id' => $this->shopping->id, 'apply' => '1'])
             ->assertSessionHasNoErrors();
 
-        $this->assertSame(3, Transaction::where('merchant', 'Amazon')->where('category_id', $this->shopping->id)->count());
-        $this->assertSame($this->shopping->id, $this->payee('Amazon')->default_category_id);
+        $amazon = $this->payee('Amazon');
+
+        $this->assertSame(3, Transaction::where('payee_id', $amazon->id)->where('category_id', $this->shopping->id)->count());
+        $this->assertSame($this->shopping->id, $amazon->default_category_id);
+        $this->assertSame(['AMZN Mktp DE'], Transaction::where('merchant', 'AMZN Mktp DE')->pluck('merchant')->all());
     }
 
     public function test_new_transactions_use_the_canonical_name_and_default_category(): void
@@ -160,7 +165,8 @@ class PayeeTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $created = Transaction::where('description', 'Oktober')->firstOrFail();
-        $this->assertSame('Netflix', $created->merchant);
+        $this->assertSame('netflix.com', $created->merchant);            // Händlertext unverändert
+        $this->assertSame('Netflix', $created->payee->name);            // Empfänger zusätzlich
         $this->assertSame($this->abos->id, $created->category_id);
 
         // Gewählte Kategorie hat Vorrang.
@@ -208,7 +214,8 @@ class PayeeTest extends TestCase
         ]);
 
         $imported = Transaction::where('description', 'Einkauf 1')->firstOrFail();
-        $this->assertSame('PayPal', $imported->merchant);
+        $this->assertSame('PayPal (Europe) S.a r.l. et Cie', $imported->merchant);   // Originaltext der Bank
+        $this->assertSame('PayPal', $imported->payee->name);
         $this->assertSame($this->shopping->id, $imported->category_id);
 
         // Erneuter Import erkennt die Zeile trotz geändertem Namen als bereits importiert.
@@ -248,7 +255,8 @@ class PayeeTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertSessionHas('success', 'Empfänger „Rewe“ wurde gespeichert. 3 Buchungen bekamen die Kategorie.');
 
-        $this->assertSame('Rewe', $uncategorized->fresh()->merchant);
+        $this->assertSame('Rewe Markt 12', $uncategorized->fresh()->merchant);        // Originaltext bleibt
+        $this->assertSame('Rewe', $uncategorized->fresh()->payee->name);
         $this->assertSame($this->abos->id, $uncategorized->fresh()->category_id);
         $this->assertSame($this->shopping->id, $categorized->fresh()->category_id);   // bleibt
 
@@ -335,6 +343,13 @@ class PayeeTest extends TestCase
         $this->assertSame(3, $restored->aliases()->count());
 
         $this->assertSame('Netflix', app(PayeeService::class)->lookup($target->id)->find('netflix.com')['name']);
+
+        // Buchungen behalten den Originaltext und sind wieder dem Empfänger zugeordnet.
+        $this->assertEqualsCanonicalizing(
+            ['Netflix International B.V.', 'NETFLIX.COM'],
+            Transaction::where('user_id', $target->id)->pluck('merchant')->all()
+        );
+        $this->assertSame(2, Transaction::where('user_id', $target->id)->where('payee_id', $restored->id)->count());
     }
 
     public function test_categories_page_links_to_payees_and_form_offers_suggestions(): void
@@ -348,5 +363,87 @@ class PayeeTest extends TestCase
             ->get(route('transactions.create'))
             ->assertSee('<datalist id="payee-names">', false)
             ->assertSee('<option value="Rewe">', false);
+    }
+
+    public function test_list_shows_payee_as_title_keeps_bank_text_and_filters_by_payee(): void
+    {
+        $this->spend('PAYPAL *PATREONIREL MEM 4159353822', 5.95);
+        $this->spend('Netflix', 13.99);
+        $this->actingAs($this->user)->get(route('payees.index'));
+
+        $paypal = $this->payee('PAYPAL *PATREONIREL MEM 4159353822');
+        $this->actingAs($this->user)->put(route('payees.update', $paypal), ['name' => 'Patreon'])->assertSessionHasNoErrors();
+
+        $page = $this->actingAs($this->user)->get(route('transactions.index'))->assertOk();
+        $content = $page->getContent();
+
+        $this->assertMatchesRegularExpression('/truncate">\s*Patreon\s*<\/p>/', $content);
+        $page->assertSee('PAYPAL *PATREONIREL MEM 4159353822');   // Buchungstext der Bank bleibt sichtbar
+
+        $this->actingAs($this->user)
+            ->get(route('transactions.index', ['payee' => $paypal->id]))
+            ->assertSee('Patreon')
+            ->assertDontSee('Netflix');
+
+        // Suche findet auch den Empfängernamen.
+        $this->actingAs($this->user)
+            ->get(route('transactions.index', ['search' => 'patreon']))
+            ->assertSee('1 Buchung gefunden');
+    }
+
+    public function test_payee_can_be_chosen_explicitly_on_a_transaction_and_is_learned(): void
+    {
+        $transaction = $this->spend('AMZN Mktp DE*2A1B', 25);
+
+        $edit = fn (array $extra) => $this->actingAs($this->user)->put(route('transactions.update', $transaction), [
+            'account_id' => $this->giro->id, 'type' => 'expense', 'amount' => 25, 'transaction_date' => '2026-09-10',
+            'description' => $transaction->description, 'merchant' => 'AMZN Mktp DE*2A1B', ...$extra,
+        ])->assertSessionHasNoErrors();
+
+        $edit(['payee' => 'Amazon']);
+
+        $transaction->refresh();
+        $this->assertSame('Amazon', $transaction->payee->name);
+        $this->assertSame('AMZN Mktp DE*2A1B', $transaction->merchant);
+
+        // Der Händlertext wurde als Schreibweise gemerkt: neue Buchungen damit gehören zu Amazon.
+        $this->assertSame('Amazon', app(PayeeService::class)->lookup($this->user->id)->find('AMZN Mktp DE*2A1B')['name']);
+
+        $this->actingAs($this->user)
+            ->get(route('transactions.edit', $transaction))
+            ->assertSee('name="payee"', false)
+            ->assertSee('value="Amazon"', false);
+
+        // Leeres Feld: Empfänger wird wieder aus dem Händlertext abgeleitet (gelernte Schreibweise).
+        $edit(['payee' => '']);
+        $this->assertSame('Amazon', $transaction->fresh()->payee->name);
+    }
+
+    public function test_sidebar_links_to_payees_and_reports_use_payee_names(): void
+    {
+        $this->spend('Rewe Markt 12', 40);
+        $this->spend('REWE Markt 99', 60);
+        $this->actingAs($this->user)->get(route('payees.index'));
+
+        $this->actingAs($this->user)
+            ->post(route('payees.merge.store'), ['ids' => Payee::pluck('id')->all(), 'name' => 'Rewe'])
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($this->user)
+            ->get(route('dashboard'))
+            ->assertSee(route('payees.index'), false);
+
+        // Top-Händler fasst beide Schreibweisen unter dem Empfängernamen zusammen.
+        $report = app(\App\Services\ReportService::class)->build(
+            $this->user,
+            \Carbon\CarbonImmutable::parse('2026-09-01'),
+            \Carbon\CarbonImmutable::parse('2026-09-30')->endOfDay()
+        );
+
+        $top = $report['top_merchants']->first();
+
+        $this->assertSame('Rewe', $top['name']);
+        $this->assertSame(2, $top['count']);
+        $this->assertEqualsWithDelta(100, $top['amount'], 0.001);
     }
 }

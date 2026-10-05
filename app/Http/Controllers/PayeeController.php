@@ -24,8 +24,8 @@ class PayeeController extends Controller
     {
         $userId = Auth::id();
 
-        // Ältere Buchungen: für jeden Händlernamen einen Empfänger anlegen.
-        $this->payees->syncFromTransactions($userId);
+        // Ältere Buchungen: für jeden Händlernamen einen Empfänger anlegen und zuordnen.
+        $this->payees->assignUnassigned($userId);
 
         $stats = $this->payees->stats($userId);
         $suggestions = $this->payees->suggestions($userId);
@@ -39,7 +39,7 @@ class PayeeController extends Controller
             ->with('defaultCategory')
             ->get()
             ->map(function (Payee $payee) use ($stats) {
-                $stat = $stats[PayeeService::key($payee->name)] ?? ['count' => 0, 'expense' => 0.0, 'income' => 0.0, 'last' => null];
+                $stat = $stats[$payee->id] ?? ['count' => 0, 'expense' => 0.0, 'income' => 0.0, 'last' => null];
 
                 return ['payee' => $payee] + $stat;
             })
@@ -77,7 +77,7 @@ class PayeeController extends Controller
     {
         $this->authorizePayee($payee);
 
-        $stat = $this->payees->stats(Auth::id())[PayeeService::key($payee->name)]
+        $stat = $this->payees->stats(Auth::id())[$payee->id]
             ?? ['count' => 0, 'expense' => 0.0, 'income' => 0.0, 'last' => null];
 
         return view('payees.edit', [
@@ -119,7 +119,7 @@ class PayeeController extends Controller
     {
         $this->authorizePayee($payee);
 
-        $count = $this->payees->stats(Auth::id())[PayeeService::key($payee->name)]['count'] ?? 0;
+        $count = $this->payees->stats(Auth::id())[$payee->id]['count'] ?? 0;
 
         if ($count > 0) {
             return back()->with('error', 'Empfänger mit Buchungen können nicht gelöscht werden – führe sie stattdessen mit einem anderen zusammen.');
@@ -160,7 +160,7 @@ class PayeeController extends Controller
         }
 
         $stats = $this->payees->stats(Auth::id());
-        $count = fn (Payee $payee) => $stats[PayeeService::key($payee->name)]['count'] ?? 0;
+        $count = fn (Payee $payee) => $stats[$payee->id]['count'] ?? 0;
 
         $selected = $selected->sortByDesc($count)->values();
 

@@ -5,7 +5,7 @@
 @section('page_title', 'Zusammenführen')
 
 @php
-    $total = $selected->sum(fn ($payee) => $stats[\App\Services\PayeeService::key($payee->name)]['count'] ?? 0);
+    $total = $selected->sum(fn ($payee) => $stats[$payee->id]['count'] ?? 0);
 @endphp
 
 @section('content')
@@ -24,7 +24,7 @@
 
         <ul class="fv-card divide-y divide-slate-100 dark:divide-white/5">
             @foreach ($selected as $payee)
-                @php $count = $stats[\App\Services\PayeeService::key($payee->name)]['count'] ?? 0; @endphp
+                @php $count = $stats[$payee->id]['count'] ?? 0; @endphp
                 <li class="flex items-center gap-3 px-5 py-3">
                     <p class="flex-1 min-w-0 text-sm font-medium text-slate-900 dark:text-white truncate">{{ $payee->name }}</p>
                     <button type="button" data-use-name="{{ $payee->name }}" class="fv-link text-xs shrink-0">Name übernehmen</button>
@@ -34,7 +34,7 @@
         </ul>
 
         <div class="fv-card p-5 sm:p-6 space-y-4">
-            <x-field label="Gemeinsamer Name" for="name" error="name" hint="Alle Buchungen bekommen diesen Namen. Die bisherigen Schreibweisen merkt sich FinanzView: Künftige Buchungen damit (Import, Bankabruf, Eingabe) werden automatisch zugeordnet.">
+            <x-field label="Gemeinsamer Name" for="name" error="name" hint="Alle Buchungen gehören danach zu diesem Empfänger. Der Buchungstext der Bank bleibt unverändert. Die bisherigen Schreibweisen merkt sich FinanzView: Künftige Buchungen damit (Import, Bankabruf, Eingabe) werden automatisch zugeordnet.">
                 <input id="name" name="name" type="text" required maxlength="255" value="{{ old('name', $suggestedName) }}" class="fv-input" autofocus>
             </x-field>
 

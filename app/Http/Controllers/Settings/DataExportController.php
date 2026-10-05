@@ -209,7 +209,7 @@ class DataExportController extends Controller
             ]);
 
         $transactions = $user->transactions()
-            ->with('tags')
+            ->with(['tags', 'payee:id,name'])
             ->get()
             ->map(function ($item) {
                 return array_merge(
@@ -232,6 +232,7 @@ class DataExportController extends Controller
                         'external_id',
                     ]),
                     [
+                        'payee' => $item->payee?->name,
                         'tags' => $item->tags
                             ->map(fn ($tag) => $tag->only([
                                 'id',
@@ -1086,6 +1087,9 @@ class DataExportController extends Controller
          * =========================================================
          */
 
+        // Empfänger-Zuordnung über Name bzw. Schreibweise (Händlertext).
+        $payeeByKey = PayeeAlias::query()->where('user_id', $user->id)->pluck('payee_id', 'alias_key');
+
         foreach ($payload['transactions'] as $item) {
             if (!is_array($item) || empty($item['id'])) {
                 continue;
@@ -1202,6 +1206,9 @@ class DataExportController extends Controller
                     $item['transaction_date'] ?? null,
                 'description' => $item['description'] ?? null,
                 'merchant' => $item['merchant'] ?? null,
+                'payee_id' => $payeeByKey[\App\Services\PayeeService::key($item['payee'] ?? null)]
+                    ?? $payeeByKey[\App\Services\PayeeService::key($item['merchant'] ?? null)]
+                    ?? null,
                 'reference' => $item['reference'] ?? null,
                 'notes' => $item['notes'] ?? null,
                 'is_pending' => $item['is_pending'] ?? false,
@@ -1684,6 +1691,9 @@ class DataExportController extends Controller
                     $values
                 );
         }
+
+        // Ältere Backups ohne Empfänger: Händlernamen den Empfängern zuordnen.
+        app(\App\Services\PayeeService::class)->assignUnassigned($user->id);
 
         return $result;
     }

@@ -380,23 +380,25 @@ class CsvImportService
             $occurrences[$key] = ($occurrences[$key] ?? 0) + 1;
             $externalId = 'csv:' . sha1($key . '|' . $occurrences[$key]);
 
-            // Empfänger: einheitlicher Name und Standardkategorie (Fingerabdruck oben bleibt beim Originaltext).
+            // Empfänger: einheitlicher Name und Standardkategorie. Der Händlertext der Bank bleibt unverändert.
             $payee = $payees->find($merchant);
-            $displayMerchant = $payee['name'] ?? $merchant;
+            $payeeName = $payee['name'] ?? $merchant;
 
             return [
                 'index' => $index,
                 'date' => $date,
                 'amount' => $amount === null ? null : abs($amount),
                 'type' => $type,
-                'merchant' => $displayMerchant,
+                'merchant' => $merchant,
+                'payee_id' => $payee['id'] ?? null,
+                'payee_name' => $payee['name'] ?? null,
                 'description' => $description !== '' ? $description : ($merchant !== '' ? $merchant : 'CSV-Import'),
                 'external_id' => $externalId,
                 // Eigene Regeln zuerst, dann Standardkategorie des Empfängers, sonst aus bisherigen Buchungen gelernt.
                 'category_id' => $error === null
                     ? ($ruleService->match($rules, $type, $merchant, $description)
                         ?? $payees->categoryFor($payee, $type)
-                        ?? $this->suggestCategory($categorySuggestions, $type, $displayMerchant, $description))
+                        ?? $this->suggestCategory($categorySuggestions, $type, $payeeName, $description))
                     : null,
                 'error' => $error,
                 'duplicate' => null,
@@ -484,9 +486,10 @@ class CsvImportService
             ->orderByDesc('transaction_date')
             ->orderByDesc('id')
             ->limit(3000)
-            ->get(['type', 'merchant', 'description', 'category_id'])
+            ->with('payee:id,name')
+            ->get(['type', 'merchant', 'payee_id', 'description', 'category_id'])
             ->each(function ($transaction) use (&$suggestions) {
-                foreach ([$transaction->merchant, $transaction->description] as $text) {
+                foreach ([$transaction->payee?->name, $transaction->merchant, $transaction->description] as $text) {
                     $key = $this->suggestionKey($text);
 
                     if ($key !== '') {

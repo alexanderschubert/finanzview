@@ -28,6 +28,7 @@
             ['accounts.index', 'accounts.*', 'landmark', 'Konten'],
             ['transactions.index', 'transactions.*', 'arrows', 'Buchungen'],
             ['categories.index', 'categories.*', 'tag', 'Kategorien'],
+            ['payees.index', 'payees.*', 'user', 'Empfänger'],
         ],
         'Planung' => [
             ['budgets.index', 'budgets.*', 'target', 'Budgets'],

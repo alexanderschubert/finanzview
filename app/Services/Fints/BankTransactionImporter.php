@@ -35,7 +35,6 @@ class BankTransactionImporter
         $items = $this->prepare($iban, $rows);
 
         $summary = ['imported' => 0, 'known' => 0, 'possible' => 0];
-        $created = [];
 
         if ($items === []) {
             return $summary;
@@ -63,7 +62,7 @@ class BankTransactionImporter
         $learned = $this->csv->categorySuggestions($userId);
         $payees = $this->payeeService->lookup($userId);
 
-        DB::transaction(function () use ($items, $known, &$existing, $rules, $learned, $payees, $userId, $accountId, &$summary, &$created) {
+        DB::transaction(function () use ($items, $known, &$existing, $rules, $learned, $payees, $userId, $accountId, &$summary) {
             foreach ($items as $item) {
                 if ($known->has($item['external_id'])) {
                     $summary['known']++;
@@ -78,30 +77,30 @@ class BankTransactionImporter
                     continue;
                 }
 
-                // Empfänger: einheitlicher Name und Standardkategorie.
+                // Empfänger zuordnen; der Händlertext der Bank bleibt unverändert.
                 $payee = $payees->find($item['merchant']);
-                $merchant = $payee['name'] ?? $item['merchant'];
+                $payeeId = $payee['id'] ?? $this->payeeService->ensure($userId, $item['merchant'])?->id;
+                $payeeName = $payee['name'] ?? (string) $item['merchant'];
 
                 Transaction::create([
                     'user_id' => $userId,
                     'account_id' => $accountId,
+                    'payee_id' => $payeeId,
                     'category_id' => $this->rules->match($rules, $item['type'], $item['merchant'], $item['description'])
                         ?? $payees->categoryFor($payee, $item['type'])
-                        ?? $this->csv->suggestCategory($learned, $item['type'], (string) $merchant, $item['description']),
+                        ?? $this->csv->suggestCategory($learned, $item['type'], $payeeName, $item['description']),
                     'type' => $item['type'],
                     'amount' => $item['amount'],
                     'transaction_date' => $item['date'],
                     'description' => $item['description'],
-                    'merchant' => $merchant,
+                    'merchant' => $item['merchant'],
                     'external_id' => $item['external_id'],
                 ]);
 
-                $created[] = $merchant;
                 $summary['imported']++;
             }
         });
 
-        $this->payeeService->ensureMany($userId, $created);
 
         return $summary;
     }

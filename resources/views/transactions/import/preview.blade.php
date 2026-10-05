@@ -162,11 +162,15 @@
                             <div class="flex items-start gap-3">
                                 <div class="flex-1 min-w-0">
                                     <p class="font-medium text-slate-900 dark:text-white truncate">
-                                        {{ $item['merchant'] !== '' ? $item['merchant'] : $item['description'] }}
+                                        {{ $item['payee_name'] ?? ($item['merchant'] !== '' ? $item['merchant'] : $item['description']) }}
                                     </p>
                                     <p class="text-[13px] text-slate-500 dark:text-slate-400 truncate">
                                         {{ $item['date']?->format('d.m.Y') ?? '–' }}
-                                        @if ($item['merchant'] !== '' && $item['description'] !== $item['merchant'])
+                                        {{-- Der Buchungstext der Bank bleibt sichtbar und wird nicht verändert. --}}
+                                        @if ($item['payee_name'] && $item['merchant'] !== '' && mb_strtolower($item['payee_name']) !== mb_strtolower($item['merchant']))
+                                            · {{ $item['merchant'] }}
+                                        @endif
+                                        @if (($item['payee_name'] || $item['merchant'] !== '') && $item['description'] !== $item['merchant'] && $item['description'] !== ($item['payee_name'] ?? ''))
                                             · {{ $item['description'] }}
                                         @endif
                                     </p>

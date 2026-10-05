@@ -15,7 +15,7 @@
 
     <x-back-link :href="route('categories.index')" label="Kategorien" />
 
-    <x-page-header title="Empfänger" subtitle="Einheitliche Namen für Händler und Auftraggeber – mit Standardkategorie, die bei neuen Buchungen automatisch greift." />
+    <x-page-header title="Empfänger" subtitle="Einheitliche Namen für Händler und Auftraggeber – mit Standardkategorie, die bei neuen Buchungen automatisch greift. Der Buchungstext der Bank bleibt dabei unverändert." />
 
     <x-flash />
 
@@ -55,7 +55,7 @@
                     <div class="fv-card p-4 sm:p-5 space-y-3">
                         <ul class="divide-y divide-slate-100 dark:divide-white/5">
                             @foreach ($group as $payee)
-                                @php $stat = $stats[\App\Services\PayeeService::key($payee->name)] ?? ['count' => 0]; @endphp
+                                @php $stat = $stats[$payee->id] ?? ['count' => 0]; @endphp
                                 <li class="flex items-center gap-3 py-2">
                                     <p class="flex-1 min-w-0 text-sm font-medium text-slate-900 dark:text-white truncate">{{ $payee->name }}</p>
                                     <p class="shrink-0 text-xs text-slate-500 dark:text-slate-400 tabular-nums">{{ $stat['count'] === 1 ? '1 Buchung' : $stat['count'] . ' Buchungen' }}</p>

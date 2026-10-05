@@ -87,8 +87,8 @@ class MonthlyReportService
             ->whereDate('transaction_date', '>=', $from->toDateString())
             ->whereDate('transaction_date', '<=', $to->toDateString())
             ->whereHas('account')
-            ->with('category:id,parent_id,name,icon,color')
-            ->get(['id', 'category_id', 'type', 'amount', 'transaction_date', 'description', 'merchant'])
+            ->with(['category:id,parent_id,name,icon,color', 'payee:id,name'])
+            ->get(['id', 'category_id', 'payee_id', 'type', 'amount', 'transaction_date', 'description', 'merchant'])
             ->map(fn (Transaction $t) => [
                 'id' => $t->id,
                 'type' => $t->type,
@@ -99,8 +99,8 @@ class MonthlyReportService
                 'category_name' => $t->category?->display_name ?? 'Ohne Kategorie',
                 'category_icon' => $t->category?->icon,
                 'category_color' => $t->category?->color,
-                'title' => $t->merchant ?: $t->description,
-                'merchant_key' => $this->merchantKey($t->merchant ?: $t->description),
+                'title' => $t->payee?->name ?: ($t->merchant ?: $t->description),
+                'merchant_key' => $this->merchantKey($t->payee?->name ?: ($t->merchant ?: $t->description)),
             ]);
     }
 

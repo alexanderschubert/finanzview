@@ -37,6 +37,7 @@ class TransactionController extends Controller
                 'category',
                 'transferAccount',
                 'tags',
+                'payee:id,name',
             ])
             ->orderByDesc('transaction_date')
             ->orderByDesc('id');
@@ -60,7 +61,8 @@ class TransactionController extends Controller
             $query->where(function ($q) use ($search) {
 
                 $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
-                    ->orWhereRaw('LOWER(merchant) LIKE ?', ["%{$search}%"]);
+                    ->orWhereRaw('LOWER(merchant) LIKE ?', ["%{$search}%"])
+                    ->orWhereHas('payee', fn ($payee) => $payee->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]));
 
             });
 
@@ -119,6 +121,19 @@ class TransactionController extends Controller
 
             // Eine Hauptkategorie schließt ihre Unterkategorien ein.
             $query->whereIn('category_id', Category::withDescendantIds([(int) $request->input('category_id')]));
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Empfänger
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('payee')) {
+
+            $query->where('payee_id', (int) $request->input('payee'));
 
         }
 
@@ -353,6 +368,13 @@ class TransactionController extends Controller
                 'max:255',
             ],
 
+            // Empfänger (einheitlicher Name); leer = aus dem Händlertext ableiten.
+            'payee' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
             'notes' => [
                 'nullable',
                 'string',
@@ -546,14 +568,14 @@ class TransactionController extends Controller
         }
 
         /*
-         * Empfänger: einheitlicher Name (auch bei anderer Schreibweise) und,
+         * Empfänger zuordnen (der Händlertext bleibt unverändert) und,
          * falls noch keine Kategorie feststeht, dessen Standardkategorie.
          */
         if ($transaction->type !== 'transfer') {
-            $payee = app(PayeeService::class)->ensure($user->id, $transaction->merchant);
+            $payee = app(PayeeService::class)->forTransaction($user->id, $transaction->merchant, $request->input('payee'));
 
             if ($payee) {
-                $transaction->merchant = $payee->name;
+                $transaction->payee_id = $payee->id;
 
                 $category = $transaction->category_id === null ? $payee->defaultCategory : null;
 
@@ -680,6 +702,13 @@ class TransactionController extends Controller
             ],
 
             'merchant' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            // Empfänger (einheitlicher Name); leer = aus dem Händlertext ableiten.
+            'payee' => [
                 'nullable',
                 'string',
                 'max:255',
@@ -863,11 +892,10 @@ class TransactionController extends Controller
                 ? null
                 : ($validated['credit_card_id'] ?? null);
 
-        // Empfänger: einheitlicher Name (die gewählte Kategorie bleibt unverändert).
-        if ($transaction->type !== 'transfer') {
-            $transaction->merchant = app(PayeeService::class)->ensure($user->id, $transaction->merchant)?->name
-                ?? $transaction->merchant;
-        }
+        // Empfänger zuordnen (Händlertext und gewählte Kategorie bleiben unverändert).
+        $transaction->payee_id = $transaction->type === 'transfer'
+            ? null
+            : app(PayeeService::class)->forTransaction($user->id, $transaction->merchant, $request->input('payee'))?->id;
 
         $transaction->save();
 
