@@ -91,19 +91,25 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <x-field label="Händler" for="merchant" error="merchant">
-                <input id="merchant" name="merchant" type="text" maxlength="255" list="payee-names" autocomplete="off"
+                <input id="merchant" name="merchant" type="text" maxlength="255"
                     value="{{ $value('merchant') }}" placeholder="z. B. REWE" class="fv-input">
-                <datalist id="payee-names">
-                    @foreach (\App\Models\Payee::query()->where('user_id', auth()->id())->orderBy('name')->limit(500)->pluck('name') as $payeeName)
-                        <option value="{{ $payeeName }}"></option>
-                    @endforeach
-                </datalist>
             </x-field>
 
             <x-field label="Datum" for="transaction_date" error="transaction_date">
                 <input id="transaction_date" name="transaction_date" type="date" required value="{{ $date }}" class="fv-input">
             </x-field>
         </div>
+
+        <x-field label="Empfänger" for="payee" error="payee" id="payee-field" class="{{ $selectedType === 'transfer' ? 'hidden' : '' }}"
+            hint="Einheitlicher Name, z. B. „Rewe“. Leer lassen: wird aus dem Händler abgeleitet. Der Händlertext bleibt unverändert.">
+            <input id="payee" name="payee" type="text" maxlength="255" list="payee-names" autocomplete="off"
+                value="{{ old('payee', $transaction->payee?->name) }}" placeholder="Automatisch" class="fv-input">
+            <datalist id="payee-names">
+                @foreach (\App\Models\Payee::query()->where('user_id', auth()->id())->orderBy('name')->limit(500)->pluck('name') as $payeeName)
+                    <option value="{{ $payeeName }}"></option>
+                @endforeach
+            </datalist>
+        </x-field>
 
     </div>
 
@@ -294,6 +300,7 @@
         const transferCard = document.getElementById('transfer-account-card');
         const transferSelect = document.getElementById('transfer_account_id');
         const categoryCard = document.getElementById('category-card');
+        const payeeField = document.getElementById('payee-field');
         const creditCardCard = document.getElementById('credit-card-card');
         const creditCardSelect = document.getElementById('credit_card_id');
 
@@ -313,6 +320,7 @@
             if (!isTransfer) transferSelect.value = '';
 
             categoryCard.classList.toggle('hidden', isTransfer);
+            payeeField.classList.toggle('hidden', isTransfer);
 
             if (creditCardCard) {
                 creditCardCard.classList.toggle('hidden', isTransfer);

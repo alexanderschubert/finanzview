@@ -18,7 +18,7 @@
 
     <x-page-header :title="$payee->name" :subtitle="($stat['count'] === 1 ? '1 Buchung' : $stat['count'] . ' Buchungen') . ($stat['last'] ? ' · zuletzt ' . \Carbon\Carbon::parse($stat['last'])->format('d.m.Y') : '')">
         @if ($stat['count'] > 0)
-            <a href="{{ route('transactions.index', ['search' => $payee->name]) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
+            <a href="{{ route('transactions.index', ['payee' => $payee->id]) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
                 <x-icon name="arrows" class="w-4 h-4" />
                 Buchungen
             </a>
@@ -38,7 +38,7 @@
         @csrf
         @method('PUT')
 
-        <x-field label="Name" for="name" error="name" hint="Umbenennen ändert den Namen bei allen Buchungen dieses Empfängers.">
+        <x-field label="Name" for="name" error="name" hint="Der Buchungstext der Bank bleibt unverändert – der Empfänger wird nur zusätzlich angezeigt.">
             <input id="name" name="name" type="text" required maxlength="255" value="{{ old('name', $payee->name) }}" class="fv-input">
         </x-field>
 

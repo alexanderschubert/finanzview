@@ -14,10 +14,13 @@ use Illuminate\Validation\ValidationException;
 /**
  * Empfänger-Verwaltung: einheitliche Namen für Händler und Auftraggeber.
  *
- * - Jeder Händlername einer Buchung wird zum Empfänger („Rewe“).
+ * Der Buchungstext der Bank (Händler, Verwendungszweck) wird nie
+ * verändert. Der Empfänger kommt als eigene Zuordnung (payee_id) dazu:
+ *
+ * - Jeder Händlername einer Buchung gehört zu einem Empfänger („Rewe“).
  * - Mehrere Schreibweisen lassen sich zu einem Empfänger zusammenführen;
- *   die alten Schreibweisen merkt sich der Empfänger als Alias und
- *   ordnet künftige Buchungen (Import, Bankabruf, Eingabe) automatisch zu.
+ *   die Schreibweisen merkt sich der Empfänger als Alias und ordnet
+ *   künftige Buchungen (Import, Bankabruf, Eingabe) automatisch zu.
  * - Ein Empfänger kann eine Standardkategorie haben.
  */
 class PayeeService
@@ -101,21 +104,37 @@ class PayeeService
     }
 
     /**
-     * @param  iterable<?string>  $merchants
+     * Empfänger für eine Buchung bestimmen.
+     *
+     * Mit ausdrücklich gewähltem Empfänger wird dieser verwendet (und der
+     * Händlertext als Schreibweise gemerkt, sofern frei); sonst wird er aus
+     * dem Händlertext abgeleitet.
      */
-    public function ensureMany(int $userId, iterable $merchants): void
+    public function forTransaction(int $userId, ?string $merchant, ?string $chosenName = null): ?Payee
     {
-        collect($merchants)
-            ->filter()
-            ->unique(fn ($merchant) => self::key($merchant))
-            ->each(fn ($merchant) => $this->ensure($userId, $merchant));
+        if (self::key($chosenName) === '') {
+            return $this->ensure($userId, $merchant);
+        }
+
+        $payee = $this->ensure($userId, $chosenName);
+        $merchantKey = self::key($merchant);
+
+        if ($payee && $merchantKey !== '') {
+            PayeeAlias::query()->firstOrCreate(
+                ['user_id' => $userId, 'alias_key' => $merchantKey],
+                ['payee_id' => $payee->id, 'alias' => self::cleanName((string) $merchant)]
+            );
+        }
+
+        return $payee;
     }
 
     /**
      * Legt für alle Händlernamen vorhandener Buchungen einen Empfänger an
-     * (einmalig für ältere Buchungen; neue entstehen beim Speichern).
+     * und ordnet Buchungen ohne Empfänger zu (einmalig für ältere Buchungen;
+     * neue Buchungen werden beim Speichern zugeordnet).
      */
-    public function syncFromTransactions(int $userId): void
+    public function assignUnassigned(int $userId): void
     {
         $known = PayeeAlias::query()->where('user_id', $userId)->pluck('alias_key')->flip();
 
@@ -123,6 +142,38 @@ class PayeeService
             ->groupBy(fn ($row) => self::key($row->merchant))
             ->reject(fn ($rows, $key) => $key === '' || $known->has($key))
             ->each(fn ($rows) => $this->ensure($userId, $rows->sortByDesc('n')->first()->merchant));
+
+        $payeeByKey = PayeeAlias::query()->where('user_id', $userId)->pluck('payee_id', 'alias_key');
+
+        Transaction::query()
+            ->where('user_id', $userId)
+            ->whereNull('payee_id')
+            ->whereNotNull('merchant')
+            ->where('merchant', '!=', '')
+            ->distinct()
+            ->pluck('merchant')
+            ->each(function (string $merchant) use ($userId, $payeeByKey) {
+                $payeeId = $payeeByKey[self::key($merchant)] ?? null;
+
+                if ($payeeId !== null) {
+                    Transaction::query()
+                        ->where('user_id', $userId)
+                        ->whereNull('payee_id')
+                        ->where('merchant', $merchant)
+                        ->update(['payee_id' => $payeeId]);
+                }
+            });
+    }
+
+    private function merchantRows(int $userId): Collection
+    {
+        return Transaction::query()
+            ->where('user_id', $userId)
+            ->whereNotNull('merchant')
+            ->where('merchant', '!=', '')
+            ->selectRaw('merchant, COUNT(*) AS n')
+            ->groupBy('merchant')
+            ->get();
     }
 
 
@@ -133,21 +184,28 @@ class PayeeService
     */
 
     /**
-     * Anzahl und Summen je Empfänger-Schlüssel (alle Schreibweisen zusammen).
+     * Anzahl und Summen je Empfänger (Schlüssel = Empfänger-ID).
      *
-     * @return Collection<string, array{count: int, expense: float, income: float, last: ?string, variants: list<string>}>
+     * @return Collection<int, array{count: int, expense: float, income: float, last: ?string}>
      */
     public function stats(int $userId): Collection
     {
-        return $this->merchantRows($userId)
-            ->groupBy(fn ($row) => self::key($row->merchant))
-            ->map(fn ($rows) => [
-                'count' => (int) $rows->sum('n'),
-                'expense' => round((float) $rows->sum('expense'), 2),
-                'income' => round((float) $rows->sum('income'), 2),
-                'last' => $rows->max('last'),
-                'variants' => $rows->pluck('merchant')->all(),
-            ]);
+        return Transaction::query()
+            ->where('user_id', $userId)
+            ->whereNotNull('payee_id')
+            ->selectRaw("payee_id,
+                COUNT(*) AS n,
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense,
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income,
+                MAX(transaction_date) AS last")
+            ->groupBy('payee_id')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(int) $row->payee_id => [
+                'count' => (int) $row->n,
+                'expense' => round((float) $row->expense, 2),
+                'income' => round((float) $row->income, 2),
+                'last' => $row->last,
+            ]]);
     }
 
     /**
@@ -168,24 +226,9 @@ class PayeeService
             ->groupBy(fn (Payee $payee) => self::similarityKey($payee->name))
             ->filter(fn (Collection $group) => $group->count() >= 2)
             ->map(fn (Collection $group) => $group
-                ->sortByDesc(fn (Payee $payee) => $stats[self::key($payee->name)]['count'] ?? 0)
+                ->sortByDesc(fn (Payee $payee) => $stats[$payee->id]['count'] ?? 0)
                 ->values())
             ->values();
-    }
-
-    private function merchantRows(int $userId): Collection
-    {
-        return Transaction::query()
-            ->where('user_id', $userId)
-            ->whereNotNull('merchant')
-            ->where('merchant', '!=', '')
-            ->selectRaw("merchant,
-                COUNT(*) AS n,
-                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense,
-                COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income,
-                MAX(transaction_date) AS last")
-            ->groupBy('merchant')
-            ->get();
     }
 
 
@@ -199,8 +242,9 @@ class PayeeService
      * Empfänger zusammenführen (bzw. bei nur einem: umbenennen und
      * Standardkategorie setzen).
      *
-     * Alle Buchungen mit einer der Schreibweisen bekommen den neuen Namen;
-     * die Namen bleiben als Aliase erhalten.
+     * Die Buchungen der zusammengeführten Empfänger gehören danach zum
+     * Ziel-Empfänger; ihre Schreibweisen bleiben als Aliase erhalten.
+     * Der Buchungstext der Bank wird nicht verändert.
      *
      * @param  Collection<int, Payee>  $payees
      */
@@ -226,18 +270,12 @@ class PayeeService
             throw ValidationException::withMessages(['name' => 'Diesen Namen hat bereits ein anderer Empfänger. Wähle ihn mit aus, um sie zusammenzuführen.']);
         }
 
-        return DB::transaction(function () use ($userId, $payees, $ids, $targetName, $targetKey, $categoryId, $applyToUncategorized) {
+        return DB::transaction(function () use ($userId, $payees, $targetName, $targetKey, $categoryId, $applyToUncategorized) {
             $target = $payees->first(fn (Payee $payee) => self::key($payee->name) === $targetKey) ?? $payees->first();
 
-            // Alle Schreibweisen in den Buchungen, die zu den gewählten Empfängern gehören.
-            $aliasKeys = PayeeAlias::query()->whereIn('payee_id', $ids)->pluck('alias_key')->flip();
-            $variants = $this->merchantRows($userId)
-                ->pluck('merchant')
-                ->filter(fn ($merchant) => $aliasKeys->has(self::key($merchant)))
-                ->values();
-
-            // Aliase der übrigen Empfänger übernehmen, sie selbst entfernen.
+            // Buchungen und Aliase der übrigen Empfänger übernehmen, sie selbst entfernen.
             foreach ($payees->reject(fn (Payee $payee) => $payee->id === $target->id) as $other) {
+                Transaction::query()->where('user_id', $userId)->where('payee_id', $other->id)->update(['payee_id' => $target->id]);
                 PayeeAlias::query()->where('payee_id', $other->id)->update(['payee_id' => $target->id]);
 
                 if ($categoryId === null && $target->default_category_id === null && $other->default_category_id !== null) {
@@ -260,12 +298,8 @@ class PayeeService
                 ['payee_id' => $target->id, 'alias' => $targetName]
             );
 
-            if ($variants->isNotEmpty()) {
-                Transaction::query()
-                    ->where('user_id', $userId)
-                    ->whereIn('merchant', $variants)
-                    ->update(['merchant' => $targetName]);
-            }
+            // Buchungen, die bisher keinem Empfänger gehörten, aber zum neuen Namen passen.
+            $this->assignUnassigned($userId);
 
             if ($applyToUncategorized && $target->default_category_id) {
                 $this->applyCategory($userId, $target);
@@ -300,7 +334,7 @@ class PayeeService
             ->where('user_id', $userId)
             ->whereNull('category_id')
             ->whereIn('type', $types)
-            ->where('merchant', $payee->name)
+            ->where('payee_id', $payee->id)
             ->update(['category_id' => $category->id]);
     }
 

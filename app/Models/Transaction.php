@@ -24,6 +24,7 @@ class Transaction extends Model
         'transaction_date',
         'description',
         'merchant',
+        'payee_id',
         'reference',
         'notes',
         'is_pending',
@@ -69,6 +70,14 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Empfänger (einheitlicher Name); „merchant“ bleibt der Originaltext der Bank.
+     */
+    public function payee(): BelongsTo
+    {
+        return $this->belongsTo(Payee::class);
     }
 
     public function recurringTransaction(): BelongsTo

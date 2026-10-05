@@ -239,7 +239,7 @@ class ReportService
                 $accountId,
                 fn ($query) => $query->where('account_id', $accountId)
             )
-            ->with('category:id,parent_id,name,icon,color')
+            ->with(['category:id,parent_id,name,icon,color', 'payee:id,name'])
             ->get([
                 'id',
                 'account_id',
@@ -249,6 +249,7 @@ class ReportService
                 'transaction_date',
                 'description',
                 'merchant',
+                'payee_id',
             ])
             ->map(function (Transaction $transaction) {
                 $date = CarbonImmutable::parse(
@@ -272,7 +273,8 @@ class ReportService
                     'category_color' =>
                         $transaction->category?->color,
                     'description' => (string) $transaction->description,
-                    'merchant' => $transaction->merchant,
+                    // Empfängername (einheitlich), sonst der Händlertext der Bank.
+                    'merchant' => $transaction->payee?->name ?: $transaction->merchant,
                 ];
             });
     }

@@ -186,7 +186,9 @@ class TransactionImportController extends Controller
             return back()->with('error', 'Es wurden keine Buchungen ausgewählt.');
         }
 
-        DB::transaction(function () use ($items, $user, $account, $chosenCategories, $validCategories) {
+        $payees = app(PayeeService::class);
+
+        DB::transaction(function () use ($items, $user, $account, $chosenCategories, $validCategories, $payees) {
             foreach ($items as $item) {
                 $categoryId = array_key_exists($item['index'], $chosenCategories)
                     ? (int) $chosenCategories[$item['index']]
@@ -197,9 +199,13 @@ class TransactionImportController extends Controller
                     $categoryId = null;
                 }
 
+                // Empfänger zuordnen; der Händlertext der Bank bleibt unverändert.
+                $payeeId = $item['payee_id'] ?? $payees->ensure($user->id, $item['merchant'])?->id;
+
                 Transaction::create([
                     'user_id' => $user->id,
                     'account_id' => $account->id,
+                    'payee_id' => $payeeId,
                     'category_id' => $categoryId,
                     'type' => $item['type'],
                     'amount' => $item['amount'],
@@ -213,8 +219,6 @@ class TransactionImportController extends Controller
         });
 
         Storage::disk('local')->delete($this->path($user->id, $token));
-
-        app(PayeeService::class)->ensureMany($user->id, $items->pluck('merchant'));
 
         $count = $items->count();
 

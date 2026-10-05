@@ -10,7 +10,8 @@
         || request()->filled('type')
         || request()->filled('account_id')
         || request()->filled('category_id')
-        || request()->filled('tag');
+        || request()->filled('tag')
+        || request()->filled('payee');
 
     /*
      * Buchungen der aktuellen Seite nach Tag gruppieren.
@@ -223,11 +224,15 @@
                                  * Empfänger als Titel (wie in Apple Wallet), der oft
                                  * lange Verwendungszweck klein darunter.
                                  */
-                                $title = $transaction->merchant ?: $transaction->description;
+                                $title = $transaction->payee?->name ?: ($transaction->merchant ?: $transaction->description);
+
+                                // Der Buchungstext der Bank bleibt sichtbar, wenn der Empfänger anders heißt.
+                                $differs = fn ($text) => $text && mb_strtolower(trim($text)) !== mb_strtolower(trim($title));
 
                                 $details = collect([
                                     $isTransfer ? null : $transaction->category?->display_name,
-                                    $transaction->merchant && $transaction->description !== $transaction->merchant ? $transaction->description : null,
+                                    $differs($transaction->merchant) ? $transaction->merchant : null,
+                                    $differs($transaction->description) && $transaction->description !== $transaction->merchant ? $transaction->description : null,
                                     $isTransfer
                                         ? ($transaction->account?->name ?: 'Gelöschtes Konto') . ' → ' . ($transaction->transferAccount?->name ?: 'Gelöschtes Konto')
                                         : $transaction->account?->name,
