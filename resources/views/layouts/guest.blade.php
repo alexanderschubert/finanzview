@@ -30,7 +30,7 @@
 
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-white">
+<body class="min-h-screen text-slate-900 dark:text-white">
 
     {{-- Dezenter Farbschein im Hintergrund --}}
     <div aria-hidden="true" class="fv-glow pointer-events-none fixed inset-x-0 top-0 h-[420px]"></div>
