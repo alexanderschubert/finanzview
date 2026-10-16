@@ -10,6 +10,8 @@
         'income' => 'trending-up',
         'expenses' => 'trending-down',
         'savings_rate' => 'percent',
+        'review' => 'check-circle',
+        'weekly' => 'chart',
         'monthly_balance' => 'arrows',
         'yearly' => 'calendar',
         'income_expense_chart' => 'chart',

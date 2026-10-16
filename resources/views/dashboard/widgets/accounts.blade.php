@@ -1,30 +1,48 @@
 @if($dashboardWidgets['accounts'] && $accounts->isNotEmpty())
 
-    {{-- KONTEN --}}
+    {{-- KONTEN als Wallet-Karten --}}
+
+    @php
+        $typeLabels = [
+            'checking' => 'Girokonto', 'savings' => 'Sparkonto', 'credit_card' => 'Kreditkarte', 'paypal' => 'PayPal',
+            'cash' => 'Bargeld', 'investment' => 'Investment', 'loan' => 'Kredit', 'other' => 'Sonstiges',
+        ];
+
+        $typeColors = [
+            'checking' => '#0b7155', 'savings' => '#1f5fa8', 'credit_card' => '#3f3f45', 'paypal' => '#123a86',
+            'cash' => '#8a6516', 'investment' => '#5b3fa8', 'loan' => '#9f2d2d', 'other' => '#3f3f45',
+        ];
+    @endphp
 
     <x-section title="Konten" subtitle="Aktuelle Kontostände" :href="route('accounts.index')">
-        <ul class="-mx-2 divide-y divide-slate-100 dark:divide-white/5">
-            @foreach ($accounts as $account)
-                <li>
-                    <a href="{{ route('accounts.edit', $account) }}" class="flex items-center gap-3 rounded-xl px-2 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 transition">
-                        <x-financial-provider :provider="$account->provider" :fallback-icon="$account->icon ?: '🏦'" size="sm" />
+        <div class="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3">
+            @foreach ($accounts->take(4) as $account)
+                @php
+                    $iban = preg_replace('/\s+/', '', (string) $account->iban);
+                    $number = $iban !== '' ? '•••• ' . substr($iban, -4) : null;
+                @endphp
 
-                        <div class="flex-1 min-w-0">
-                            <p class="font-medium text-slate-900 dark:text-white truncate">{{ $account->name }}</p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                {{ $account->institution ?: ucfirst($account->type) }}
-                            </p>
-                        </div>
-
-                        <p class="font-semibold tabular-nums whitespace-nowrap {{ $account->calculated_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white' }}">
-                            {{ number_format($account->calculated_balance, 2, ',', '.') }} {{ $account->currency === 'EUR' ? '€' : $account->currency }}
-                        </p>
-
-                        <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
-                    </a>
-                </li>
+                <a href="{{ route('accounts.edit', $account) }}" class="group block">
+                    <x-wallet-card
+                        :color="$account->color"
+                        :fallback-color="$account->provider?->color ?: ($typeColors[$account->type] ?? '#3f3f45')"
+                        :title="$account->name"
+                        :subtitle="$account->institution ?: ($typeLabels[$account->type] ?? 'Sonstiges')"
+                        amount-label="Kontostand"
+                        :amount="number_format($account->calculated_balance, 2, ',', '.') . ' ' . ($account->currency === 'EUR' ? '€' : $account->currency)"
+                        :number="$number"
+                        :provider="$account->provider"
+                        class="!p-4 transition group-hover:-translate-y-0.5 group-hover:shadow-xl"
+                    />
+                </a>
             @endforeach
-        </ul>
+        </div>
+
+        @if ($accounts->count() > 4)
+            <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+                und {{ $accounts->count() - 4 }} weitere Konten
+            </p>
+        @endif
     </x-section>
 
 @endif

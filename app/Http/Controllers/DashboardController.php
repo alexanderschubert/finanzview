@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DashboardSetting;
 use App\Models\Transaction;
 use App\Services\BudgetService;
+use App\Services\TransferMatcher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -116,6 +117,10 @@ class DashboardController extends Controller
         $minWealthValue = 0;
 
         $budgets = collect();
+
+        $weekDays = collect();
+        $reviewTransfers = 0;
+        $reviewUncategorized = 0;
 
 
         /*
@@ -413,7 +418,8 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        if ($dashboardWidgets['wealth_chart']) {
+        // Auch die Gesamtvermögen-Kachel zeigt den Verlauf als Kurve.
+        if ($dashboardWidgets['wealth_chart'] || $dashboardWidgets['summary']) {
 
             $includedAccounts = $accounts
                 ->where('include_in_total', true);
@@ -591,7 +597,59 @@ class DashboardController extends Controller
         }
 
 
+        /*
+         * =========================================================
+         * DIESE WOCHE (letzte sieben Tage)
+         * =========================================================
+         */
+
+        if ($dashboardWidgets['weekly'] ?? false) {
+
+            $today = now()->startOfDay();
+
+            $perDay = $user->transactions()
+                ->where('type', 'expense')
+                ->whereDate('transaction_date', '>=', $today->copy()->subDays(6)->toDateString())
+                ->whereDate('transaction_date', '<=', $today->toDateString())
+                ->get(['transaction_date', 'amount'])
+                ->groupBy(fn ($t) => $t->transaction_date->toDateString())
+                ->map(fn ($rows) => round((float) $rows->sum('amount'), 2));
+
+            $weekDays = collect(range(6, 0))->map(function ($ago) use ($today, $perDay) {
+                $day = $today->copy()->subDays($ago);
+
+                return [
+                    'label' => $day->translatedFormat('D'),
+                    'long' => $day->translatedFormat('l'),
+                    'amount' => $perDay[$day->toDateString()] ?? 0.0,
+                    'today' => $ago === 0,
+                ];
+            });
+        }
+
+
+        /*
+         * =========================================================
+         * ZU PRÜFEN
+         * =========================================================
+         */
+
+        if ($dashboardWidgets['review'] ?? false) {
+
+            $reviewTransfers = app(TransferMatcher::class)->count($user->id);
+
+            $reviewUncategorized = $user->transactions()
+                ->whereNull('category_id')
+                ->whereIn('type', ['income', 'expense'])
+                ->count();
+        }
+
+
         return view('dashboard', [
+
+            'weekDays' => $weekDays,
+            'reviewTransfers' => $reviewTransfers,
+            'reviewUncategorized' => $reviewUncategorized,
 
             'dashboardWidgets' =>
                 $dashboardWidgets,

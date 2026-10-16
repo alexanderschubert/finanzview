@@ -60,6 +60,16 @@ class DashboardSetting extends Model
                 'icon' => '💾',
             ],
 
+            'review' => [
+                'label' => 'Zu prüfen',
+                'description' => 'Mögliche Umbuchungen und Buchungen ohne Kategorie',
+                'icon' => '✅',
+            ],
+            'weekly' => [
+                'label' => 'Diese Woche',
+                'description' => 'Ausgaben der letzten sieben Tage',
+                'icon' => '📆',
+            ],
             'monthly_balance' => [
                 'label' => 'Monatsbilanz',
                 'description' => 'Bilanz des ausgewählten Monats',
