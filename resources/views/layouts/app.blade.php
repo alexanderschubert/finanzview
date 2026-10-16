@@ -81,7 +81,6 @@
 <html
     lang="de"
     data-theme="{{ $theme }}"
-    class="bg-slate-100 dark:bg-slate-950"
 >
 
 <head>
@@ -147,9 +146,7 @@
         m-0
         min-h-screen
         w-full
-        bg-slate-100
         text-slate-900
-        dark:bg-slate-950
         dark:text-slate-100
     "
 >
@@ -174,8 +171,8 @@
             flex-shrink-0
             flex-col
             border-r
-            border-slate-200/80
-            dark:border-white/5
+            border-slate-200/60
+            dark:border-white/10
         "
     >
 

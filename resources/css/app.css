@@ -2,11 +2,13 @@
 
 /*
 |--------------------------------------------------------------------------
-| FinanzView – Tailwind Dark Mode
+| FinanzView – Aurora-Design
 |--------------------------------------------------------------------------
 |
-| Der Dark Mode wird von FinanzView über die Klasse "dark"
-| auf dem <html>-Element gesteuert.
+| Tiefer Nachthimmel mit weichen Farbflächen im Hintergrund und Kacheln aus
+| Milchglas. Im hellen Modus dieselbe Idee mit hellem Glas.
+|
+| Der Dark Mode wird über die Klasse "dark" auf dem <html>-Element gesteuert.
 |
 */
 
@@ -20,31 +22,51 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * Schrift: Plus Jakarta Sans für Überschriften und große Zahlen (liegt auf dem
+ * eigenen Server, es wird nichts von Google geladen), sonst die Systemschrift.
+ */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 500 800;
+    font-display: swap;
+    src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 500 800;
+    font-display: swap;
+    src: url('/fonts/plus-jakarta-sans-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @theme {
-    /*
-     * Systemschrift im Apple-Stil: SF Pro auf Apple-Geräten,
-     * Segoe UI unter Windows, Roboto unter Android.
-     */
     --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto,
         'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
+
     /*
-     * Neutrale Grautöne nach den Apple-Systemfarben
-     * (statt des bläulichen Tailwind-"slate").
+     * Neutrale Grautöne mit leichtem Blaustich (Nachthimmel).
      * Alle Seiten verwenden slate-* und werden so einheitlich.
      */
-    --color-slate-50: #f9f9fb;
-    --color-slate-100: #f2f2f7;
-    --color-slate-200: #e5e5ea;
-    --color-slate-300: #d1d1d6;
-    --color-slate-400: #98989f;
-    --color-slate-500: #7c7c82;
-    --color-slate-600: #5c5c62;
-    --color-slate-700: #3f3f45;
-    --color-slate-800: #2c2c2e;
-    --color-slate-900: #1c1c1e;
-    --color-slate-950: #0b0b0c;
+    --color-slate-50: #f8fafc;
+    --color-slate-100: #eef2f7;
+    --color-slate-200: #e1e7ef;
+    --color-slate-300: #cbd3df;
+    --color-slate-400: #94a0b2;
+    --color-slate-500: #748195;
+    --color-slate-600: #566174;
+    --color-slate-700: #3a4457;
+    --color-slate-800: #232b3a;
+    --color-slate-900: #121823;
+    --color-slate-950: #070b12;
 
     /*
      * Markenfarbe (aus dem Logo). Ersetzt das Tailwind-"emerald",
@@ -78,6 +100,41 @@
 
 /*
 |--------------------------------------------------------------------------
+| Aurora – Farben für Glas und Hintergrund
+|--------------------------------------------------------------------------
+*/
+
+:root {
+    --fv-page: #eaf0f7;
+    --fv-glass: rgb(255 255 255 / 0.66);
+    --fv-glass-strong: rgb(255 255 255 / 0.82);
+    --fv-glass-border: rgb(255 255 255 / 0.95);
+    --fv-glass-shadow:
+        0 1px 2px rgb(15 23 42 / 0.05),
+        0 18px 40px -20px rgb(15 23 42 / 0.2);
+    --fv-field: rgb(255 255 255 / 0.7);
+    --fv-field-border: rgb(15 23 42 / 0.1);
+    --fv-aurora-1: rgb(16 185 129 / 0.22);
+    --fv-aurora-2: rgb(139 92 246 / 0.17);
+    --fv-aurora-3: rgb(56 189 248 / 0.22);
+}
+
+.dark {
+    --fv-page: #070b12;
+    --fv-glass: rgb(255 255 255 / 0.05);
+    --fv-glass-strong: rgb(255 255 255 / 0.09);
+    --fv-glass-border: rgb(255 255 255 / 0.1);
+    --fv-glass-shadow: 0 24px 50px -26px rgb(0 0 0 / 0.75);
+    --fv-field: rgb(255 255 255 / 0.06);
+    --fv-field-border: rgb(255 255 255 / 0.12);
+    --fv-aurora-1: rgb(16 185 129 / 0.36);
+    --fv-aurora-2: rgb(124 58 237 / 0.32);
+    --fv-aurora-3: rgb(14 165 233 / 0.26);
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | FinanzView – Globales Dokument-Layout
 |--------------------------------------------------------------------------
 */
@@ -92,25 +149,46 @@
     }
 
     html {
-        background-color: var(--color-slate-100);
+        background-color: var(--fv-page);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
         -webkit-tap-highlight-color: transparent;
     }
 
+    /*
+     * Der Körper ist durchsichtig, damit die Farbflächen dahinter sichtbar sind.
+     */
     body {
-        background-color: var(--color-slate-100);
+        background-color: transparent;
     }
 
     .dark,
     .dark body {
-        background-color: var(--color-slate-950);
         color-scheme: dark;
     }
 
+    /*
+     * Weiche Farbflächen hinter allem (Aurora).
+     */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            radial-gradient(44rem 44rem at -6% -8%, var(--fv-aurora-1), transparent 62%),
+            radial-gradient(46rem 46rem at 106% 36%, var(--fv-aurora-2), transparent 62%),
+            radial-gradient(40rem 40rem at 38% 108%, var(--fv-aurora-3), transparent 62%);
+    }
+
     h1, h2, h3 {
-        letter-spacing: -0.015em;
+        letter-spacing: -0.02em;
+    }
+
+    h1, h2 {
+        font-family: var(--font-display);
     }
 
 
@@ -125,15 +203,15 @@
     textarea:focus {
         border-color: var(--color-emerald-500);
         outline: none;
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-emerald-500) 18%, transparent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-emerald-500) 22%, transparent);
     }
 
     .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
     .dark select,
     .dark textarea {
-        background-color: var(--color-slate-800);
+        background-color: var(--fv-field);
         color: var(--color-slate-50);
-        border-color: var(--color-slate-700);
+        border-color: var(--fv-field-border);
     }
 
     .dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"])::placeholder,
@@ -143,7 +221,7 @@
 
     input[type="checkbox"],
     input[type="radio"] {
-        accent-color: var(--color-emerald-600);
+        accent-color: var(--color-emerald-500);
     }
 
 
@@ -153,8 +231,9 @@
     |--------------------------------------------------------------------------
     */
 
-    .dark select option {
-        background-color: var(--color-slate-800);
+    .dark select option,
+    .dark select optgroup {
+        background-color: var(--color-slate-900);
         color: var(--color-slate-50);
     }
 
@@ -167,34 +246,27 @@
 
     .dark input[type="checkbox"],
     .dark input[type="radio"] {
-        background-color: var(--color-slate-800);
+        background-color: var(--fv-field);
         border-color: var(--color-slate-600);
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Karten mit bg-white
+    | Flächen im Dunkelmodus: Glas statt fester Grautöne
     |--------------------------------------------------------------------------
     */
 
     .dark .bg-white {
-        background-color: var(--color-slate-900);
+        background-color: var(--fv-glass-strong);
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Helle Borders
-    |--------------------------------------------------------------------------
-    */
-
     .dark .border-slate-100 {
-        border-color: var(--color-slate-800);
+        border-color: rgb(255 255 255 / 0.07);
     }
 
     .dark .border-slate-200 {
-        border-color: var(--color-slate-800);
+        border-color: rgb(255 255 255 / 0.1);
     }
 
 
@@ -228,11 +300,11 @@
     */
 
     .dark .bg-slate-50 {
-        background-color: var(--color-slate-900);
+        background-color: rgb(255 255 255 / 0.05);
     }
 
     .dark .bg-slate-100 {
-        background-color: var(--color-slate-950);
+        background-color: rgb(255 255 255 / 0.04);
     }
 
 
@@ -243,11 +315,11 @@
     */
 
     .dark .hover\:bg-slate-50:hover {
-        background-color: var(--color-slate-800);
+        background-color: rgb(255 255 255 / 0.07);
     }
 
     .dark .hover\:bg-slate-100:hover {
-        background-color: var(--color-slate-800);
+        background-color: rgb(255 255 255 / 0.08);
     }
 }
 
@@ -261,33 +333,27 @@
 @layer components {
 
     /*
-     * Glas-Effekt für Seitenleiste, Kopfzeile und Tab-Leiste.
+     * Glas für Seitenleiste, Kopfzeile und Tab-Leiste.
+     * Die Farbfläche liegt auf einer eigenen Ebene (siehe Layout), damit
+     * "fixed"-Menüs nicht vom Weichzeichner eingesperrt werden.
      */
     .fv-glass {
-        background-color: color-mix(in srgb, white 72%, transparent);
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
-        backdrop-filter: saturate(180%) blur(20px);
+        background-color: color-mix(in srgb, white 62%, transparent);
+        -webkit-backdrop-filter: saturate(180%) blur(28px);
+        backdrop-filter: saturate(180%) blur(28px);
     }
 
     .dark .fv-glass {
-        background-color: color-mix(in srgb, var(--color-slate-900) 72%, transparent);
+        background-color: color-mix(in srgb, var(--color-slate-950) 55%, transparent);
     }
 
     /*
-     * Dezenter Farbschein hinter den Anmeldeseiten.
+     * Farbschein hinter den Anmeldeseiten (die Aurora ist schon überall).
      */
     .fv-glow {
         background: radial-gradient(
             ellipse at top,
-            color-mix(in srgb, var(--color-emerald-400) 22%, transparent),
-            transparent 65%
-        );
-    }
-
-    .dark .fv-glow {
-        background: radial-gradient(
-            ellipse at top,
-            color-mix(in srgb, var(--color-emerald-500) 16%, transparent),
+            color-mix(in srgb, var(--color-emerald-400) 14%, transparent),
             transparent 65%
         );
     }
@@ -303,7 +369,7 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        border-radius: 0.625rem;
+        border-radius: 0.875rem;
         padding: 0.5rem 0.75rem;
         font-size: 0.875rem;
         font-weight: 500;
@@ -317,8 +383,9 @@
     }
 
     .fv-nav-link[aria-current="page"] {
-        background-color: color-mix(in srgb, var(--color-emerald-500) 12%, transparent);
+        background-color: color-mix(in srgb, var(--color-emerald-500) 14%, transparent);
         color: var(--color-emerald-700);
+        font-weight: 600;
     }
 
     .dark .fv-nav-link {
@@ -326,13 +393,14 @@
     }
 
     .dark .fv-nav-link:hover {
-        background-color: color-mix(in srgb, white 6%, transparent);
+        background-color: color-mix(in srgb, white 7%, transparent);
         color: white;
     }
 
     .dark .fv-nav-link[aria-current="page"] {
-        background-color: color-mix(in srgb, var(--color-emerald-400) 15%, transparent);
+        background-color: color-mix(in srgb, white 10%, transparent);
         color: var(--color-emerald-300);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, white 8%, transparent);
     }
 
 
@@ -343,19 +411,12 @@
     */
 
     .fv-card {
-        border-radius: 1.5rem;
-        background-color: white;
-        box-shadow:
-            0 0 0 1px color-mix(in srgb, var(--color-slate-900) 6%, transparent),
-            0 1px 2px color-mix(in srgb, var(--color-slate-900) 4%, transparent),
-            0 12px 32px -12px color-mix(in srgb, var(--color-slate-900) 12%, transparent);
-    }
-
-    .dark .fv-card {
-        background-color: var(--color-slate-900);
-        box-shadow:
-            0 0 0 1px color-mix(in srgb, white 7%, transparent),
-            0 12px 32px -12px rgb(0 0 0 / 0.6);
+        border-radius: 1.75rem;
+        background-color: var(--fv-glass);
+        border: 1px solid var(--fv-glass-border);
+        box-shadow: var(--fv-glass-shadow);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        backdrop-filter: blur(24px) saturate(160%);
     }
 
     .fv-label {
@@ -372,9 +433,9 @@
 
     .fv-input {
         width: 100%;
-        border-radius: 0.75rem;
-        border: 1px solid var(--color-slate-200);
-        background-color: var(--color-slate-50);
+        border-radius: 0.875rem;
+        border: 1px solid var(--fv-field-border);
+        background-color: var(--fv-field);
         padding: 0.75rem 0.875rem;
         font-size: 0.9375rem;
         color: var(--color-slate-900);
@@ -386,17 +447,11 @@
     }
 
     .fv-input:focus {
-        background-color: white;
+        background-color: var(--fv-glass-strong);
     }
 
     .dark .fv-input {
-        border-color: var(--color-slate-700);
-        background-color: var(--color-slate-800);
         color: var(--color-slate-50);
-    }
-
-    .dark .fv-input:focus {
-        background-color: var(--color-slate-800);
     }
 
     .fv-btn {
@@ -404,7 +459,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        border-radius: 0.75rem;
+        border-radius: 0.875rem;
         padding: 0.75rem 1.25rem;
         font-size: 0.9375rem;
         font-weight: 600;
@@ -416,31 +471,35 @@
     }
 
     .fv-btn-primary {
-        background-color: var(--color-emerald-600);
+        background-image: linear-gradient(135deg, var(--color-emerald-500), var(--color-emerald-700));
         color: white;
-        box-shadow: 0 1px 2px color-mix(in srgb, var(--color-emerald-900) 30%, transparent);
+        box-shadow:
+            0 1px 2px color-mix(in srgb, var(--color-emerald-900) 30%, transparent),
+            0 10px 24px -10px color-mix(in srgb, var(--color-emerald-500) 70%, transparent);
     }
 
     .fv-btn-primary:hover {
-        background-color: var(--color-emerald-700);
+        background-image: linear-gradient(135deg, var(--color-emerald-400), var(--color-emerald-600));
     }
 
     .fv-btn-secondary {
-        background-color: color-mix(in srgb, var(--color-slate-900) 5%, transparent);
+        background-color: color-mix(in srgb, var(--color-slate-900) 6%, transparent);
         color: var(--color-slate-900);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-slate-900) 7%, transparent);
     }
 
     .fv-btn-secondary:hover {
-        background-color: color-mix(in srgb, var(--color-slate-900) 9%, transparent);
+        background-color: color-mix(in srgb, var(--color-slate-900) 10%, transparent);
     }
 
     .dark .fv-btn-secondary {
         background-color: color-mix(in srgb, white 8%, transparent);
         color: white;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, white 9%, transparent);
     }
 
     .dark .fv-btn-secondary:hover {
-        background-color: color-mix(in srgb, white 12%, transparent);
+        background-color: color-mix(in srgb, white 13%, transparent);
     }
 
     .fv-link {
@@ -458,6 +517,15 @@
 
     .dark .fv-link:hover {
         color: var(--color-emerald-300);
+    }
+
+    /*
+     * Große Zahlen und Titel in der Display-Schrift.
+     */
+    .fv-display {
+        font-family: var(--font-display);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
     }
 }
 
