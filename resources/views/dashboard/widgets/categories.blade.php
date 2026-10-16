@@ -27,7 +27,7 @@
             $offset = 0;
         @endphp
 
-        <div class="flex flex-col items-center gap-6 sm:flex-row">
+        <div class="@container"><div class="flex flex-col items-center gap-6 @lg:flex-row">
             <div class="relative h-44 w-44 shrink-0">
                 <svg viewBox="0 0 42 42" class="h-full w-full -rotate-90" role="img" aria-label="Verteilung der Ausgaben">
                     <circle cx="21" cy="21" r="{{ $radius }}" fill="none" stroke="currentColor" stroke-width="5" class="text-slate-200/70 dark:text-white/10" />
@@ -63,6 +63,7 @@
                     </li>
                 @endforeach
             </ul>
+        </div>
         </div>
     </x-section>
 
