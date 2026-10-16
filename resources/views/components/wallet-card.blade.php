@@ -34,9 +34,10 @@
 
 {{-- Karte im Stil der Apple-Wallet (Seitenverhältnis einer echten Karte). --}}
 <div
-    {{ $attributes->merge(['class' => "relative aspect-[1.586] overflow-hidden rounded-2xl p-5 shadow-lg shadow-slate-900/20 $text"]) }}
+    {{ $attributes->merge(['class' => "relative aspect-[1.586] overflow-hidden rounded-3xl p-5 shadow-2xl shadow-black/30 ring-1 ring-inset " . ($isLight ? 'ring-black/5' : 'ring-white/15') . " $text"]) }}
     style="background: linear-gradient(135deg, {{ $base }}, color-mix(in srgb, {{ $base }} {{ $isLight ? '80%, black' : '55%, black' }}));"
 >
+    <div aria-hidden="true" class="absolute inset-0" style="background: radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / {{ $isLight ? '0.55' : '0.2' }}), transparent 55%);"></div>
     <div aria-hidden="true" class="absolute -right-12 -bottom-16 w-52 h-52 rounded-full {{ $isLight ? 'bg-black/5' : 'bg-white/10' }}"></div>
     <div aria-hidden="true" class="absolute -right-2 -bottom-24 w-52 h-52 rounded-full {{ $isLight ? 'bg-black/[0.03]' : 'bg-white/5' }}"></div>
 
@@ -67,7 +68,7 @@
 
         <div>
             <p class="text-xs {{ $muted }}">{{ $amountLabel }}</p>
-            <p class="text-2xl font-semibold tracking-tight tabular-nums">{{ $amount }}</p>
+            <p class="fv-display text-2xl font-extrabold tabular-nums">{{ $amount }}</p>
         </div>
 
         {{-- Zeile immer vorhanden, damit der Saldo bei allen Karten
