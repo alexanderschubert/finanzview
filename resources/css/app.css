@@ -112,8 +112,8 @@
     --fv-glass-shadow:
         0 1px 2px rgb(15 23 42 / 0.05),
         0 18px 40px -20px rgb(15 23 42 / 0.2);
-    --fv-field: rgb(255 255 255 / 0.7);
-    --fv-field-border: rgb(15 23 42 / 0.1);
+    --fv-field: rgb(255 255 255 / 0.85);
+    --fv-field-border: rgb(15 23 42 / 0.18);
     --fv-aurora-1: rgb(16 185 129 / 0.22);
     --fv-aurora-2: rgb(139 92 246 / 0.17);
     --fv-aurora-3: rgb(56 189 248 / 0.22);
@@ -483,9 +483,9 @@
     }
 
     .fv-btn-secondary {
-        background-color: color-mix(in srgb, var(--color-slate-900) 6%, transparent);
+        background-color: color-mix(in srgb, white 70%, transparent);
         color: var(--color-slate-900);
-        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-slate-900) 7%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-slate-900) 14%, transparent);
     }
 
     .fv-btn-secondary:hover {
