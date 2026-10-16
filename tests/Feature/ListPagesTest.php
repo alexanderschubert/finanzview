@@ -111,7 +111,7 @@ class ListPagesTest extends TestCase
             ->assertSee('#0b7155', false)
             // Helle Kontofarbe: dunkle Schrift
             ->assertSee('#fde68a', false)
-            ->assertSee('shadow-slate-900/20 text-slate-900 transition', false);
+            ->assertSee('ring-black/5 text-slate-900 transition', false);
     }
 
     public function test_categories_index_groups_by_type(): void
