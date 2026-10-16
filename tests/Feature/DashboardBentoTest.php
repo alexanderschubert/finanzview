@@ -186,7 +186,8 @@ class DashboardBentoTest extends TestCase
             ])
             ->assertSessionHasNoErrors();
 
-        $this->actingAs($this->user)
+        // Der Test-Benutzer hält die alten Einstellungen im Speicher – frisch laden wie ein neuer Aufruf.
+        $this->actingAs($this->user->fresh())
             ->get(route('dashboard'))
             ->assertOk()
             ->assertDontSee('Alles erledigt')
