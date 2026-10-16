@@ -47,15 +47,17 @@
          * Die Breite eines Widgets wird zentral hier definiert.
          *
          * Mobile: 1 Spalte
-         * Tablet:  6 Spalten
+         * Tablet:  2 Spalten
          * Desktop: 12 Spalten
          */
         $dashboardWidgetWidths = [
-            // Kennzahlen
-            'summary' => 'lg:col-span-3',
+            // Hauptkachel: zwei Zeilen hoch, daneben die Kennzahlen
+            'summary' => 'md:col-span-2 lg:col-span-6 lg:row-span-2',
             'income' => 'lg:col-span-3',
             'expenses' => 'lg:col-span-3',
             'savings_rate' => 'lg:col-span-3',
+            'review' => 'lg:col-span-3',
+            'weekly' => 'lg:col-span-3',
 
             // Große Auswertungen
             'monthly_balance' => 'lg:col-span-8',
@@ -81,7 +83,8 @@
         ];
     @endphp
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 mt-6 items-stretch">
+    {{-- „dense“: Lücken neben der Hauptkachel füllen sich mit den nächsten kleinen Kacheln. --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 mt-6 items-stretch [grid-auto-flow:dense]">
 
         @foreach($dashboardWidgetOrder as $widget)
 

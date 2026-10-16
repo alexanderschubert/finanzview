@@ -11,7 +11,8 @@
         || request()->filled('account_id')
         || request()->filled('category_id')
         || request()->filled('tag')
-        || request()->filled('payee');
+        || request()->filled('payee')
+        || request()->boolean('uncategorized');
 
     /*
      * Buchungen der aktuellen Seite nach Tag gruppieren.

@@ -131,6 +131,13 @@ class TransactionController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        if ($request->boolean('uncategorized')) {
+
+            $query->whereNull('category_id')->whereIn('type', ['income', 'expense']);
+
+        }
+
+
         if ($request->filled('payee')) {
 
             $query->where('payee_id', (int) $request->input('payee'));
