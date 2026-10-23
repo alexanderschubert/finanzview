@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+  # Wöchentlich neu bauen, damit Sicherheitsupdates von PHP/Alpine ankommen.
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -104,7 +108,7 @@ jobs:
       # Pull Request -> :pr-<Nummer> (Vorschau zum Testen vor dem Mergen).
       # PRs aus Forks haben keine Schreibrechte und werden nur getestet.
       - name: Bei GitHub Container Registry anmelden
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
           docker login ghcr.io \
@@ -112,9 +116,9 @@ jobs:
             --password-stdin
 
       - name: Image taggen und pushen
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
             TAGS="latest sha-${GITHUB_SHA::7}"
           else
             TAGS="pr-${{ github.event.pull_request.number }}"
