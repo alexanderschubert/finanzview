@@ -77,4 +77,14 @@ return [
         'product_version' => env('FINTS_PRODUCT_VERSION', '1.0'),
     ],
 
+
+    /*
+     * Native iPad-App: Apple verbindet App und Domain über die Datei
+     * /.well-known/apple-app-site-association (nötig für Passkeys in der App).
+     * Format: <Team-ID>.<Bundle-ID>
+     */
+    'ios_app' => [
+        'id' => env('IOS_APP_ID', 'YV52URM734.de.alxserver.finanzview'),
+    ],
+
 ];

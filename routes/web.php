@@ -24,6 +24,12 @@ use App\Http\Controllers\CreditCardController;
 use App\Http\Controllers\ReportController;
 
 
+// Verknüpfung mit der iPad-App (Passkeys). Muss ohne Weiterleitung als JSON erreichbar sein.
+Route::get('/.well-known/apple-app-site-association', function () {
+    return response()->json(['webcredentials' => ['apps' => [config('services.ios_app.id')]]]);
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | Öffentliche Routen
