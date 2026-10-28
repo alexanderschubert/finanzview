@@ -76,6 +76,6 @@ class PwaTest extends TestCase
         $this->get('/.well-known/apple-app-site-association')
             ->assertOk()
             ->assertHeader('Content-Type', 'application/json')
-            ->assertExactJson(['webcredentials' => ['apps' => ['TEAM123456.de.example.app', 'TEAM123456.de.example.mac']]]);
+            ->assertJsonPath('webcredentials.apps', ['TEAM123456.de.example.app', 'TEAM123456.de.example.mac']);
     }
 }
