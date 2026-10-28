@@ -68,4 +68,14 @@ class PwaTest extends TestCase
             ->get(route('settings.index'))
             ->assertSee('data-install', false);
     }
+
+    public function test_apple_app_site_association_is_public_json(): void
+    {
+        config(['services.ios_app.id' => 'TEAM123456.de.example.app, TEAM123456.de.example.mac']);
+
+        $this->get('/.well-known/apple-app-site-association')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/json')
+            ->assertJsonPath('webcredentials.apps', ['TEAM123456.de.example.app', 'TEAM123456.de.example.mac']);
+    }
 }
