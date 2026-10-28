@@ -71,11 +71,11 @@ class PwaTest extends TestCase
 
     public function test_apple_app_site_association_is_public_json(): void
     {
-        config(['services.ios_app.id' => 'TEAM123456.de.example.app']);
+        config(['services.ios_app.id' => 'TEAM123456.de.example.app, TEAM123456.de.example.mac']);
 
         $this->get('/.well-known/apple-app-site-association')
             ->assertOk()
             ->assertHeader('Content-Type', 'application/json')
-            ->assertExactJson(['webcredentials' => ['apps' => ['TEAM123456.de.example.app']]]);
+            ->assertExactJson(['webcredentials' => ['apps' => ['TEAM123456.de.example.app', 'TEAM123456.de.example.mac']]]);
     }
 }

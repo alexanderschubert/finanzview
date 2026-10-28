@@ -81,7 +81,7 @@ return [
     /*
      * Native iPad-App: Apple verbindet App und Domain über die Datei
      * /.well-known/apple-app-site-association (nötig für Passkeys in der App).
-     * Format: <Team-ID>.<Bundle-ID>
+     * Format: <Team-ID>.<Bundle-ID>, mehrere (z. B. iPad und Mac) mit Komma getrennt.
      */
     'ios_app' => [
         'id' => env('IOS_APP_ID', 'YV52URM734.de.alxserver.finanzview'),
