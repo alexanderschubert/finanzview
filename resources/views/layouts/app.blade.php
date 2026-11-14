@@ -32,6 +32,7 @@
         ],
         'Planung' => [
             ['budgets.index', 'budgets.*', 'target', 'Budgets'],
+            ['plan.index', 'plan.*', 'layout', 'Monatsplan'],
             ['recurring-transactions.index', 'recurring-transactions.*', 'repeat', 'Wiederkehrend'],
             ['loans.index', 'loans.*', 'banknote', 'Kredite'],
             ['credit-cards.index', 'credit-cards.*', 'card', 'Kreditkarten'],

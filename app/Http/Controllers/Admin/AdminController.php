@@ -288,6 +288,7 @@ class AdminController extends Controller
             $user->loans()->delete();
             $user->creditCards()->delete();
             $user->recurringTransactions()->delete();
+            $user->planMonths()->delete();
             $user->setting()->delete();
 
             // Der Benutzer selbst wird anschließend gelöscht.

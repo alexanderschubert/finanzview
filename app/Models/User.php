@@ -99,6 +99,11 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasMany(Loan::class);
     }
 
+    public function planMonths(): HasMany
+    {
+        return $this->hasMany(PlanMonth::class);
+    }
+
     /**
      * Kreditkarten des Benutzers.
      */
