@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\PayeeController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -455,6 +456,27 @@ Route::get('/settings/dashboard', [
     Route::resource('category-rules', CategoryRuleController::class)->except(['show', 'create']);
 
     Route::resource('tags', TagController::class)->only(['index', 'edit', 'update', 'destroy']);
+
+    /*
+     * MONATSPLAN (nur zum Planen, bucht nichts)
+     */
+    Route::controller(PlanController::class)->prefix('plan')->name('plan.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::get('/import', 'importForm')->name('import');
+        Route::post('/import', 'import')->middleware('throttle:20,1')->name('import.store');
+        Route::delete('/{planMonth}', 'destroy')->name('destroy');
+
+        Route::post('/{planMonth}/groups', 'storeGroup')->name('groups.store');
+        Route::get('/groups/{planGroup}/edit', 'editGroup')->name('groups.edit');
+        Route::put('/groups/{planGroup}', 'updateGroup')->name('groups.update');
+        Route::delete('/groups/{planGroup}', 'destroyGroup')->name('groups.destroy');
+
+        Route::post('/groups/{planGroup}/items', 'storeItem')->name('items.store');
+        Route::get('/items/{planItem}/edit', 'editItem')->name('items.edit');
+        Route::put('/items/{planItem}', 'updateItem')->name('items.update');
+        Route::delete('/items/{planItem}', 'destroyItem')->name('items.destroy');
+    });
 
     Route::controller(PayeeController::class)->prefix('payees')->name('payees.')->group(function () {
         Route::get('/', 'index')->name('index');
