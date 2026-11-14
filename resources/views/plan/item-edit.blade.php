@@ -28,9 +28,23 @@
             <input id="note" name="note" type="text" maxlength="255" value="{{ old('note', $item->note) }}" class="fv-input">
         </x-field>
 
-        <x-field label="Letzte Rate" for="ends_on" error="ends_on" hint="Danach fällt der Posten beim Übernehmen in den nächsten Monat weg. Leer lassen für unbefristet.">
-            <input id="ends_on" name="ends_on" type="date" value="{{ old('ends_on', $item->ends_on?->format('Y-m-d')) }}" class="fv-input">
+        <x-field label="Wie oft fällt der Betrag an?" for="interval" error="interval" hint="Der Betrag gilt je Zahlung. Bei „Jährlich“ zählt er nur in dem Monat, in dem er fällig ist.">
+            <select id="interval" name="interval" class="fv-input">
+                @foreach ($intervals as $value => $meta)
+                    <option value="{{ $value }}" @selected(old('interval', $item->interval) === $value)>{{ $meta['label'] }}</option>
+                @endforeach
+            </select>
         </x-field>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <x-field label="Beginn / erste Zahlung" for="starts_on" error="starts_on" hint="Bei Krediten und Raten der Start. Bei jährlich, halbjährlich oder vierteljährlich legt der Monat fest, wann gezahlt wird.">
+                <input id="starts_on" name="starts_on" type="date" value="{{ old('starts_on', $item->starts_on?->format('Y-m-d')) }}" class="fv-input">
+            </x-field>
+
+            <x-field label="Ende / letzte Rate" for="ends_on" error="ends_on" hint="Danach zählt der Posten nicht mehr. Leer lassen für unbefristet.">
+                <input id="ends_on" name="ends_on" type="date" value="{{ old('ends_on', $item->ends_on?->format('Y-m-d')) }}" class="fv-input">
+            </x-field>
+        </div>
 
         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
             <a href="{{ route('plan.index', ['month' => $monthKey]) }}#group-{{ $group->id }}" class="fv-btn fv-btn-secondary">Abbrechen</a>

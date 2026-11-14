@@ -28,13 +28,13 @@
 
     <div class="fv-card p-5 sm:p-6 text-sm text-slate-600 dark:text-slate-300 space-y-3">
         <p class="font-medium text-slate-900 dark:text-white">So muss die Datei aussehen</p>
-        <p>Die erste Zeile enthält die Spaltennamen. Pflicht sind <strong>Gruppe</strong>, <strong>Beschreibung</strong> und <strong>Betrag</strong>. Optional: <strong>Typ</strong> (Ausgabe, Einnahme, Rate oder Kredit), <strong>Bemerkung</strong> und <strong>Letzte Rate</strong>.</p>
-        <pre class="overflow-x-auto rounded-xl bg-slate-900/5 dark:bg-white/5 p-3 text-xs leading-relaxed">Gruppe;Typ;Beschreibung;Betrag;Bemerkung;Letzte Rate
-Kredite;Kredit;Sparkassen Kredit;407,00;;17.01.2033
-Raten PayPal;Rate;Couch;74,15;;26.06.2026
-Wohnung;Ausgabe;Miete;664,45;;
-Einnahmen;Einnahme;Gehalt;2400,00;;</pre>
-        <p>Der Typ gilt für die ganze Gruppe und wird beim ersten Eintrag der Gruppe gelesen.</p>
+        <p>Die erste Zeile enthält die Spaltennamen. Pflicht sind <strong>Gruppe</strong>, <strong>Beschreibung</strong> und <strong>Betrag</strong>. Optional: <strong>Typ</strong> (Ausgabe, Einnahme, Rate oder Kredit), <strong>Bemerkung</strong>, <strong>Rhythmus</strong> (Monatlich, Vierteljährlich, Halbjährlich, Jährlich), <strong>Beginn</strong> und <strong>Letzte Rate</strong>.</p>
+        <pre class="overflow-x-auto rounded-xl bg-slate-900/5 dark:bg-white/5 p-3 text-xs leading-relaxed">Gruppe;Typ;Beschreibung;Betrag;Bemerkung;Rhythmus;Beginn;Letzte Rate
+Kredite;Kredit;Sparkassen Kredit;407,00;;Monatlich;20.01.2023;17.01.2033
+Raten PayPal;Rate;Couch;74,15;;;;26.06.2026
+Auto;Ausgabe;KFZ-Steuer;98,00;;Jährlich;08.05.2026;
+Einnahmen;Einnahme;Gehalt;2400,00;;;;</pre>
+        <p>Der Typ gilt für die ganze Gruppe und wird beim ersten Eintrag der Gruppe gelesen. Ohne Rhythmus gilt „monatlich“. Wer nicht monatlich zahlt, braucht einen Beginn, sonst wird der Posten monatlich geplant.</p>
     </div>
 
 </div>

@@ -124,7 +124,7 @@ class PlanService
                         continue;
                     }
 
-                    $copy->items()->create($item->only(['name', 'amount', 'note', 'ends_on', 'sort_order']));
+                    $copy->items()->create($item->only(['name', 'amount', 'note', 'interval', 'starts_on', 'ends_on', 'sort_order']));
                 }
             }
 
@@ -146,7 +146,7 @@ class PlanService
     {
         $plan->loadMissing('groups.items');
 
-        $sum = fn (PlanGroup $group) => round((float) $group->items->sum('amount'), 2);
+        $sum = fn (PlanGroup $group) => self::groupSum($group, $plan->month);
 
         $income = round($plan->groups->filter->isIncome()->sum($sum), 2);
         $expenseGroups = $plan->groups->reject->isIncome();
@@ -166,6 +166,14 @@ class PlanService
                 ->map(fn (PlanGroup $group) => ['group' => $group, 'sum' => $sum($group)])
                 ->values(),
         ];
+    }
+
+    /**
+     * Summe einer Gruppe im Monat: nur Posten, die in diesem Monat fällig sind.
+     */
+    public static function groupSum(PlanGroup $group, Carbon $month): float
+    {
+        return round((float) $group->items->filter(fn (PlanItem $item) => $item->isDueIn($month))->sum('amount'), 2);
     }
 
     /**
@@ -240,10 +248,19 @@ class PlanService
         'kredite' => PlanGroup::KIND_LOAN,
     ];
 
+    private const RHYTHM_WORDS = [
+        'monatlich' => PlanItem::MONTHLY,
+        'vierteljährlich' => 'quarterly',
+        'quartalsweise' => 'quarterly',
+        'halbjährlich' => 'semiannual',
+        'jährlich' => 'yearly',
+    ];
+
     /**
      * Posten aus einer CSV-Datei in den Plan übernehmen (bestehende
      * Posten bleiben). Spalten: Gruppe, Typ, Beschreibung, Betrag,
-     * Bemerkung, Letzte Rate. Typ ist optional.
+     * Bemerkung, Rhythmus, Beginn, Letzte Rate. Alles außer Gruppe,
+     * Beschreibung und Betrag ist optional.
      *
      * @return array{groups: int, items: int, skipped: int}
      */
@@ -265,6 +282,8 @@ class PlanService
         $amount = $column(['betrag']);
         $note = $column(['bemerkung', 'notiz']);
         $ends = $column(['letzte rate', 'ende']);
+        $starts = $column(['beginn', 'start', 'erste fälligkeit']);
+        $rhythm = $column(['rhythmus', 'intervall']);
 
         if ($group === null || $name === null || $amount === null) {
             throw ValidationException::withMessages(['file' => 'Die Kopfzeile braucht die Spalten „Gruppe“, „Beschreibung“ und „Betrag“.']);
@@ -272,7 +291,7 @@ class PlanService
 
         $stats = ['groups' => 0, 'items' => 0, 'skipped' => 0];
 
-        DB::transaction(function () use ($plan, $rows, $group, $kind, $name, $amount, $note, $ends, &$stats) {
+        DB::transaction(function () use ($plan, $rows, $group, $kind, $name, $amount, $note, $ends, $starts, $rhythm, &$stats) {
             $groups = $plan->groups()->get()->keyBy(fn (PlanGroup $g) => mb_strtolower($g->name));
             $sort = $this->nextSortOrder($plan);
 
@@ -302,9 +321,20 @@ class PlanService
 
                 $target = $groups[$key];
 
+                $rhythmWord = $rhythm !== null ? mb_strtolower(trim($row[$rhythm] ?? '')) : '';
+                $startsOn = $starts !== null ? $this->csv->parseDate($row[$starts] ?? '') : null;
+                $interval = self::RHYTHM_WORDS[$rhythmWord] ?? PlanItem::MONTHLY;
+
+                // Ohne Beginn lässt sich nicht sagen, wann gezahlt wird: dann monatlich.
+                if ($interval !== PlanItem::MONTHLY && ! $startsOn) {
+                    $interval = PlanItem::MONTHLY;
+                }
+
                 $target->items()->create([
                     'name' => mb_substr($itemName, 0, 255),
                     'amount' => $value,
+                    'interval' => $interval,
+                    'starts_on' => $startsOn?->toDateString(),
                     'note' => $note !== null && trim($row[$note] ?? '') !== '' ? mb_substr(trim($row[$note]), 0, 255) : null,
                     'ends_on' => $ends !== null ? $this->csv->parseDate($row[$ends] ?? '')?->toDateString() : null,
                     'sort_order' => $this->nextItemSortOrder($target),

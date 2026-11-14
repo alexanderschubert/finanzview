@@ -147,13 +147,19 @@ class PlanController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'amount' => ['nullable', 'string', 'max:30'],
             'note' => ['nullable', 'string', 'max:255'],
-            'ends_on' => ['nullable', 'date'],
-        ], ['name.required' => 'Bitte eine Beschreibung eingeben.']);
+            'interval' => ['nullable', Rule::in(array_keys(PlanItem::INTERVALS))],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', ...($request->filled('starts_on') ? ['after_or_equal:starts_on'] : [])],
+        ], $this->messages());
+
+        $this->requireStart($validated);
 
         $planGroup->items()->create([
             'name' => trim($validated['name']),
             'amount' => $this->amount($validated['amount'] ?? null, allowEmpty: true),
             'note' => $this->text($validated['note'] ?? null),
+            'interval' => $validated['interval'] ?? PlanItem::MONTHLY,
+            'starts_on' => $validated['starts_on'] ?? null,
             'ends_on' => $validated['ends_on'] ?? null,
             'sort_order' => $this->plans->nextItemSortOrder($planGroup),
         ]);
@@ -168,6 +174,7 @@ class PlanController extends Controller
         return view('plan.item-edit', [
             'item' => $planItem,
             'group' => $planItem->group,
+            'intervals' => PlanItem::INTERVALS,
             'monthKey' => $planItem->group->planMonth->month->format('Y-m'),
         ]);
     }
@@ -184,14 +191,20 @@ class PlanController extends Controller
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'amount' => ['required', 'string', 'max:30'],
             'note' => ['nullable', 'string', 'max:255'],
-            'ends_on' => ['nullable', 'date'],
-        ], ['name.required' => 'Bitte eine Beschreibung eingeben.']);
+            'interval' => ['nullable', Rule::in(array_keys(PlanItem::INTERVALS))],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', ...($request->filled('starts_on') ? ['after_or_equal:starts_on'] : [])],
+        ], $this->messages());
 
         $data = ['amount' => $this->amount($validated['amount'])];
 
         if ($request->has('name')) {
+            $this->requireStart($validated);
+
             $data['name'] = trim($validated['name']);
             $data['note'] = $this->text($validated['note'] ?? null);
+            $data['interval'] = $validated['interval'] ?? PlanItem::MONTHLY;
+            $data['starts_on'] = $validated['starts_on'] ?? null;
             $data['ends_on'] = $validated['ends_on'] ?? null;
         }
 
@@ -281,6 +294,27 @@ class PlanController extends Controller
         }
 
         return $amount;
+    }
+
+    /**
+     * Bei Zahlungen, die nicht monatlich anfallen, muss der Beginn feststehen –
+     * er legt fest, in welchen Monaten gezahlt wird.
+     */
+    private function requireStart(array $validated): void
+    {
+        $interval = $validated['interval'] ?? PlanItem::MONTHLY;
+
+        if ($interval !== PlanItem::MONTHLY && empty($validated['starts_on'])) {
+            throw ValidationException::withMessages(['starts_on' => 'Bitte angeben, wann die erste Zahlung fällig ist. Daraus ergibt sich, in welchen Monaten gezahlt wird.']);
+        }
+    }
+
+    private function messages(): array
+    {
+        return [
+            'name.required' => 'Bitte eine Beschreibung eingeben.',
+            'ends_on.after_or_equal' => 'Das Ende muss nach dem Beginn liegen.',
+        ];
     }
 
     private function text(?string $value): ?string

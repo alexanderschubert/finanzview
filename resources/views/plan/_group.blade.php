@@ -1,6 +1,6 @@
 @php
     $money = fn ($value) => number_format((float) $value, 2, ',', '.') . ' €';
-    $sum = (float) $group->items->sum('amount');
+    $sum = \App\Services\PlanService::groupSum($group, $month);
 @endphp
 
 <section id="group-{{ $group->id }}" class="fv-card p-2 scroll-mt-4">
@@ -20,20 +20,33 @@
     <ul>
         @foreach ($group->items as $item)
             @php
-                $left = \App\Services\PlanService::monthsLeft($item->ends_on, $month);
+                $state = $item->stateIn($month);
+                $left = $state === 'due' && $item->intervalMonths() === 1 ? \App\Services\PlanService::monthsLeft($item->ends_on, $month) : null;
+                $next = $item->nextDueAfter($month);
+                $chip = 'bg-slate-900/5 dark:bg-white/10 text-slate-500 dark:text-slate-400';
             @endphp
 
-            <li class="flex items-center gap-2 rounded-2xl px-3 py-2 hover:bg-slate-900/[0.03] dark:hover:bg-white/5 transition">
+            <li class="flex items-center gap-2 rounded-2xl px-3 py-2 hover:bg-slate-900/[0.03] dark:hover:bg-white/5 transition {{ $state === 'due' ? '' : 'opacity-60' }}">
                 <a href="{{ route('plan.items.edit', $item) }}" class="min-w-0 flex-1" aria-label="{{ $item->name }} bearbeiten">
                     <span class="break-words text-[15px] text-slate-900 dark:text-white">{{ $item->name }}</span>
 
-                    @if ($left !== null)
-                        @if ($left < 0)
-                            <span class="ml-1.5 rounded-full bg-slate-900/5 dark:bg-white/10 px-2 py-0.5 text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">beendet</span>
-                        @elseif ($left === 0)
-                            <span class="ml-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] text-emerald-700 dark:text-emerald-300 whitespace-nowrap">letzte Rate</span>
-                        @else
-                            <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap {{ $left <= 2 ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'bg-slate-900/5 dark:bg-white/10 text-slate-500 dark:text-slate-400' }}">noch {{ $left }} Mon.</span>
+                    @if ($state === 'upcoming')
+                        <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap {{ $chip }}">beginnt {{ $item->starts_on->translatedFormat('M Y') }}</span>
+                    @elseif ($state === 'ended')
+                        <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap {{ $chip }}">beendet</span>
+                    @elseif ($state === 'off')
+                        <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap {{ $chip }}">{{ $item->intervalLabel() }} · nächste Zahlung {{ $next ? $next->translatedFormat('M Y') : 'keine' }}</span>
+                    @else
+                        @if ($item->intervalMonths() > 1)
+                            <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap bg-sky-500/15 text-sky-700 dark:text-sky-300">{{ $item->intervalLabel() }} · fällig</span>
+                        @endif
+
+                        @if ($left !== null)
+                            @if ($left === 0)
+                                <span class="ml-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] text-emerald-700 dark:text-emerald-300 whitespace-nowrap">letzte Rate</span>
+                            @else
+                                <span class="ml-1.5 rounded-full px-2 py-0.5 text-[11px] whitespace-nowrap {{ $left <= 2 ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300' : $chip }}">noch {{ $left }} Mon.</span>
+                            @endif
                         @endif
                     @endif
 

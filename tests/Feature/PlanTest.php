@@ -36,9 +36,12 @@ class PlanTest extends TestCase
         return $plan->groups()->create(['name' => $name, 'kind' => $kind, 'sort_order' => $plan->groups()->count()]);
     }
 
-    private function item(PlanGroup $group, string $name, float $amount, ?string $endsOn = null): PlanItem
+    private function item(PlanGroup $group, string $name, float $amount, ?string $endsOn = null, string $interval = 'monthly', ?string $startsOn = null): PlanItem
     {
-        return $group->items()->create(['name' => $name, 'amount' => $amount, 'ends_on' => $endsOn, 'sort_order' => $group->items()->count()]);
+        return $group->items()->create([
+            'name' => $name, 'amount' => $amount, 'ends_on' => $endsOn,
+            'interval' => $interval, 'starts_on' => $startsOn, 'sort_order' => $group->items()->count(),
+        ]);
     }
 
     public function test_guests_are_redirected_to_login(): void
@@ -326,5 +329,127 @@ class PlanTest extends TestCase
 
         $this->assertSame(0, PlanGroup::count());
         $this->assertSame(0, PlanItem::count());
+    }
+
+    public function test_yearly_item_counts_only_in_its_due_month(): void
+    {
+        $item = $this->item($this->group($this->plan(), 'Auto'), 'KFZ-Steuer', 98, null, 'yearly', '2026-05-08');
+
+        $this->assertTrue($item->isDueIn(Carbon::create(2026, 5, 1)));
+        $this->assertSame('off', $item->stateIn(Carbon::create(2026, 6, 1)));
+        $this->assertSame('off', $item->stateIn(Carbon::create(2027, 4, 1)));
+        $this->assertTrue($item->isDueIn(Carbon::create(2027, 5, 1)));
+        $this->assertSame('upcoming', $item->stateIn(Carbon::create(2026, 4, 1)));
+        $this->assertSame('2027-05', $item->nextDueAfter(Carbon::create(2026, 6, 1))->format('Y-m'));
+    }
+
+    public function test_quarterly_and_half_yearly_rhythm(): void
+    {
+        $group = $this->group($this->plan(), 'GEZ');
+        $quarterly = $this->item($group, 'Rundfunk', 55.08, null, 'quarterly', '2026-01-15');
+        $half = $this->item($group, 'Gebühr', 20, null, 'semiannual', '2026-03-01');
+
+        $due = fn (PlanItem $item) => collect(range(1, 12))->filter(fn ($m) => $item->isDueIn(Carbon::create(2026, $m, 1)))->values()->all();
+
+        $this->assertSame([1, 4, 7, 10], $due($quarterly));
+        $this->assertSame([3, 9], $due($half));
+    }
+
+    public function test_loan_counts_only_between_start_and_end(): void
+    {
+        $plan = $this->plan('2026-05');
+        $loan = $this->item($this->group($plan, 'Kredite', 'loan'), 'Sparkasse', 407, '2026-07-31', 'monthly', '2026-03-20');
+
+        $this->assertSame('upcoming', $loan->stateIn(Carbon::create(2026, 2, 1)));
+        $this->assertSame('due', $loan->stateIn(Carbon::create(2026, 3, 1)));
+        $this->assertSame('due', $loan->stateIn(Carbon::create(2026, 7, 1)));
+        $this->assertSame('ended', $loan->stateIn(Carbon::create(2026, 8, 1)));
+
+        $service = app(PlanService::class);
+        $this->assertSame(407.0, $service->totals($plan->fresh())['loans']);
+
+        $this->plan('2026-08', $this->user);
+        $august = PlanMonth::whereDate('month', '2026-08-01')->first();
+        $this->item($this->group($august, 'Kredite', 'loan'), 'Sparkasse', 407, '2026-07-31', 'monthly', '2026-03-20');
+        $this->assertSame(0.0, $service->totals($august->fresh())['loans']);
+    }
+
+    public function test_totals_skip_items_that_are_not_due(): void
+    {
+        $plan = $this->plan('2026-06');
+        $group = $this->group($plan, 'Auto');
+        $this->item($group, 'Wartung', 35);
+        $this->item($group, 'KFZ-Steuer', 98, null, 'yearly', '2026-05-08');
+
+        $this->assertSame(35.0, app(PlanService::class)->totals($plan->fresh())['expense']);
+
+        $this->actingAs($this->user)
+            ->get('/plan?month=2026-06')
+            ->assertOk()
+            ->assertSee('nächste Zahlung');
+    }
+
+    public function test_non_monthly_items_need_a_start_date(): void
+    {
+        $item = $this->item($this->group($this->plan(), 'Auto'), 'KFZ-Steuer', 98);
+
+        $this->actingAs($this->user)
+            ->from('/plan/items/' . $item->id . '/edit')
+            ->put("/plan/items/{$item->id}", ['name' => 'KFZ-Steuer', 'amount' => '98', 'interval' => 'yearly'])
+            ->assertSessionHasErrors('starts_on');
+
+        $this->actingAs($this->user)
+            ->put("/plan/items/{$item->id}", ['name' => 'KFZ-Steuer', 'amount' => '98', 'interval' => 'yearly', 'starts_on' => '2026-05-08'])
+            ->assertSessionHasNoErrors();
+
+        $item->refresh();
+        $this->assertSame('yearly', $item->interval);
+        $this->assertSame('2026-05-08', $item->starts_on->toDateString());
+    }
+
+    public function test_end_must_not_be_before_start(): void
+    {
+        $item = $this->item($this->group($this->plan(), 'Kredite', 'loan'), 'Kredit', 100);
+
+        $this->actingAs($this->user)
+            ->put("/plan/items/{$item->id}", ['name' => 'Kredit', 'amount' => '100', 'starts_on' => '2026-05-01', 'ends_on' => '2026-01-01'])
+            ->assertSessionHasErrors('ends_on');
+
+        $this->actingAs($this->user)
+            ->put("/plan/items/{$item->id}", ['name' => 'Kredit', 'amount' => '100', 'ends_on' => '2030-01-01'])
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_rhythm_and_dates_are_copied_to_the_next_month(): void
+    {
+        $this->item($this->group($this->plan('2026-05'), 'Auto'), 'KFZ-Steuer', 98, null, 'yearly', '2026-05-08');
+
+        $this->actingAs($this->user)->post('/plan', ['month' => '2026-06', 'source' => 'previous']);
+
+        $copy = PlanItem::whereHas('group.planMonth', fn ($q) => $q->whereDate('month', '2026-06-01'))->firstOrFail();
+
+        $this->assertSame('yearly', $copy->interval);
+        $this->assertSame('2026-05-08', $copy->starts_on->toDateString());
+    }
+
+    public function test_csv_import_reads_rhythm_and_start(): void
+    {
+        $csv = "Gruppe;Typ;Beschreibung;Betrag;Bemerkung;Rhythmus;Beginn;Letzte Rate\n"
+            . "Auto;Ausgabe;KFZ-Steuer;98,00;;Jährlich;08.05.2026;\n"
+            . "Auto;Ausgabe;Ohne Beginn;12,00;;Jährlich;;\n"
+            . "Kredite;Kredit;Sparkasse;407,00;;Monatlich;20.01.2023;17.01.2033\n";
+
+        $this->actingAs($this->user)->post('/plan/import', [
+            'month' => '2026-05',
+            'file' => UploadedFile::fake()->createWithContent('plan.csv', $csv),
+        ])->assertRedirect();
+
+        $items = PlanItem::all()->keyBy('name');
+
+        $this->assertSame('yearly', $items['KFZ-Steuer']->interval);
+        $this->assertSame('2026-05-08', $items['KFZ-Steuer']->starts_on->toDateString());
+        $this->assertSame('monthly', $items['Ohne Beginn']->interval);
+        $this->assertSame('2023-01-20', $items['Sparkasse']->starts_on->toDateString());
+        $this->assertSame('2033-01-17', $items['Sparkasse']->ends_on->toDateString());
     }
 }

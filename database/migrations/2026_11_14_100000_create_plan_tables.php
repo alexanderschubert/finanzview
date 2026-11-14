@@ -48,7 +48,13 @@ return new class extends Migration
             $table->decimal('amount', 12, 2)->default(0);
             $table->string('note')->nullable();
 
-            // Datum der letzten Rate; danach fällt der Posten im nächsten Monat weg.
+            // Rhythmus: monthly, quarterly, semiannual oder yearly. Der Betrag gilt je Zahlung.
+            $table->string('interval', 20)->default('monthly');
+
+            // Beginn bzw. erste Fälligkeit. Bei Rhythmus > monatlich legt der Monat fest, wann gezahlt wird.
+            $table->date('starts_on')->nullable();
+
+            // Ende bzw. letzte Rate; danach zählt der Posten nicht mehr.
             $table->date('ends_on')->nullable();
 
             $table->unsignedInteger('sort_order')->default(0);
