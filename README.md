@@ -134,6 +134,40 @@ docker compose up -d
 
 Danach `http://<server-ip>:8080` öffnen. Der Container meldet unter `/up` seinen Zustand (für Healthchecks).
 
+### All-in-One (ein Container, PostgreSQL inklusive)
+
+Wer keine eigene Datenbank betreiben möchte, nimmt das All-in-One-Image `ghcr.io/alexanderschubert/finanzview-aio`. Es enthält App und PostgreSQL 17 und legt **alles in einem Ordner** ab: Datenbank, Storage und eine tägliche Sicherung der letzten 14 Tage (`backups/`).
+
+**Unraid:** Template-URL im Docker-Tab unter „Add Container“:
+
+```
+https://raw.githubusercontent.com/alexanderschubert/finanzview/main/finanzview-aio.xml
+```
+
+Mindestens **Application URL** und den **Daten**-Pfad prüfen (Vorgabe `/mnt/user/appdata/finanzview/data`).
+
+**Docker Compose:** [`docker-compose.aio.yml`](docker-compose.aio.yml) herunterladen, `APP_URL` anpassen und starten:
+
+```bash
+docker compose -f docker-compose.aio.yml up -d
+```
+
+**Umzug von einer bestehenden Installation (eigene PostgreSQL-Datenbank):**
+
+1. Datenbank sichern (Containername und Benutzer anpassen):
+   ```bash
+   docker exec <postgres-container> pg_dump -U <benutzer> --no-owner --no-privileges <datenbank> > import.sql
+   ```
+2. Den Datenordner anlegen und die Datei hineinlegen, z. B. `/mnt/user/appdata/finanzview/data/import.sql`. Sie wird **nur beim allerersten Start** in die neue Datenbank geladen und danach in `import.sql.done` umbenannt.
+3. Den bisherigen `APP_KEY` übernehmen (Variable `APP_KEY` setzen oder die Datei `storage/app/.app_key` nach `data/storage/app/.app_key` kopieren). Ohne den alten Schlüssel lassen sich verschlüsselte Daten wie Zwei-Faktor-Geheimnisse nicht mehr lesen.
+4. Alten Container stoppen, AIO-Container starten.
+
+**Hinweise**
+
+- Die PostgreSQL-Hauptversion ist festgelegt (17). Ein Datenordner einer anderen Hauptversion wird nicht gestartet, sondern mit einer Fehlermeldung abgelehnt; dann hilft die Rücksicherung aus `backups/` (`gunzip -c datei.sql.gz | psql ...`).
+- Den Datenordner in die eigene Datensicherung aufnehmen. Die Sicherungen im Ordner liegen auf demselben Datenträger wie die Datenbank.
+- Das Datenbank-Passwort erzeugt der Container selbst (`data/.db_password`). Die Datenbank ist nur innerhalb des Containers erreichbar.
+
 ### Erste Schritte
 
 1. **Registrieren** – der **erste Benutzer wird automatisch Administrator**.

@@ -9,10 +9,12 @@
 #   base      PHP-FPM + Nginx + Supervisor auf Alpine
 #   vendor    PHP-Pakete ohne Entwicklungswerkzeuge
 #   test      Image für die Tests in der CI (mit PHPUnit)
-#   app       Fertiges Image für den Betrieb (Standard)
+#   app       Fertiges Image für den Betrieb (Datenbank separat)
+#   aio       All-in-One: wie app, aber mit PostgreSQL im selben Container
 #
-# Bauen:  docker build -t finanzview .
-# Tests:  docker build --target test -t finanzview-test .
+# Bauen:  docker build --target app -t finanzview .
+# AIO:    docker build --target aio -t finanzview-aio .
+# Tests:  docker build --target test -t finanzview-tests .
 
 
 # =========================================================
@@ -167,5 +169,46 @@ RUN chmod +x /usr/local/bin/finanzview-entrypoint \
 EXPOSE 80
 
 ENTRYPOINT ["finanzview-entrypoint"]
+
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+
+# =========================================================
+# All-in-One: App + PostgreSQL + tägliche Sicherung
+# =========================================================
+#
+# Alle Daten liegen im Volume /data (Datenbank, Storage, Sicherungen).
+# PostgreSQL ist auf Hauptversion 17 festgelegt: bei einem Wechsel der
+# Hauptversion lässt sich ein bestehendes Datenverzeichnis nicht mehr
+# starten, deshalb wird die Version nicht mitgezogen.
+
+FROM app AS aio
+
+RUN apk add --no-cache \
+        postgresql17 \
+        postgresql17-client \
+        su-exec \
+        tini
+
+COPY docker/aio/entrypoint.sh /usr/local/bin/finanzview-aio-entrypoint
+COPY docker/aio/backup.sh /usr/local/bin/finanzview-backup
+COPY docker/aio/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+RUN chmod +x /usr/local/bin/finanzview-aio-entrypoint /usr/local/bin/finanzview-backup \
+    && mkdir -p /data /run/postgresql \
+    && chown postgres:postgres /run/postgresql
+
+ENV DB_CONNECTION=pgsql \
+    DB_HOST=127.0.0.1 \
+    DB_PORT=5432 \
+    DB_DATABASE=finanzview \
+    DB_USERNAME=finanzview
+
+VOLUME /data
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+    CMD wget -q -O /dev/null http://127.0.0.1/up || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--", "finanzview-aio-entrypoint"]
 
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

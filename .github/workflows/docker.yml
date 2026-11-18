@@ -98,11 +98,66 @@ jobs:
           curl -fsS -o /dev/null -w "/offline.html: %{http_code}\n" http://localhost:8080/offline.html
           curl -fsS -o /dev/null -w "/icons/icon-maskable-512.png: %{http_code}\n" http://localhost:8080/icons/icon-maskable-512.png
 
+      # All-in-One: App und PostgreSQL in einem Container. Prüft den ersten Start
+      # (Datenbank anlegen, import.sql laden, migrieren) und einen Neustart mit
+      # vorhandenen Daten.
+      - name: All-in-One Image bauen
+        run: |
+          docker build \
+            --target aio \
+            -t finanzview-aio-test \
+            .
+
+      - name: Starttest All-in-One
+        run: |
+          mkdir -p /tmp/fv-aio-data
+          echo "CREATE TABLE smoke_import (id integer); INSERT INTO smoke_import VALUES (42);" > /tmp/fv-aio-data/import.sql
+
+          docker run -d --name fv-aio -p 8081:80 \
+            -e APP_ENV=production \
+            -e APP_DEBUG=false \
+            -e APP_URL=http://localhost:8081 \
+            -v /tmp/fv-aio-data:/data \
+            finanzview-aio-test
+
+          wait_up() {
+            for i in $(seq 1 90); do
+              if curl -fsS -o /dev/null http://localhost:8081/up; then
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+
+          query() {
+            docker exec fv-aio sh -c "PGPASSWORD=\$(cat /data/.db_password) psql -h 127.0.0.1 -U finanzview -d finanzview -tA -c \"$1\""
+          }
+
+          wait_up
+          curl -fsS http://localhost:8081/login | grep -q "Willkommen bei FinanzView"
+
+          # import.sql wurde geladen und die App hat migriert.
+          test "$(query 'select id from smoke_import')" = "42"
+          test "$(query 'select count(*) from migrations')" -gt 0
+          docker exec fv-aio test -s /data/postgres/PG_VERSION
+          docker exec fv-aio test -f /data/import.sql.done
+          docker exec fv-aio test -s /data/storage/app/.app_key
+
+          # Neustart mit vorhandenen Daten.
+          docker restart fv-aio
+          wait_up
+          curl -fsS http://localhost:8081/login | grep -q "Willkommen bei FinanzView"
+          test "$(query 'select id from smoke_import')" = "42"
+
+          docker inspect --format '{{.State.Health.Status}}' fv-aio
+
       - name: Container-Logs bei Fehler
         if: failure()
         run: |
           docker logs fv-app || true
           docker logs fv-db | tail -20 || true
+          docker logs fv-aio | tail -80 || true
 
       # main -> :latest und :sha-xxxxxxx
       # Pull Request -> :pr-<Nummer> (Vorschau zum Testen vor dem Mergen).
@@ -127,4 +182,7 @@ jobs:
           for TAG in $TAGS; do
             docker tag finanzview-test "$IMAGE:$TAG"
             docker push "$IMAGE:$TAG"
+
+            docker tag finanzview-aio-test "$IMAGE-aio:$TAG"
+            docker push "$IMAGE-aio:$TAG"
           done

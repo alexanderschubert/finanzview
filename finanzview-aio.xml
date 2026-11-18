@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>FinanzView-AIO</Name>
+  <Repository>ghcr.io/alexanderschubert/finanzview-aio:latest</Repository>
+  <Registry>https://github.com/alexanderschubert/finanzview/pkgs/container/finanzview-aio</Registry>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+
+  <Support>https://github.com/alexanderschubert/finanzview/issues</Support>
+
+  <Project>FinanzView</Project>
+  <Overview>
+    FinanzView – persönliche Finanzverwaltung (All-in-One).
+
+    Ein Container mit App und PostgreSQL. Alle Daten (Datenbank, Storage, tägliche
+    Sicherungen der letzten 14 Tage) liegen im Ordner, den du unter "Daten" angibst.
+    Eine separate Datenbank ist nicht nötig.
+  </Overview>
+
+  <Category>Finance:</Category>
+
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+
+  <TemplateURL>https://raw.githubusercontent.com/alexanderschubert/finanzview/main/finanzview-aio.xml</TemplateURL>
+
+  <Icon>https://raw.githubusercontent.com/alexanderschubert/finanzview/main/public/favicon-512.png</Icon>
+
+  <Config Name="WebUI Port"
+          Target="80"
+          Default="8080"
+          Mode="tcp"
+          Description="Port für die FinanzView Weboberfläche."
+          Type="Port"
+          Display="always"
+          Required="true"
+          Mask="false">8080</Config>
+
+  <Config Name="Daten"
+          Target="/data"
+          Default="/mnt/user/appdata/finanzview/data"
+          Mode="rw"
+          Description="Datenbank, Storage und Sicherungen. Diesen Ordner solltest du in deine Datensicherung aufnehmen."
+          Type="Path"
+          Display="always"
+          Required="true"
+          Mask="false">/mnt/user/appdata/finanzview/data</Config>
+
+  <Config Name="Application URL"
+          Target="APP_URL"
+          Default="http://[IP]:[PORT:8080]"
+          Mode=""
+          Description="Öffentliche URL von FinanzView. Bei Verwendung eines Reverse Proxy z.B. https://finanzview.example.com"
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">http://[IP]:[PORT:8080]</Config>
+
+  <Config Name="Application Key"
+          Target="APP_KEY"
+          Default=""
+          Mode=""
+          Description="Optional. Laravel APP_KEY (base64:...). Leer lassen: FinanzView erzeugt beim ersten Start einen Schlüssel und speichert ihn im Datenordner. Beim Umzug von einer bestehenden Installation den bisherigen Schlüssel eintragen."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="false"></Config>
+
+  <Config Name="Timezone"
+          Target="TZ"
+          Default="Europe/Berlin"
+          Mode=""
+          Description="Zeitzone für FinanzView."
+          Type="Variable"
+          Display="always"
+          Required="true"
+          Mask="false">Europe/Berlin</Config>
+
+  <Config Name="OIDC aktivieren"
+          Target="OIDC_ENABLED"
+          Default="false"
+          Mode=""
+          Description="Anmeldung über OpenID Connect (z. B. Authentik) aktivieren. Redirect-URI im Provider: APP_URL/auth/oidc/callback"
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false">false</Config>
+
+  <Config Name="OIDC Issuer"
+          Target="OIDC_ISSUER"
+          Default=""
+          Mode=""
+          Description="Issuer-URL des Providers. Authentik: https://auth.example.com/application/o/finanzview/"
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false"></Config>
+
+  <Config Name="OIDC Client ID"
+          Target="OIDC_CLIENT_ID"
+          Default=""
+          Mode=""
+          Description="Client ID aus dem OAuth2/OpenID-Provider."
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="false"></Config>
+
+  <Config Name="OIDC Client Secret"
+          Target="OIDC_CLIENT_SECRET"
+          Default=""
+          Mode=""
+          Description="Client Secret aus dem OAuth2/OpenID-Provider."
+          Type="Variable"
+          Display="always"
+          Required="false"
+          Mask="true"></Config>
+
+  <Config Name="OIDC Button-Text"
+          Target="OIDC_BUTTON_LABEL"
+          Default="Mit SSO anmelden"
+          Mode=""
+          Description="Beschriftung des SSO-Buttons auf der Login-Seite."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="false">Mit SSO anmelden</Config>
+
+  <Config Name="OIDC E-Mail vertrauen"
+          Target="OIDC_TRUST_EMAIL"
+          Default="false"
+          Mode=""
+          Description="Bestehende Konten auch dann per E-Mail verknüpfen, wenn der Provider email_verified nicht auf true setzt. Nur aktivieren, wenn Benutzer ihre E-Mail im Provider nicht selbst ändern können."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="false">false</Config>
+
+  <Config Name="FinTS Produktregistrierung"
+          Target="FINTS_PRODUCT_ID"
+          Default=""
+          Mode=""
+          Description="Optional. Kostenlose FinTS-Produktregistrierungsnummer der Deutschen Kreditwirtschaft (hbci-zka.de). Damit lassen sich Umsätze direkt von der Bank abrufen (Einstellungen → Bankverbindungen). Nicht öffentlich teilen."
+          Type="Variable"
+          Display="advanced"
+          Required="false"
+          Mask="true"></Config>
+
+</Container>
