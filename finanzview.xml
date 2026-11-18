@@ -4,6 +4,7 @@
   <Repository>ghcr.io/alexanderschubert/finanzview:latest</Repository>
   <Registry>https://github.com/alexanderschubert/finanzview/pkgs/container/finanzview</Registry>
   <Network>bridge</Network>
+  <Shell>sh</Shell>
   <Privileged>false</Privileged>
 
   <Support>https://github.com/alexanderschubert/finanzview/issues</Support>
@@ -19,6 +20,8 @@
     Container (ein einziger Container reicht). Alternativ kannst du den Host
     einer eigenen PostgreSQL-Instanz eintragen.
   </Overview>
+
+  <Requires>Nichts weiter: Lässt du „PostgreSQL: Host“ leer, läuft die Datenbank im Container (Daten unter „Datenbank (eingebaut)“). Eine eigene PostgreSQL-Instanz kannst du stattdessen eintragen.</Requires>
 
   <Category>Finance:</Category>
 
@@ -58,13 +61,13 @@
           Required="false"
           Mask="false"></Config>
 
-  <Config Name="Database Connection"
+  <Config Name="DB_CONNECTION"
           Target="DB_CONNECTION"
           Default="pgsql"
           Mode=""
-          Description="Datenbanktreiber."
+          Description=""
           Type="Variable"
-          Display="always"
+          Display="advanced-hide"
           Required="true"
           Mask="false">pgsql</Config>
 
@@ -148,16 +151,6 @@
           Required="false"
           Mask="false">/mnt/user/appdata/finanzview/postgres</Config>
 
-  <Config Name="App Data"
-          Target="/var/www/html/bootstrap/cache"
-          Default="/mnt/user/appdata/finanzview/bootstrap-cache"
-          Mode="rw"
-          Description="Persistenter Laravel Bootstrap Cache."
-          Type="Path"
-          Display="advanced"
-          Required="true"
-          Mask="false">/mnt/user/appdata/finanzview/bootstrap-cache</Config>
-
   <Config Name="OIDC aktivieren"
           Target="OIDC_ENABLED"
           Default="false"
@@ -227,5 +220,8 @@
           Display="advanced"
           Required="false"
           Mask="true"></Config>
+
+  <Config Name="APP_ENV" Target="APP_ENV" Default="production" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">production</Config>
+  <Config Name="APP_DEBUG" Target="APP_DEBUG" Default="false" Mode="" Description="" Type="Variable" Display="advanced-hide" Required="true" Mask="false">false</Config>
 
 </Container>
