@@ -298,6 +298,8 @@ docker run --rm --entrypoint sh finanzview-tests -c 'touch .env && php artisan t
 
 **Branches:** `main` ist der stabile Stand (Image `:latest`, das auch die Unraid-Vorlage nutzt), `dev` ist der Entwicklungsstand (Image `:dev`). Neue Arbeit entsteht in kurzlebigen Branches (`feature/…`, `fix/…`), Pull Requests gehen nach `dev`. Ist `dev` getestet, wird er per Pull Request nach `main` übernommen (Release). Eilige Korrekturen gehen direkt nach `main`; danach `main` wieder in `dev` mergen.
 
+**Labels, Issues und Pull Requests** sind komplett auf Deutsch: Vorlagen für Fehler, Funktionswünsche und Fragen, eine Pull-Request-Vorlage mit Checkliste und Labels wie *Fehler*, *Funktion*, *Design*, *Datenbank*, *Docker & Betrieb*, *Priorität: hoch* oder *Status: in Arbeit*. Pull Requests bekommen ihre Labels automatisch anhand von Branch-Name und geänderten Dateien.
+
 Jeder Pull Request wird automatisch getestet und als Vorschau-Image (`:pr-<Nummer>`) gebaut. Merges auf `dev` erzeugen `:dev`, Merges auf `main` erzeugen `:latest`. Die wöchentliche Neu-Erstellung (Sicherheitsupdates) läuft auf `main`.
 
 ```text
