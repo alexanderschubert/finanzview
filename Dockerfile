@@ -128,6 +128,10 @@ RUN apk add --no-cache \
     && mkdir -p /run/postgresql /var/lib/postgresql/data /etc/supervisor/conf.d \
     && chown postgres:postgres /run/postgresql
 
+# PostgreSQL ist der einzige unterstützte Treiber; so findet auch ein
+# "docker exec ... php artisan" die eingebaute Datenbank.
+ENV DB_CONNECTION=pgsql
+
 COPY --from=vendor /var/www/html/vendor ./vendor
 
 COPY . .
