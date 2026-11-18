@@ -71,21 +71,41 @@ Deine Daten bleiben auf deinem eigenen Server (z. B. Unraid, NAS oder Homelab).
 
 ## Installation
 
-FinanzView läuft als Docker-Container (`ghcr.io/alexanderschubert/finanzview`) und braucht eine **PostgreSQL**-Datenbank. Beim Start werden Datenbank-Migrationen automatisch ausgeführt und – falls nicht gesetzt – ein `APP_KEY` erzeugt und im Storage gespeichert.
+FinanzView läuft als **ein** Docker-Container (`ghcr.io/alexanderschubert/finanzview`). Die Datenbank ist **PostgreSQL**: Ohne `DB_HOST` läuft sie **eingebaut im selben Container** (PostgreSQL 18, nur im Container erreichbar), mit `DB_HOST` verwendet FinanzView eine eigene Instanz. Beim Start werden Datenbank-Migrationen automatisch ausgeführt und – falls nicht gesetzt – ein `APP_KEY` erzeugt und im Storage gespeichert.
 
 > **HTTPS empfohlen:** Für die Installation als App (PWA) und für Passkeys ist ein Aufruf über HTTPS mit eigener Domain nötig, z. B. hinter Nginx Proxy Manager, Traefik oder Caddy. Über `http://IP:Port` funktioniert alles andere.
 
 ### Unraid
 
-1. PostgreSQL-Container installieren (z. B. `postgres:17`) und eine Datenbank samt Benutzer anlegen.
-2. Im Unraid-Docker-Tab **„Add Container“** wählen und als Template-URL eintragen:
+1. Im Unraid-Docker-Tab **„Add Container“** wählen und als Template-URL eintragen:
    ```
    https://raw.githubusercontent.com/alexanderschubert/finanzview/main/finanzview.xml
    ```
-3. Mindestens ausfüllen: **Application URL** (`APP_URL`), **Database Host/Name/User/Password**.
+2. **Application URL** (`APP_URL`) ausfüllen. Die Pfade **Storage** und **Datenbank (eingebaut)** zeigen standardmäßig auf `/mnt/user/appdata/finanzview/storage` und `/mnt/user/appdata/finanzview/postgres`.
+3. **PostgreSQL: Host leer lassen** für die eingebaute Datenbank. Wer eine eigene Instanz nutzt, trägt Host, Datenbank, Benutzer und Passwort ein.
 4. Container starten und die Weboberfläche öffnen.
 
 ### Docker Compose
+
+Mit eingebauter Datenbank (ein Container):
+
+```yaml
+services:
+  finanzview:
+    image: ghcr.io/alexanderschubert/finanzview:latest
+    container_name: finanzview
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      APP_URL: https://finanzen.example.com   # bzw. http://<server-ip>:8080
+      TZ: Europe/Berlin
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./postgres:/var/lib/postgresql/data
+```
+
+Mit eigener PostgreSQL-Instanz:
 
 ```yaml
 services:
@@ -134,39 +154,17 @@ docker compose up -d
 
 Danach `http://<server-ip>:8080` öffnen. Der Container meldet unter `/up` seinen Zustand (für Healthchecks).
 
-### All-in-One (ein Container, PostgreSQL inklusive)
+### Eingebaute Datenbank
 
-Wer keine eigene Datenbank betreiben möchte, nimmt das All-in-One-Image `ghcr.io/alexanderschubert/finanzview-aio`. Es enthält App und PostgreSQL 17 und legt **alles in einem Ordner** ab: Datenbank, Storage und eine tägliche Sicherung der letzten 14 Tage (`backups/`).
+- Sie hört nur im Container (127.0.0.1). Das Passwort erzeugt der Container und legt es in `storage/app/.db_password` ab.
+- Die Daten liegen im Ordner „Datenbank (eingebaut)“ in einem Unterordner pro PostgreSQL-Hauptversion (`pg18`). **Storage und Datenbank gehören in die Sicherung.** Ein Datenordner einer anderen Hauptversion wird nicht gestartet, sondern mit einer Fehlermeldung abgelehnt.
+- Sicherung und Wiederherstellung übernehmen die Skripte `bin/backup.sh` und `bin/restore.sh` (siehe [Updates und Datensicherung](#updates-und-datensicherung)).
 
-**Unraid:** Template-URL im Docker-Tab unter „Add Container“:
+**Umzug von einer eigenen PostgreSQL-Datenbank auf die eingebaute:**
 
-```
-https://raw.githubusercontent.com/alexanderschubert/finanzview/main/finanzview-aio.xml
-```
-
-Mindestens **Application URL** und den **Daten**-Pfad prüfen (Vorgabe `/mnt/user/appdata/finanzview/data`).
-
-**Docker Compose:** [`docker-compose.aio.yml`](docker-compose.aio.yml) herunterladen, `APP_URL` anpassen und starten:
-
-```bash
-docker compose -f docker-compose.aio.yml up -d
-```
-
-**Umzug von einer bestehenden Installation (eigene PostgreSQL-Datenbank):**
-
-1. Datenbank sichern (Containername und Benutzer anpassen):
-   ```bash
-   docker exec <postgres-container> pg_dump -U <benutzer> --no-owner --no-privileges <datenbank> > import.sql
-   ```
-2. Den Datenordner anlegen und die Datei hineinlegen, z. B. `/mnt/user/appdata/finanzview/data/import.sql`. Sie wird **nur beim allerersten Start** in die neue Datenbank geladen und danach in `import.sql.done` umbenannt.
-3. Den bisherigen `APP_KEY` übernehmen (Variable `APP_KEY` setzen oder die Datei `storage/app/.app_key` nach `data/storage/app/.app_key` kopieren). Ohne den alten Schlüssel lassen sich verschlüsselte Daten wie Zwei-Faktor-Geheimnisse nicht mehr lesen.
-4. Alten Container stoppen, AIO-Container starten.
-
-**Hinweise**
-
-- Die PostgreSQL-Hauptversion ist festgelegt (17). Ein Datenordner einer anderen Hauptversion wird nicht gestartet, sondern mit einer Fehlermeldung abgelehnt; dann hilft die Rücksicherung aus `backups/` (`gunzip -c datei.sql.gz | psql ...`).
-- Den Datenordner in die eigene Datensicherung aufnehmen. Die Sicherungen im Ordner liegen auf demselben Datenträger wie die Datenbank.
-- Das Datenbank-Passwort erzeugt der Container selbst (`data/.db_password`). Die Datenbank ist nur innerhalb des Containers erreichbar.
+1. Mit `bin/backup.sh` sichern (der Container läuft noch mit der alten Datenbank).
+2. Container ohne `DB_HOST` neu anlegen, dabei den bisherigen `APP_KEY` setzen. Er legt die eingebaute Datenbank an und migriert.
+3. Mit `bin/restore.sh <db-dump> [files-tar]` die Sicherung einspielen.
 
 ### Erste Schritte
 
@@ -252,7 +250,19 @@ Migrationen laufen beim Start automatisch.
 
 **Datensicherung:**
 - In der App: *Einstellungen → Daten & Export* – JSON-Backup herunterladen und bei Bedarf wiederherstellen (vorhandene Daten bleiben erhalten, Dubletten werden erkannt).
-- Zusätzlich empfohlen: regelmäßiger PostgreSQL-Dump (`pg_dump`) und das Storage-Volume sichern.
+- Empfohlen: `bin/backup.sh` täglich ausführen (auf Unraid mit dem Plugin „User Scripts“). Es sichert die Datenbank (`pg_dump`, eingebaut oder eigene Instanz) und `storage/app` (App-Schlüssel, Datenbank-Passwort) und behält die letzten 14 Sicherungen:
+
+  ```bash
+  FINANZVIEW_CONTAINER=FinanzView BACKUP_DIR=/mnt/user/appdata/finanzview/backups KEEP=14 ./bin/backup.sh
+  ```
+
+  Wiederherstellen (ersetzt die aktuellen Daten, der Container muss laufen):
+
+  ```bash
+  FINANZVIEW_CONTAINER=FinanzView ./bin/restore.sh /mnt/user/appdata/finanzview/backups/finanzview-db-<Zeit>.sql.gz /mnt/user/appdata/finanzview/backups/finanzview-files-<Zeit>.tar.gz
+  ```
+
+  `FINANZVIEW_CONTAINER` ist der Name deines Containers. Ist `APP_KEY` als Variable gesetzt, steckt er nicht in der Dateisicherung und muss separat aufbewahrt werden.
 
 ---
 

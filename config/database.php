@@ -87,11 +87,15 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            // Ohne DB_HOST läuft PostgreSQL im Container (siehe docker/entrypoint.sh); das Passwort
+            // erzeugt der Entrypoint und legt es im Storage-Ordner ab.
+            'host' => env('DB_HOST') ?: '127.0.0.1',
+            'port' => env('DB_PORT') ?: '5432',
+            'database' => env('DB_HOST') ? env('DB_DATABASE', 'laravel') : (env('DB_DATABASE') ?: 'finanzview'),
+            'username' => env('DB_HOST') ? env('DB_USERNAME', 'root') : (env('DB_USERNAME') ?: 'finanzview'),
+            'password' => env('DB_HOST') || env('DB_CONNECTION') !== 'pgsql'
+                ? env('DB_PASSWORD', '')
+                : (is_file($file = storage_path('app/.db_password')) ? trim((string) file_get_contents($file)) : env('DB_PASSWORD', '')),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
