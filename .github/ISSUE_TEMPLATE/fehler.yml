@@ -1,0 +1,48 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet
+title: "Fehler: "
+labels: ["Fehler"]
+body:
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was ist passiert?
+      description: Beschreibe das Problem in ein paar Sätzen.
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: So lässt sich der Fehler nachstellen
+      placeholder: |
+        1. Seite „…“ öffnen
+        2. Auf „…“ tippen
+        3. Es erscheint …
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hättest du erwartet?
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Image-Tag oder Commit, z. B. `latest` oder `sha-1a2b3c4`.
+  - type: dropdown
+    id: umgebung
+    attributes:
+      label: Wo tritt es auf?
+      multiple: true
+      options:
+        - Browser am Computer
+        - Handy (installierte App)
+        - iPad
+        - Mac-App
+        - Anderes
+  - type: textarea
+    id: logs
+    attributes:
+      label: Fehlermeldung oder Log
+      description: Bitte keine Passwörter, PINs oder Kontonummern einfügen.
+      render: shell

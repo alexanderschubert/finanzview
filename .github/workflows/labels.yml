@@ -1,0 +1,54 @@
+name: PR-Labels
+
+# Setzt Labels (auf Deutsch) anhand des Branch-Namens und der geänderten Dateien.
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    # PRs aus Forks haben keine Schreibrechte.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Labels setzen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          labels=()
+
+          case "$HEAD_REF" in
+            feature/*) labels+=("Funktion") ;;
+            fix/*)     labels+=("Fehler") ;;
+            design/*)  labels+=("Design") ;;
+            docs/*)    labels+=("Dokumentation") ;;
+            ci/*|build/*|chore/*) labels+=("Wartung") ;;
+            dev)       labels+=("Release") ;;
+          esac
+
+          if [ "$HEAD_REF" = "dev" ] && [ "$BASE_REF" = "main" ]; then
+            labels+=("Release")
+          fi
+
+          files=$(gh pr diff "$PR" --name-only)
+
+          echo "$files" | grep -q '^app/Services/Fints/\|^app/Http/Controllers/BankConnection' && labels+=("Bankabruf (FinTS)")
+          echo "$files" | grep -q '^database/migrations/' && labels+=("Datenbank")
+          echo "$files" | grep -q '^Dockerfile$\|^docker/\|^bin/\|^finanzview.xml$' && labels+=("Docker & Betrieb")
+          echo "$files" | grep -qi 'plan' && labels+=("Monatsplan")
+          echo "$files" | grep -q 'CsvImport\|TransactionImport' && labels+=("CSV-Import")
+          echo "$files" | grep -q '^resources/css/' && labels+=("Design")
+
+          for label in $(printf '%s\n' "${labels[@]}" | sort -u | tr ' ' '_'); do
+            gh pr edit "$PR" --add-label "$(echo "$label" | tr '_' ' ')" || true
+          done

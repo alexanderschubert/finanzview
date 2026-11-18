@@ -1,0 +1,15 @@
+name: Frage
+description: Hilfe bei Installation, Einrichtung oder Bedienung
+title: "Frage: "
+labels: ["Frage"]
+body:
+  - type: textarea
+    id: frage
+    attributes:
+      label: Was möchtest du wissen?
+    validations:
+      required: true
+  - type: textarea
+    id: bisher
+    attributes:
+      label: Was hast du schon versucht?
