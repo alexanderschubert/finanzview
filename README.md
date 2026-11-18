@@ -1,34 +1,38 @@
+<div align="center">
+
+<img src="public/finanzview.svg" width="112" alt="FinanzView Logo">
+
 # FinanzView
 
-[![Test, Build and Push](https://github.com/alexanderschubert/finanzview/actions/workflows/docker.yml/badge.svg)](https://github.com/alexanderschubert/finanzview/actions/workflows/docker.yml)
+**Deine Finanzen im Blick – selbst gehostet, im Aurora-Look.**
+
+Konten, Buchungen, Budgets, Kredite, Kreditkarten und ein Monatsplan an einem Ort.<br>
+Hell und dunkel, als Web-App installierbar auf iPhone, iPad, Mac und Android. Deine Daten bleiben auf deinem Server.
+
+[![Test, Build and Push](https://github.com/alexanderschubert/finanzview/actions/workflows/docker.yml/badge.svg?branch=main)](https://github.com/alexanderschubert/finanzview/actions/workflows/docker.yml)
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-green.svg)](LICENSE)
+[![Letzter Commit](https://img.shields.io/github/last-commit/alexanderschubert/finanzview?label=Letzter%20Commit)](https://github.com/alexanderschubert/finanzview/commits/main)
 
-**FinanzView** ist eine selbst gehostete Finanzverwaltung für den privaten Überblick – Konten, Buchungen, Budgets, Kredite und Kreditkarten an einem Ort, im aufgeräumten Apple-Stil, hell und dunkel, als Web-App und installierbar auf dem Handy.
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Node](https://img.shields.io/badge/Node-24-5FA04E?logo=nodedotjs&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-ghcr.io-2496ED?logo=docker&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-installierbar-5A0FC8?logo=pwa&logoColor=white)
 
-Deine Daten bleiben auf deinem eigenen Server (z. B. Unraid, NAS oder Homelab).
+<br>
 
----
+**[✨ Funktionen](#funktionen)** &nbsp;·&nbsp; **[📦 Installation](#installation)** &nbsp;·&nbsp; **[⚙️ Konfiguration](#konfiguration)** &nbsp;·&nbsp; **[🏦 FinTS](#bankabruf-per-fints)** &nbsp;·&nbsp; **[🔐 SSO](#single-sign-on-authentik)** &nbsp;·&nbsp; **[💾 Sicherung](#updates-und-datensicherung)** &nbsp;·&nbsp; **[🛠️ Entwicklung](#entwicklung)**
 
-## Inhalt
-
-- [Funktionen](#funktionen)
-- [Installation](#installation)
-  - [Unraid](#unraid)
-  - [Docker Compose](#docker-compose)
-  - [Erste Schritte](#erste-schritte)
-- [Konfiguration](#konfiguration)
-- [Bankabruf per FinTS](#bankabruf-per-fints)
-- [Single Sign-On (Authentik)](#single-sign-on-authentik)
-- [Updates und Datensicherung](#updates-und-datensicherung)
-- [Entwicklung](#entwicklung)
-- [Lizenz](#lizenz)
+</div>
 
 ---
 
 ## Funktionen
 
 ### 💳 Konten und Buchungen
-- Mehrere Konten (Giro, Sparen, Kreditkarte, PayPal, Bargeld, Depot …) als **Wallet-Karten** mit Anbieter-Logo
+- Mehrere Konten (Giro, Sparen, Kreditkarte, PayPal, Bargeld, Depot …) als glänzende **Wallet-Karten** mit Anbieter-Logo
 - Einnahmen, Ausgaben und **Umbuchungen** zwischen eigenen Konten – Umbuchungen zählen nie doppelt
 - Suche und Filter nach Monat, Art, Konto, Kategorie und Tag
 - **Tags** quer zu Kategorien (z. B. „Urlaub 2026“) mit Summen je Tag
@@ -41,7 +45,8 @@ Deine Daten bleiben auf deinem eigenen Server (z. B. Unraid, NAS oder Homelab).
 - **Umbuchungen erkennen:** z. B. die Kreditkarten-Abrechnung (Abbuchung im Girokonto + Gutschrift im Kartenkonto) wird als ein Paar erkannt und mit einem Tipp zusammengefasst
 
 ### 🗂️ Ordnung
-- Kategorien mit Emoji und Farbe
+- Kategorien mit Emoji und Farbe, auch als **Unterkategorien**
+- **Empfänger-Verwaltung:** einheitliche Namen für Händler mit Standardkategorie; der Buchungstext der Bank bleibt unverändert
 - **Kategorie-Regeln** („enthält ‚Netflix‘ → Abos“) für neue Buchungen, Import und Bankabruf
 - Kategorie-Vorschläge, die aus deinen bisherigen Buchungen lernen
 
@@ -49,9 +54,10 @@ Deine Daten bleiben auf deinem eigenen Server (z. B. Unraid, NAS oder Homelab).
 - **Budgets** – monatlich, jährlich oder frei, mit Verbrauch, Rest und Warnung bei Überschreitung
 - **Kredite** mit Tilgungsplan, Zinsen und Sondertilgungen
 - **Kreditkarten** mit Limit-Auslastung und Monatsabrechnungen; der Saldo wird aus dem Kartenkonto berechnet
+- **Monatsplan** – feste Einnahmen und Ausgaben pro Monat in Gruppen (Wohnung, Versicherung, Raten …) mit Rhythmus (monatlich bis jährlich), Beginn und Ende; Summen für Einkünfte, Ausgaben, Saldo, Raten und Kredite. Neuer Monat per Klick aus dem Vormonat, CSV-Import. Der Plan **bucht nichts**
 
 ### 📊 Auswertung
-- **Dashboard** mit frei anordenbaren Widgets (Vermögen, Monat, Budgets, Kredite, Kreditkarten, Vermögensentwicklung …)
+- **Dashboard** im Bento-Stil mit frei anordenbaren Widgets (Vermögen mit Verlaufskurve, Monat, Sparquote, Kategorien als Donut, Budgets, Kredite, Kreditkarten …)
 - **Monatsbericht** – Vergleich mit Vormonat und üblichem Monat, Auffälligkeiten in Worten („Lebensmittel: 40 % mehr als üblich“), Budgets, größte Ausgaben, neue Händler
 - **Analysen** über frei wählbare Zeiträume mit Kategorien, Heatmap, Top-Händlern und CSV-Export
 
@@ -63,6 +69,7 @@ Deine Daten bleiben auf deinem eigenen Server (z. B. Unraid, NAS oder Homelab).
 - Jeder Benutzer sieht nur seine eigenen Daten
 
 ### 📱 Komfort
+- **Aurora-Design:** dunkler Nachthimmel mit Milchglas-Kacheln, leuchtenden Diagrammen und großen Zahlen – im hellen Modus als helles Glas
 - **Installierbar als App** (PWA) auf iPhone, iPad, Android und Desktop – Finanzdaten werden dabei nie im Browser-Cache gespeichert
 - Hell, Dunkel oder automatisch
 - **Datensicherung** als JSON (inkl. Wiederherstellung) und CSV-Export
@@ -75,7 +82,9 @@ FinanzView läuft als **ein** Docker-Container (`ghcr.io/alexanderschubert/finan
 
 > **HTTPS empfohlen:** Für die Installation als App (PWA) und für Passkeys ist ein Aufruf über HTTPS mit eigener Domain nötig, z. B. hinter Nginx Proxy Manager, Traefik oder Caddy. Über `http://IP:Port` funktioniert alles andere.
 
-### Unraid
+<details open>
+<summary><b>🟠 Unraid</b></summary>
+
 
 1. Im Unraid-Docker-Tab **„Add Container“** wählen und als Template-URL eintragen:
    ```
@@ -85,7 +94,11 @@ FinanzView läuft als **ein** Docker-Container (`ghcr.io/alexanderschubert/finan
 3. **PostgreSQL: Host leer lassen** für die eingebaute Datenbank. Wer eine eigene Instanz nutzt, trägt Host, Datenbank, Benutzer und Passwort ein.
 4. Container starten und die Weboberfläche öffnen.
 
-### Docker Compose
+</details>
+
+<details>
+<summary><b>🐳 Docker Compose</b></summary>
+
 
 Mit eingebauter Datenbank (ein Container):
 
@@ -154,7 +167,11 @@ docker compose up -d
 
 Danach `http://<server-ip>:8080` öffnen. Der Container meldet unter `/up` seinen Zustand (für Healthchecks).
 
-### Eingebaute Datenbank
+</details>
+
+<details>
+<summary><b>🗄️ Eingebaute oder eigene Datenbank</b></summary>
+
 
 - Sie hört nur im Container (127.0.0.1). Das Passwort erzeugt der Container und legt es in `storage/app/.db_password` ab.
 - Die Daten liegen im Ordner „Datenbank (eingebaut)“ in einem Unterordner pro PostgreSQL-Hauptversion (`pg18`). **Storage und Datenbank gehören in die Sicherung.** Ein Datenordner einer anderen Hauptversion wird nicht gestartet, sondern mit einer Fehlermeldung abgelehnt.
@@ -165,6 +182,8 @@ Danach `http://<server-ip>:8080` öffnen. Der Container meldet unter `/up` seine
 1. Mit `bin/backup.sh` sichern (der Container läuft noch mit der alten Datenbank).
 2. Container ohne `DB_HOST` neu anlegen, dabei den bisherigen `APP_KEY` setzen. Er legt die eingebaute Datenbank an und migriert.
 3. Mit `bin/restore.sh <db-dump> [files-tar]` die Sicherung einspielen.
+
+</details>
 
 ### Erste Schritte
 
