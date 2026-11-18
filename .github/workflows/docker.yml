@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
   # Wöchentlich neu bauen, damit Sicherheitsupdates von PHP/Alpine ankommen.
   schedule:
@@ -155,7 +156,7 @@ jobs:
           docker logs fv-db | tail -20 || true
           docker logs fv-emb | tail -80 || true
 
-      # main -> :latest und :sha-xxxxxxx
+      # main -> :latest und :sha-xxxxxxx, dev -> :dev und :sha-xxxxxxx
       # Pull Request -> :pr-<Nummer> (Vorschau zum Testen vor dem Mergen).
       # PRs aus Forks haben keine Schreibrechte und werden nur getestet.
       - name: Bei GitHub Container Registry anmelden
@@ -169,10 +170,13 @@ jobs:
       - name: Image taggen und pushen
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
+          # main -> :latest, dev -> :dev, Pull Request -> :pr-<Nummer>
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TAGS="pr-${{ github.event.pull_request.number }}"
+          elif [ "$GITHUB_REF_NAME" = "main" ]; then
             TAGS="latest sha-${GITHUB_SHA::7}"
           else
-            TAGS="pr-${{ github.event.pull_request.number }}"
+            TAGS="dev sha-${GITHUB_SHA::7}"
           fi
 
           for TAG in $TAGS; do

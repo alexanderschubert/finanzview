@@ -277,7 +277,9 @@ docker build --target test -t finanzview-tests .
 docker run --rm --entrypoint sh finanzview-tests -c 'touch .env && php artisan test'
 ```
 
-Jeder Pull Request wird automatisch getestet und als Vorschau-Image (`:pr-<Nummer>`) gebaut; Merges auf `main` erzeugen `:latest`.
+**Branches:** `main` ist der stabile Stand (Image `:latest`, das auch die Unraid-Vorlage nutzt), `dev` ist der Entwicklungsstand (Image `:dev`). Neue Arbeit entsteht in kurzlebigen Branches (`feature/…`, `fix/…`), Pull Requests gehen nach `dev`. Ist `dev` getestet, wird er per Pull Request nach `main` übernommen (Release). Eilige Korrekturen gehen direkt nach `main`; danach `main` wieder in `dev` mergen.
+
+Jeder Pull Request wird automatisch getestet und als Vorschau-Image (`:pr-<Nummer>`) gebaut. Merges auf `dev` erzeugen `:dev`, Merges auf `main` erzeugen `:latest`. Die wöchentliche Neu-Erstellung (Sicherheitsupdates) läuft auf `main`.
 
 ```text
 app/
