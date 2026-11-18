@@ -15,7 +15,9 @@
     Dieses Template verwendet das fertige FinanzView Docker Image aus der
     GitHub Container Registry (ghcr.io).
 
-    PostgreSQL wird separat betrieben und über die DB_* Variablen konfiguriert.
+    Datenbank: Lässt du "PostgreSQL: Host" leer, läuft PostgreSQL 18 im selben
+    Container (ein einziger Container reicht). Alternativ kannst du den Host
+    einer eigenen PostgreSQL-Instanz eintragen.
   </Overview>
 
   <Category>Finance:</Category>
@@ -66,54 +68,54 @@
           Required="true"
           Mask="false">pgsql</Config>
 
-  <Config Name="Database Host"
+  <Config Name="PostgreSQL: Host (leer = eingebaut)"
           Target="DB_HOST"
           Default=""
           Mode=""
-          Description="Hostname oder IP-Adresse des PostgreSQL-Servers. Beispiel: 192.168.40.100 oder postgres."
+          Description="Leer lassen für die eingebaute Datenbank (nur ein Container). Für eine eigene Instanz: Hostname oder IP-Adresse des PostgreSQL-Servers, z. B. 192.168.40.100 oder postgres."
           Type="Variable"
           Display="always"
-          Required="true"
+          Required="false"
           Mask="false"></Config>
 
   <Config Name="Database Port"
           Target="DB_PORT"
           Default="5432"
           Mode=""
-          Description="PostgreSQL Port."
+          Description="Nur für eine eigene Instanz."
           Type="Variable"
-          Display="always"
-          Required="true"
+          Display="advanced"
+          Required="false"
           Mask="false">5432</Config>
 
   <Config Name="Database Name"
           Target="DB_DATABASE"
           Default="finanzview"
           Mode=""
-          Description="Name der PostgreSQL-Datenbank."
+          Description="Name der PostgreSQL-Datenbank. Bei einer eigenen Instanz muss sie schon existieren."
           Type="Variable"
-          Display="always"
-          Required="true"
+          Display="advanced"
+          Required="false"
           Mask="false">finanzview</Config>
 
   <Config Name="Database User"
           Target="DB_USERNAME"
           Default="finanzview"
           Mode=""
-          Description="PostgreSQL Benutzer."
+          Description="PostgreSQL Benutzer. Bei der eingebauten Datenbank wird er automatisch angelegt."
           Type="Variable"
-          Display="always"
-          Required="true"
+          Display="advanced"
+          Required="false"
           Mask="false">finanzview</Config>
 
   <Config Name="Database Password"
           Target="DB_PASSWORD"
           Default=""
           Mode=""
-          Description="PostgreSQL Passwort."
+          Description="Nur für eine eigene Instanz. Die eingebaute Datenbank erzeugt ihr Passwort selbst (storage/app/.db_password)."
           Type="Variable"
-          Display="always"
-          Required="true"
+          Display="advanced"
+          Required="false"
           Mask="true"></Config>
 
   <Config Name="Timezone"
@@ -130,11 +132,21 @@
           Target="/var/www/html/storage"
           Default="/mnt/user/appdata/finanzview/storage"
           Mode="rw"
-          Description="Persistenter Speicher für Laravel Storage."
+          Description="Persistenter Speicher für Laravel Storage (App-Schlüssel, Datenbank-Passwort, Logs). In die Sicherung von appdata aufnehmen."
           Type="Path"
           Display="always"
           Required="true"
           Mask="false">/mnt/user/appdata/finanzview/storage</Config>
+
+  <Config Name="Datenbank (eingebaut)"
+          Target="/var/lib/postgresql/data"
+          Default="/mnt/user/appdata/finanzview/postgres"
+          Mode="rw"
+          Description="Daten der eingebauten PostgreSQL-Datenbank (PostgreSQL 18, Unterordner pg18). Wird nur genutzt, wenn „PostgreSQL: Host“ leer ist. In die Sicherung von appdata aufnehmen oder täglich bin/backup.sh ausführen."
+          Type="Path"
+          Display="always"
+          Required="false"
+          Mask="false">/mnt/user/appdata/finanzview/postgres</Config>
 
   <Config Name="App Data"
           Target="/var/www/html/bootstrap/cache"

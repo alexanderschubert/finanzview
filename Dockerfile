@@ -19,7 +19,7 @@
 # Frontend bauen
 # =========================================================
 
-FROM node:22-alpine AS frontend
+FROM node:24-alpine AS frontend
 
 WORKDIR /var/www/html
 
@@ -118,6 +118,20 @@ RUN composer dump-autoload --optimize --no-scripts
 
 FROM base AS app
 
+# Eingebaute PostgreSQL-Datenbank: wird nur gestartet, wenn kein DB_HOST gesetzt ist
+# (siehe docker/entrypoint.sh). Die Hauptversion ist fest (18); der Datenordner liegt
+# in einem Unterordner pro Hauptversion (pg18).
+RUN apk add --no-cache \
+        postgresql18 \
+        postgresql18-client \
+        su-exec \
+    && mkdir -p /run/postgresql /var/lib/postgresql/data /etc/supervisor/conf.d \
+    && chown postgres:postgres /run/postgresql
+
+# PostgreSQL ist der einzige unterstützte Treiber; so findet auch ein
+# "docker exec ... php artisan" die eingebaute Datenbank.
+ENV DB_CONNECTION=pgsql
+
 COPY --from=vendor /var/www/html/vendor ./vendor
 
 COPY . .
@@ -141,7 +155,7 @@ COPY docker/nginx/default.conf \
     /etc/nginx/http.d/finanzview.conf
 
 COPY docker/supervisord.conf \
-    /etc/supervisor/conf.d/supervisord.conf
+    /etc/supervisor/finanzview.conf
 
 COPY docker/entrypoint.sh \
     /usr/local/bin/finanzview-entrypoint
@@ -168,4 +182,4 @@ EXPOSE 80
 
 ENTRYPOINT ["finanzview-entrypoint"]
 
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["supervisord", "-c", "/etc/supervisor/finanzview.conf"]
