@@ -38,10 +38,11 @@ RUN npm run build
 # Basis: PHP + Nginx + Supervisor
 # =========================================================
 
-FROM php:8.4-fpm-alpine AS base
+FROM php:8.5-fpm-alpine AS base
 
 # Laufzeitbibliotheken bleiben, Build-Werkzeuge werden nach dem
-# Kompilieren der PHP-Erweiterungen wieder entfernt.
+# Kompilieren der PHP-Erweiterungen wieder entfernt. OPcache ist seit
+# PHP 8.5 fester Bestandteil von PHP und muss nicht mehr gebaut werden.
 RUN apk add --no-cache \
         nginx \
         supervisor \
@@ -59,7 +60,6 @@ RUN apk add --no-cache \
         mbstring \
         bcmath \
         zip \
-        opcache \
     && apk del .build-deps \
     && rm -rf /tmp/* /usr/src/php*
 
