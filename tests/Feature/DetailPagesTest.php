@@ -212,7 +212,42 @@ class DetailPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Restschuld')
             ->assertSee('Nächste Raten')
-            ->assertSee('Kompletter Tilgungsplan')
+            ->assertSee('Tilgungsplan')
             ->assertSee('Sondertilgung erfassen');
+    }
+
+    public function test_detail_pages_share_header_and_back_link(): void
+    {
+        $budget = Budget::create([
+            'user_id' => $this->user->id, 'name' => 'Lebensmittel', 'amount' => 400, 'period' => 'monthly',
+            'start_date' => now()->startOfMonth()->toDateString(), 'is_active' => true,
+        ]);
+        $card = CreditCard::create([
+            'user_id' => $this->user->id, 'name' => 'AMEX', 'credit_limit' => 3000, 'billing_day' => 5, 'payment_due_day' => 25, 'is_active' => true,
+        ]);
+        $recurring = RecurringTransaction::create([
+            'user_id' => $this->user->id, 'account_id' => $this->account->id, 'description' => 'Miete', 'amount' => 664.45,
+            'type' => 'expense', 'frequency' => 'monthly', 'next_date' => now()->addDays(3)->toDateString(), 'is_active' => true,
+        ]);
+        $loan = Loan::create([
+            'user_id' => $this->user->id, 'name' => 'Sparkasse', 'type' => 'loan', 'principal_amount' => 1000,
+            'installment_amount' => 100, 'interest_rate' => 5, 'is_active' => true,
+        ]);
+
+        $pages = [
+            [route('budgets.show', $budget), 'Budgets'],
+            [route('credit-cards.show', $card), 'Kreditkarten'],
+            [route('recurring-transactions.show', $recurring), 'Wiederkehrend'],
+            [route('loans.show', $loan), 'Kredite'],
+        ];
+
+        foreach ($pages as [$url, $parent]) {
+            $this->actingAs($this->user)
+                ->get($url)
+                ->assertOk()
+                ->assertSee('fv-link -ml-1', false)
+                ->assertSee($parent)
+                ->assertSee('max-w-3xl', false);
+        }
     }
 }

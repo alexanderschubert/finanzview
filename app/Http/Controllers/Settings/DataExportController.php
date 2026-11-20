@@ -345,7 +345,10 @@ class DataExportController extends Controller
                         'principal_amount',
                         'paid_amount',
                         'interest_rate',
+                        'effective_rate',
                         'installment_amount',
+                        'contract_total',
+                        'financed_costs',
                         'total_installments',
                         'paid_installments',
                         'start_date',
@@ -362,6 +365,9 @@ class DataExportController extends Controller
                                 'installment_number',
                                 'due_date',
                                 'amount',
+                                'interest_amount',
+                                'principal_amount',
+                                'remaining_amount',
                                 'payment_type',
                                 'paid_date',
                                 'status',
@@ -405,6 +411,7 @@ class DataExportController extends Controller
                         'amount' => $item->amount,
                         'note' => $item->note,
                         'interval' => $item->interval,
+                        'due_day' => $item->due_day,
                         'starts_on' => $item->starts_on?->toDateString(),
                         'ends_on' => $item->ends_on?->toDateString(),
                         'sort_order' => $item->sort_order,
@@ -1641,8 +1648,14 @@ class DataExportController extends Controller
                         $item['paid_amount'] ?? 0,
                     'interest_rate' =>
                         $item['interest_rate'] ?? 0,
+                    'effective_rate' =>
+                        $item['effective_rate'] ?? null,
                     'installment_amount' =>
                         $item['installment_amount'] ?? 0,
+                    'contract_total' =>
+                        $item['contract_total'] ?? null,
+                    'financed_costs' =>
+                        $item['financed_costs'] ?? null,
                     'total_installments' =>
                         $item['total_installments'] ?? 0,
                     'paid_installments' =>
@@ -1698,6 +1711,12 @@ class DataExportController extends Controller
                             $payment['due_date'],
                         'amount' =>
                             $payment['amount'] ?? 0,
+                        'interest_amount' =>
+                            $payment['interest_amount'] ?? 0,
+                        'principal_amount' =>
+                            $payment['principal_amount'] ?? 0,
+                        'remaining_amount' =>
+                            $payment['remaining_amount'] ?? 0,
                         'payment_type' =>
                             $payment['payment_type'] ?? 'regular',
                         'paid_date' =>
@@ -1857,6 +1876,7 @@ class DataExportController extends Controller
                         'amount' => $amount,
                         'note' => $isFilled($planItem['note'] ?? null) ? Str::limit((string) $planItem['note'], 255, '') : null,
                         'interval' => $interval,
+                        'due_day' => isset($planItem['due_day']) && (int) $planItem['due_day'] >= 1 && (int) $planItem['due_day'] <= 31 ? (int) $planItem['due_day'] : null,
                         'starts_on' => $startsOn,
                         'ends_on' => $endsOn,
                         'sort_order' => (int) ($planItem['sort_order'] ?? 0),

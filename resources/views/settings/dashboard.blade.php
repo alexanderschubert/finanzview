@@ -12,6 +12,9 @@
         'savings_rate' => 'percent',
         'review' => 'check-circle',
         'weekly' => 'chart',
+        'plan' => 'layout',
+        'cockpit' => 'target',
+        'upcoming' => 'calendar',
         'monthly_balance' => 'arrows',
         'yearly' => 'calendar',
         'income_expense_chart' => 'chart',
@@ -49,6 +52,29 @@
             <p>{{ $errors->first() }}</p>
         </div>
     @endif
+
+    {{-- FERTIGE ANORDNUNGEN --}}
+
+    <section>
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Fertige Anordnung</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @foreach ([
+                'cockpit' => ['Cockpit', 'Ruhig: was bis Monatsende frei ist, nächste Zahlungen, Zu prüfen, Plan, Konten, Kredite.'],
+                'classic' => ['Klassisch', 'Alle Kacheln im Bento-Stil: Vermögen mit Kurve, Monat, Sparquote, Budgets, Diagramme.'],
+            ] as $key => [$title, $text])
+                <form method="POST" action="{{ route('settings.dashboard.preset') }}" class="fv-card flex flex-col p-4">
+                    @csrf
+                    <input type="hidden" name="preset" value="{{ $key }}">
+                    <p class="font-semibold text-slate-900 dark:text-white">{{ $title }}</p>
+                    <p class="mt-1 flex-1 text-[13px] text-slate-500 dark:text-slate-400">{{ $text }}</p>
+                    <button type="submit" class="fv-btn fv-btn-secondary mt-3 text-sm py-2">Übernehmen</button>
+                </form>
+            @endforeach
+        </div>
+
+        <p class="mt-2 px-1 text-[13px] text-slate-500 dark:text-slate-400">Das ersetzt die Auswahl und Reihenfolge unten. Danach lässt sich alles einzeln anpassen.</p>
+    </section>
 
     <form method="POST" action="{{ route('settings.dashboard.update') }}" class="space-y-6" id="dashboard-settings-form">
         @csrf

@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('plan_items', function (Blueprint $table) {
+            // Zahlungstag im Monat (1 bis 31) für den Kalender; kürzere Monate nutzen den letzten Tag.
+            $table->unsignedTinyInteger('due_day')->nullable()->after('interval');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('plan_items', function (Blueprint $table) {
+            $table->dropColumn('due_day');
+        });
+    }
+};

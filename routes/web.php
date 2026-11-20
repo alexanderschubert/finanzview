@@ -9,6 +9,8 @@ use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\PayeeController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\TransactionQuickController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -256,6 +258,8 @@ Route::get('/settings/dashboard', [
         'edit',
     ])->name('settings.dashboard');
 
+    Route::post('/settings/dashboard/preset', [DashboardSettingsController::class, 'preset'])->name('settings.dashboard.preset');
+
     Route::put('/settings/dashboard', [
         DashboardSettingsController::class,
         'update',
@@ -416,6 +420,16 @@ Route::get('/settings/dashboard', [
     Route::delete('/transactions/import/{token}', [TransactionImportController::class, 'destroy'])
         ->name('transactions.import.destroy');
 
+    Route::get('/transactions/quick', [TransactionQuickController::class, 'form'])->name('transactions.quick');
+
+    Route::get('/transactions/{transaction}/panel', [TransactionQuickController::class, 'panel'])->name('transactions.panel');
+
+    Route::patch('/transactions/{transaction}/quick', [TransactionQuickController::class, 'update'])->name('transactions.quick-update');
+
+    Route::get('/transactions/review', [ReviewController::class, 'index'])->name('transactions.review');
+
+    Route::post('/transactions/review/{transaction}', [ReviewController::class, 'assign'])->name('transactions.review.assign');
+
     Route::get('/transactions/transfers', [TransferSuggestionController::class, 'index'])
         ->name('transactions.transfers');
 
@@ -463,6 +477,7 @@ Route::get('/settings/dashboard', [
     Route::controller(PlanController::class)->prefix('plan')->name('plan.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
+        Route::get('/calendar', 'calendar')->name('calendar');
         Route::get('/export', 'export')->name('export');
         Route::get('/import', 'importForm')->name('import');
         Route::post('/import', 'import')->middleware('throttle:20,1')->name('import.store');
@@ -505,6 +520,8 @@ Route::get('/settings/dashboard', [
      * KREDITE
      * =========================================================
      */
+
+    Route::get('/loans/{loan}/plan.csv', [LoanController::class, 'exportPlan'])->name('loans.plan.export');
 
     Route::resource('loans', LoanController::class);
 

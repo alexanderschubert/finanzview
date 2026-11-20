@@ -405,6 +405,46 @@
 
 
     /*
+     * Tabs innerhalb eines Bereichs (Kopfzeile bzw. oberhalb des Inhalts am Handy).
+     */
+    .fv-tab {
+        flex: none;
+        border-radius: 9999px;
+        padding: 0.375rem 0.875rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-slate-500);
+        transition: background-color 150ms, color 150ms;
+    }
+
+    .fv-tab:hover {
+        background-color: color-mix(in srgb, var(--color-slate-900) 6%, transparent);
+        color: var(--color-slate-900);
+    }
+
+    .fv-tab[aria-current="page"] {
+        background-color: color-mix(in srgb, var(--color-emerald-500) 16%, transparent);
+        color: var(--color-emerald-700);
+        font-weight: 600;
+    }
+
+    .dark .fv-tab {
+        color: var(--color-slate-400);
+    }
+
+    .dark .fv-tab:hover {
+        background-color: color-mix(in srgb, white 8%, transparent);
+        color: white;
+    }
+
+    .dark .fv-tab[aria-current="page"] {
+        background-color: color-mix(in srgb, white 11%, transparent);
+        color: var(--color-emerald-300);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, white 8%, transparent);
+    }
+
+
+    /*
     |--------------------------------------------------------------------------
     | Karten, Formulare und Buttons
     |--------------------------------------------------------------------------
@@ -417,6 +457,33 @@
         box-shadow: var(--fv-glass-shadow);
         -webkit-backdrop-filter: blur(24px) saturate(160%);
         backdrop-filter: blur(24px) saturate(160%);
+    }
+
+    /*
+     * Dialog (Schnellerfassung): Glas über abgedunkeltem Hintergrund.
+     */
+    .fv-dialog {
+        margin: auto;
+        width: min(30rem, calc(100% - 2rem));
+        max-height: calc(100% - 2rem);
+        overflow-y: auto;
+        border: 1px solid var(--fv-glass-border);
+        border-radius: 1.75rem;
+        padding: 0;
+        color: var(--color-slate-900);
+        background-color: rgb(255 255 255 / 0.94);
+        box-shadow: 0 30px 80px -20px rgb(2 6 23 / 0.5);
+    }
+
+    .dark .fv-dialog {
+        color: white;
+        background-color: rgb(16 22 33 / 0.94);
+    }
+
+    .fv-dialog::backdrop {
+        background-color: rgb(2 6 23 / 0.45);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
     }
 
     .fv-label {

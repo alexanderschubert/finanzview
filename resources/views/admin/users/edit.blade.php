@@ -25,18 +25,13 @@
 
     <x-back-link :href="route('admin.index')" label="Administration" />
 
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold {{ $user->is_admin ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300' }}">
-            {{ $initials ?: '?' }}
-        </div>
-        <div class="min-w-0">
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{{ $user->name }}</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400 truncate">
-                Registriert am {{ $user->created_at?->format('d.m.Y') }}
-                · {{ $user->last_login_at ? 'zuletzt ' . $user->last_login_at->format('d.m.Y H:i') : 'noch nie angemeldet' }}
-            </p>
-        </div>
-    </div>
+    <x-page-header :title="$user->name" :subtitle="'Registriert am ' . $user->created_at?->format('d.m.Y') . ' · ' . ($user->last_login_at ? 'zuletzt ' . $user->last_login_at->format('d.m.Y H:i') : 'noch nie angemeldet')">
+        <x-slot:leading>
+            <div class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold {{ $user->is_admin ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300' }}">
+                {{ $initials ?: '?' }}
+            </div>
+        </x-slot:leading>
+    </x-page-header>
 
     <x-flash />
 

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Posten bearbeiten – FinanzView')
-@section('eyebrow', 'Monatsplan')
+@section('eyebrow', 'Planung')
 @section('page_title', 'Posten bearbeiten')
 
 @section('content')
@@ -34,6 +34,10 @@
                     <option value="{{ $value }}" @selected(old('interval', $item->interval) === $value)>{{ $meta['label'] }}</option>
                 @endforeach
             </select>
+        </x-field>
+
+        <x-field label="Zahlungstag im Monat" for="due_day" error="due_day" hint="Optional. Damit erscheint der Posten im Kalender an diesem Tag. In kürzeren Monaten gilt der letzte Tag.">
+            <input id="due_day" name="due_day" type="number" min="1" max="31" step="1" inputmode="numeric" value="{{ old('due_day', $item->due_day) }}" placeholder="z. B. 1" class="fv-input tabular-nums sm:max-w-[10rem]">
         </x-field>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

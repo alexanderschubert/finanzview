@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('title', 'Administration – FinanzView')
-@section('eyebrow', 'System')
+@section('eyebrow', 'Administration')
 @section('page_title', 'Administration')
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Administration" subtitle="Benutzer, Registrierung und Finanzanbieter.">
         <a href="{{ route('admin.providers.index') }}" class="fv-btn fv-btn-secondary text-sm py-2.5">

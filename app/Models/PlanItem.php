@@ -26,6 +26,7 @@ class PlanItem extends Model
         'amount',
         'note',
         'interval',
+        'due_day',
         'starts_on',
         'ends_on',
         'sort_order',

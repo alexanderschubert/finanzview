@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Konten – FinanzView')
-@section('eyebrow', 'Finanzverwaltung')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Konten')
 
 @php
@@ -43,7 +43,7 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Konten" subtitle="Bankkonten, Bargeld und weitere Vermögenswerte.">
         <a href="{{ route('accounts.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
@@ -71,7 +71,7 @@
 
             <div class="relative">
                 <p class="text-sm font-medium text-white/80">Gesamtvermögen</p>
-                <p class="mt-1 text-[34px] leading-tight font-semibold tracking-tight tabular-nums">
+                <p class="mt-1 fv-display text-[34px] leading-tight font-extrabold tabular-nums">
                     {{ number_format($totalBalance, 2, ',', '.') }} €
                 </p>
                 <p class="mt-1 text-xs text-white/70">
@@ -89,7 +89,7 @@
             <section>
                 <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{{ $group }}</h3>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     @foreach ($groupAccounts as $account)
                         @php
                             $iban = preg_replace('/\s+/', '', (string) $account->iban);

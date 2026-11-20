@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Kredite – FinanzView')
-@section('eyebrow', 'Finanzplanung')
+@section('eyebrow', 'Kredite')
 @section('page_title', 'Kredite')
 
 @php
@@ -13,7 +13,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Kredite" subtitle="Restschuld, Raten und Tilgungsfortschritt.">
         <a href="{{ route('loans.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
@@ -38,7 +38,7 @@
 
         <div class="fv-card p-5 sm:p-6">
             <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Offene Restschuld</p>
-            <p class="mt-1 text-[34px] leading-tight font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">
+            <p class="mt-1 fv-display text-[34px] leading-tight font-extrabold tabular-nums text-slate-900 dark:text-white">
                 {{ number_format($totalRemaining, 2, ',', '.') }} €
             </p>
 

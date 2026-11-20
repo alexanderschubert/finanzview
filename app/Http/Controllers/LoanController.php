@@ -157,6 +157,25 @@ class LoanController extends Controller
                 'min:0',
             ],
 
+            'effective_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+
+            'contract_total' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'financed_costs' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
             'installment_amount' => [
                 'required',
                 'numeric',
@@ -277,15 +296,66 @@ class LoanController extends Controller
                 'extra'
             );
 
+        // Summen des Tilgungsplans (nur regelmäßige Raten).
+        $planTotals = [
+            'interest' => round((float) $regularPayments->sum('interest_amount'), 2),
+            'principal' => round((float) $regularPayments->sum('principal_amount'), 2),
+            'total' => round((float) $regularPayments->sum('amount'), 2),
+            'count' => $regularPayments->count(),
+        ];
+
         return view(
             'loans.show',
             compact(
                 'loan',
                 'payments',
                 'regularPayments',
-                'extraPayments'
+                'extraPayments',
+                'planTotals'
             )
         );
+    }
+
+    /**
+     * Tilgungsplan als CSV (Semikolon, UTF-8 mit BOM für Excel).
+     */
+    public function exportPlan(Loan $loan)
+    {
+        $this->authorizeLoan($loan);
+
+        $payments = $loan->payments()
+            ->where('payment_type', 'regular')
+            ->orderBy('installment_number')
+            ->get();
+
+        $statusLabels = [
+            'planned' => 'Geplant',
+            'paid' => 'Bezahlt',
+            'overdue' => 'Überfällig',
+            'cancelled' => 'Entfällt',
+        ];
+
+        $filename = 'finanzview-tilgungsplan-' . \Illuminate\Support\Str::slug($loan->name) . '.csv';
+
+        return response()->streamDownload(function () use ($payments, $statusLabels) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Nr.', 'Fällig', 'Rate', 'Zinsen', 'Tilgung', 'Restschuld', 'Status'], ';', '"', '');
+
+            foreach ($payments as $payment) {
+                fputcsv($handle, [
+                    $payment->installment_number,
+                    $payment->due_date?->format('d.m.Y'),
+                    number_format((float) $payment->amount, 2, ',', ''),
+                    number_format((float) $payment->interest_amount, 2, ',', ''),
+                    number_format((float) $payment->principal_amount, 2, ',', ''),
+                    number_format((float) $payment->remaining_amount, 2, ',', ''),
+                    $statusLabels[$payment->status] ?? $payment->status,
+                ], ';', '"', '');
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /**
@@ -372,6 +442,25 @@ class LoanController extends Controller
             ],
 
             'interest_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'effective_rate' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+
+            'contract_total' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'financed_costs' => [
                 'nullable',
                 'numeric',
                 'min:0',

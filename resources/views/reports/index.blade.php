@@ -2,7 +2,7 @@
 
 @section('title', 'Analysen – FinanzView')
 
-@section('eyebrow', 'Auswertungen')
+@section('eyebrow', 'Auswertung')
 
 @section('page_title', 'Analysen')
 
@@ -50,7 +50,7 @@
 
 @section('content')
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 print:py-0 print:px-0">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 print:py-0 print:px-0">
 
     <x-page-header title="Analysen" :subtitle="$periodLabel . ' · verglichen mit ' . $previousLabel">
         <div class="flex flex-wrap gap-2 print:hidden">

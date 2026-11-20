@@ -8,6 +8,8 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <x-back-link :href="route('accounts.index')" label="Konten" />
+
     <x-page-header :title="$account->name" subtitle="Konto bearbeiten">
         <a href="{{ route('transactions.index', ['account_id' => $account->id]) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
             <x-icon name="arrows" class="w-4 h-4" />

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Kreditkarten – FinanzView')
-@section('eyebrow', 'Finanzplanung')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Kreditkarten')
 
 @php
@@ -13,7 +13,7 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Kreditkarten" subtitle="Saldo, Limit und Abrechnungen deiner Karten.">
         <a href="{{ route('credit-cards.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
@@ -53,7 +53,7 @@
 
         {{-- KARTEN --}}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             @foreach ($creditCards as $creditCard)
                 @php
                     $limit = (float) ($creditCard->credit_limit ?? 0);

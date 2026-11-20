@@ -20,31 +20,25 @@
     }
 
     /*
-     * Navigation: [Route, aktive Routen, Icon, Beschriftung]
+     * Navigation: sechs Bereiche plus Einstellungen (siehe App\Support\Navigation), innerhalb
+     * eines Bereichs wechselt man mit Tabs.
+     * Eintrag: [Route, aktive Routen, Icon, Beschriftung]
      */
+    $areas = \App\Support\Navigation::areas();
+
     $navigation = [
-        null => [
-            ['dashboard', 'dashboard', 'home', 'Übersicht'],
-            ['accounts.index', 'accounts.*', 'landmark', 'Konten'],
-            ['transactions.index', 'transactions.*', 'arrows', 'Buchungen'],
-            ['categories.index', 'categories.*', 'tag', 'Kategorien'],
-            ['payees.index', 'payees.*', 'user', 'Empfänger'],
-        ],
-        'Planung' => [
-            ['budgets.index', 'budgets.*', 'target', 'Budgets'],
-            ['plan.index', 'plan.*', 'layout', 'Monatsplan'],
-            ['recurring-transactions.index', 'recurring-transactions.*', 'repeat', 'Wiederkehrend'],
-            ['loans.index', 'loans.*', 'banknote', 'Kredite'],
-            ['credit-cards.index', 'credit-cards.*', 'card', 'Kreditkarten'],
-        ],
-        'Auswertung' => [
-            ['reports.month', 'reports.month', 'calendar', 'Monatsbericht'],
-            ['reports.index', 'reports.index', 'chart', 'Analysen'],
-        ],
+        null => collect($areas)
+            ->except('settings')
+            ->map(fn ($area) => [$area['route'], $area['patterns'], $area['icon'], $area['label']])
+            ->values()
+            ->all(),
     ];
 
+    $visibleTabs = \App\Support\Navigation::visibleTabs();
+
+    // Einstellungen: Allgemein, Kategorien, Empfänger, Tags und Regeln.
     $systemNavigation = [
-        ['settings.index', 'settings.*', 'settings', 'Einstellungen'],
+        ['settings.index', $areas['settings']['patterns'], 'settings', 'Einstellungen'],
     ];
 
     if ($user->isAdmin()) {
@@ -55,15 +49,14 @@
      * Handy: Tab-Leiste unten. Alles andere liegt unter "Mehr".
      */
     $tabBar = [
-        ['dashboard', 'dashboard', 'home', 'Übersicht'],
-        ['transactions.index', 'transactions.*', 'arrows', 'Buchungen'],
-        ['budgets.index', 'budgets.*', 'target', 'Budgets'],
+        ['dashboard', $areas['overview']['patterns'], 'home', 'Übersicht'],
+        ['transactions.index', $areas['transactions']['patterns'], 'arrows', 'Buchungen'],
+        ['plan.index', $areas['planning']['patterns'], 'layout', 'Planung'],
     ];
 
-    $tabBarRoutes = collect($tabBar)->pluck(1)->all();
+    $tabBarLabels = collect($tabBar)->pluck(3)->all();
 
-    $moreIsActive = ! request()->routeIs(...$tabBarRoutes)
-        && ! request()->routeIs('transactions.create');
+    $moreIsActive = ! request()->routeIs(...collect($tabBar)->pluck(1)->flatten()->all());
 
     /*
      * Hauptseiten brauchen in der installierten App keinen
@@ -72,7 +65,7 @@
      */
     $isRootPage = request()->routeIs(
         'dashboard',
-        ...collect($navigation)->flatten(1)->pluck(0)->all(),
+        ...\App\Support\Navigation::rootRoutes(),
         ...collect($systemNavigation)->pluck(0)->all(),
     );
 @endphp
@@ -209,7 +202,7 @@
                         <a
                             href="{{ route($route) }}"
                             class="fv-nav-link"
-                            @if (request()->routeIs($pattern)) aria-current="page" @endif
+                            @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
                         >
                             <x-icon :name="$icon" class="w-[18px] h-[18px]" />
                             <span>{{ $label }}</span>
@@ -231,7 +224,7 @@
                 <a
                     href="{{ route($route) }}"
                     class="fv-nav-link"
-                    @if (request()->routeIs($pattern)) aria-current="page" @endif
+                    @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
                 >
                     <x-icon :name="$icon" class="w-[18px] h-[18px]" />
                     <span>{{ $label }}</span>
@@ -340,12 +333,20 @@
             </div>
 
 
+            {{-- TABS DES BEREICHS (DESKTOP) --}}
+
+            @if ($visibleTabs)
+                <x-area-tabs :tabs="$visibleTabs" class="hidden lg:flex flex-1 min-w-0 justify-center" />
+            @endif
+
+
             {{-- RECHTS --}}
 
             <div class="flex items-center gap-2">
 
                 <a
                     href="{{ route('transactions.create') }}"
+                    data-quick-add
                     class="
                         hidden
                         sm:inline-flex
@@ -457,6 +458,12 @@
 
         <main class="flex-1 w-full min-w-0 pb-24 lg:pb-0 print:pb-0">
 
+            @if ($visibleTabs)
+                <div class="lg:hidden print:hidden px-4 sm:px-6 pt-4">
+                    <x-area-tabs :tabs="$visibleTabs" class="flex" />
+                </div>
+            @endif
+
             @yield('content')
 
         </main>
@@ -495,8 +502,8 @@
         @foreach (array_slice($tabBar, 0, 2) as [$route, $pattern, $icon, $label])
             <a
                 href="{{ route($route) }}"
-                class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium {{ request()->routeIs($pattern) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}"
-                @if (request()->routeIs($pattern)) aria-current="page" @endif
+                class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium {{ request()->routeIs(...(array) $pattern) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}"
+                @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
             >
                 <x-icon :name="$icon" class="w-6 h-6" />
                 {{ $label }}
@@ -509,6 +516,7 @@
         <div class="flex items-center justify-center">
             <a
                 href="{{ route('transactions.create') }}"
+                data-quick-add
                 class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-900/25 active:scale-95 transition"
                 aria-label="Neue Buchung"
             >
@@ -520,8 +528,8 @@
         @foreach (array_slice($tabBar, 2) as [$route, $pattern, $icon, $label])
             <a
                 href="{{ route($route) }}"
-                class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium {{ request()->routeIs($pattern) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}"
-                @if (request()->routeIs($pattern)) aria-current="page" @endif
+                class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium {{ request()->routeIs(...(array) $pattern) ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400' }}"
+                @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
             >
                 <x-icon :name="$icon" class="w-6 h-6" />
                 {{ $label }}
@@ -567,11 +575,11 @@
 
                 @foreach ($navigation as $group => $items)
                     @foreach ($items as [$route, $pattern, $icon, $label])
-                        @continue(in_array($pattern, $tabBarRoutes, true))
+                        @continue(in_array($label, $tabBarLabels, true))
                         <a
                             href="{{ route($route) }}"
                             class="fv-nav-link py-3"
-                            @if (request()->routeIs($pattern)) aria-current="page" @endif
+                            @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
                         >
                             <x-icon :name="$icon" class="w-5 h-5" />
                             <span class="flex-1">{{ $label }}</span>
@@ -586,7 +594,7 @@
                     <a
                         href="{{ route($route) }}"
                         class="fv-nav-link py-3"
-                        @if (request()->routeIs($pattern)) aria-current="page" @endif
+                        @if (request()->routeIs(...(array) $pattern)) aria-current="page" @endif
                     >
                         <x-icon :name="$icon" class="w-5 h-5" />
                         <span class="flex-1">{{ $label }}</span>
@@ -609,6 +617,15 @@
     </div>
 
 </nav>
+
+
+{{-- =========================================================
+     SCHNELLERFASSUNG (Taste N oder Knopf „Buchung“)
+========================================================= --}}
+
+<dialog id="quick-add" class="fv-dialog print:hidden" data-quick-url="{{ route('transactions.quick') }}" data-fallback-url="{{ route('transactions.create') }}" aria-label="Neue Buchung">
+    <div data-quick-body class="p-5 sm:p-6"></div>
+</dialog>
 
 
 {{-- =========================================================

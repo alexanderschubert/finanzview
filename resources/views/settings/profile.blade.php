@@ -17,13 +17,13 @@
 
     <x-back-link :href="route('settings.index')" label="Einstellungen" />
 
-    <div class="flex flex-col items-center text-center">
-        <div class="w-20 h-20 rounded-full bg-emerald-600 text-white flex items-center justify-center text-2xl font-semibold" data-avatar>
-            {{ $initials ?: '?' }}
-        </div>
-        <h2 class="mt-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $user->name }}</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400">{{ $user->email }}</p>
-    </div>
+    <x-page-header :title="$user->name" :subtitle="$user->email">
+        <x-slot:leading>
+            <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold" data-avatar>
+                {{ $initials ?: '?' }}
+            </div>
+        </x-slot:leading>
+    </x-page-header>
 
     <x-flash />
 

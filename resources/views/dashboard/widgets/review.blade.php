@@ -9,6 +9,31 @@
             <p class="text-sm font-medium text-white/80">Zu prüfen</p>
             <p class="mt-2 text-[34px] leading-none font-bold tracking-tight tabular-nums">{{ $open }}</p>
 
+            @if (($dashboardWidgets['cockpit'] ?? false) && $reviewItems->isNotEmpty())
+                {{-- Direkt zuordnen: die drei neuesten Buchungen ohne Kategorie --}}
+                <ul class="mt-4 space-y-2">
+                    @foreach ($reviewItems as $item)
+                        @php $chips = $reviewChips[$item->type] ?? collect(); @endphp
+
+                        <li class="rounded-xl bg-black/20 px-3 py-2.5">
+                            <form method="POST" action="{{ route('transactions.review.assign', $item) }}" class="flex flex-wrap items-center gap-2">
+                                @csrf
+                                <input type="hidden" name="back" value="dashboard">
+
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold">{{ $item->payee?->name ?: ($item->merchant ?: $item->description) }}</p>
+                                    <p class="truncate text-xs text-white/75 tabular-nums">{{ $item->transaction_date?->format('d.m.') }} · {{ $item->account?->name }} · {{ $item->type === 'income' ? '+' : '−' }}{{ number_format((float) $item->amount, 2, ',', '.') }} €</p>
+                                </div>
+
+                                @foreach ($chips as $category)
+                                    <button type="submit" name="category_id" value="{{ $category->id }}" class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30 transition">{{ $category->icon }} {{ $category->name }}</button>
+                                @endforeach
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
             <ul class="mt-4 space-y-2 text-sm">
                 @if ($reviewTransfers > 0)
                     <li>
@@ -21,7 +46,7 @@
 
                 @if ($reviewUncategorized > 0)
                     <li>
-                        <a href="{{ route('transactions.index', ['uncategorized' => 1]) }}" class="flex items-center justify-between gap-2 rounded-xl bg-black/20 px-3 py-2 hover:bg-black/30 transition">
+                        <a href="{{ route('transactions.review') }}" class="flex items-center justify-between gap-2 rounded-xl bg-black/20 px-3 py-2 hover:bg-black/30 transition">
                             <span>{{ $reviewUncategorized }} ohne Kategorie</span>
                             <x-icon name="chevron-right" class="w-4 h-4 shrink-0" />
                         </a>

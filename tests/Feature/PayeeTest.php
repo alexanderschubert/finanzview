@@ -424,7 +424,7 @@ class PayeeTest extends TestCase
         $this->assertSame('Amazon', $transaction->fresh()->payee->name);
     }
 
-    public function test_sidebar_links_to_payees_and_reports_use_payee_names(): void
+    public function test_settings_tabs_link_to_payees_and_reports_use_payee_names(): void
     {
         $this->spend('Rewe Markt 12', 40);
         $this->spend('REWE Markt 99', 60);
@@ -434,8 +434,9 @@ class PayeeTest extends TestCase
             ->post(route('payees.merge.store'), ['ids' => Payee::pluck('id')->all(), 'name' => 'Rewe'])
             ->assertSessionHasNoErrors();
 
+        // Empfänger sind ein Tab bei den Einstellungen.
         $this->actingAs($this->user)
-            ->get(route('dashboard'))
+            ->get(route('categories.index'))
             ->assertSee(route('payees.index'), false);
 
         // Top-Händler fasst beide Schreibweisen unter dem Empfängernamen zusammen.

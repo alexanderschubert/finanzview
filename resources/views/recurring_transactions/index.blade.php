@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Wiederkehrende Buchungen – FinanzView')
-@section('eyebrow', 'Finanzplanung')
+@section('eyebrow', 'Planung')
 @section('page_title', 'Wiederkehrend')
 
 @php
@@ -36,7 +36,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Wiederkehrend" subtitle="Daueraufträge, Abos und regelmäßige Einnahmen.">
         <a href="{{ route('recurring-transactions.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">

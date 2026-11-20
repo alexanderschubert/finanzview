@@ -156,7 +156,7 @@ class DashboardBentoTest extends TestCase
             ->assertSee('1 mögliche Umbuchung')
             ->assertSee('1 ohne Kategorie')
             ->assertSee(route('transactions.transfers'), false)
-            ->assertSee('uncategorized=1', false);
+            ->assertSee(route('transactions.review'), false);
 
         $this->actingAs($this->user)
             ->get(route('transactions.index', ['uncategorized' => 1]))

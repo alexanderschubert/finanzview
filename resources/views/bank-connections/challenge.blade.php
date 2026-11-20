@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Freigabe – FinanzView')
-@section('eyebrow', 'Bankverbindungen')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Freigabe')
 
 @section('content')
@@ -9,10 +9,10 @@
 <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6">
 
     <div class="text-center space-y-3">
-        <span class="mx-auto w-16 h-16 rounded-2xl bg-teal-600 text-white flex items-center justify-center">
+        <span class="mx-auto w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-400 to-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-900/20">
             <x-icon name="{{ $decoupled ? 'shield' : 'key' }}" class="w-8 h-8" />
         </span>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h2 class="fv-display text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {{ $decoupled ? 'In der App freigeben' : 'TAN eingeben' }}
         </h2>
         <p class="text-[15px] text-slate-500 dark:text-slate-400">
