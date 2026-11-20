@@ -24,14 +24,20 @@ class AppLayoutTest extends TestCase
         $response->assertDontSee(route('admin.index'), false);
     }
 
-    public function test_admin_sees_administration_link(): void
+    public function test_admin_sees_user_administration_as_a_settings_tab(): void
     {
         $admin = User::factory()->create(['is_active' => true]);
         $admin->forceFill(['is_admin' => true])->save();
 
         $this->actingAs($admin)
-            ->get(route('dashboard'))
+            ->get(route('settings.index'))
             ->assertOk()
             ->assertSee(route('admin.index'), false);
+
+        // Nicht mehr als eigener Eintrag in der Seitenleiste.
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('admin.index'), false);
     }
 }

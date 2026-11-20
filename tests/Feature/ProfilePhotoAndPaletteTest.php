@@ -14,13 +14,21 @@ class ProfilePhotoAndPaletteTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** Kleines gültiges PNG – die Test-Umgebung hat kein GD für UploadedFile::image(). */
+    private function png(): UploadedFile
+    {
+        $data = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+
+        return UploadedFile::fake()->createWithContent('ich.png', $data);
+    }
+
     public function test_profile_photo_can_be_uploaded_shown_and_removed(): void
     {
         Storage::fake('local');
         $user = User::factory()->create(['is_active' => true]);
 
         $this->actingAs($user)
-            ->post(route('settings.profile.photo.update'), ['photo' => UploadedFile::fake()->image('ich.png', 200, 200)])
+            ->post(route('settings.profile.photo.update'), ['photo' => $this->png()])
             ->assertRedirect(route('settings.profile'))
             ->assertSessionHasNoErrors();
 
@@ -45,6 +53,10 @@ class ProfilePhotoAndPaletteTest extends TestCase
             ->post(route('settings.profile.photo.update'), ['photo' => UploadedFile::fake()->create('x.pdf', 10, 'application/pdf')])
             ->assertSessionHasErrors('photo');
 
+    }
+
+    public function test_profile_photo_requires_login(): void
+    {
         $this->get(route('settings.profile.photo'))->assertRedirect();
     }
 
