@@ -20,7 +20,7 @@
     }
 
     /*
-     * Navigation: sieben Bereiche (siehe App\Support\Navigation), innerhalb
+     * Navigation: sechs Bereiche plus Einstellungen (siehe App\Support\Navigation), innerhalb
      * eines Bereichs wechselt man mit Tabs.
      * Eintrag: [Route, aktive Routen, Icon, Beschriftung]
      */
@@ -28,6 +28,7 @@
 
     $navigation = [
         null => collect($areas)
+            ->except('settings')
             ->map(fn ($area) => [$area['route'], $area['patterns'], $area['icon'], $area['label']])
             ->values()
             ->all(),
@@ -35,8 +36,9 @@
 
     $visibleTabs = \App\Support\Navigation::visibleTabs();
 
+    // Einstellungen: Allgemein, Kategorien, Empfänger, Tags und Regeln.
     $systemNavigation = [
-        ['settings.index', 'settings.*', 'settings', 'Einstellungen'],
+        ['settings.index', $areas['settings']['patterns'], 'settings', 'Einstellungen'],
     ];
 
     if ($user->isAdmin()) {

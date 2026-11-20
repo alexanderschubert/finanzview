@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Sieben Bereiche in der Seitenleiste, Tabs innerhalb der Bereiche.
+ * Sechs Bereiche und Einstellungen in der Seitenleiste, Tabs innerhalb der Bereiche.
  */
 class NavigationTest extends TestCase
 {
@@ -29,24 +29,24 @@ class NavigationTest extends TestCase
         return substr($html, $start, strpos($html, '</aside>', $start) - $start);
     }
 
-    public function test_sidebar_has_the_seven_areas_and_no_single_page_entries(): void
+    public function test_sidebar_has_the_areas_and_no_single_page_entries(): void
     {
         $html = $this->actingAs($this->user)->get('/dashboard')->assertOk()->getContent();
         $sidebar = $this->sidebar($html);
 
-        foreach (['Übersicht', 'Konten', 'Buchungen', 'Planung', 'Kredite', 'Auswertung', 'Ordnung', 'Einstellungen'] as $label) {
+        foreach (['Übersicht', 'Konten', 'Buchungen', 'Planung', 'Kredite', 'Auswertung', 'Einstellungen'] as $label) {
             $this->assertStringContainsString($label, $sidebar, $label);
         }
 
         // Diese Seiten sind jetzt Tabs, keine eigenen Einträge mehr.
-        foreach (['Kreditkarten', 'Budgets', 'Monatsplan', 'Wiederkehrend', 'Empfänger', 'Analysen', 'Monatsbericht'] as $label) {
+        foreach (['Ordnung', 'Kategorien', 'Kreditkarten', 'Budgets', 'Monatsplan', 'Wiederkehrend', 'Empfänger', 'Analysen', 'Monatsbericht'] as $label) {
             $this->assertStringNotContainsString($label, $sidebar, $label);
         }
     }
 
     public function test_every_area_landing_page_opens(): void
     {
-        foreach (['dashboard', 'accounts.index', 'transactions.index', 'plan.index', 'loans.index', 'reports.month', 'categories.index'] as $route) {
+        foreach (['dashboard', 'accounts.index', 'transactions.index', 'plan.index', 'loans.index', 'reports.month', 'settings.index'] as $route) {
             $this->actingAs($this->user)->get(route($route))->assertOk();
         }
     }
@@ -68,7 +68,7 @@ class NavigationTest extends TestCase
     {
         $html = $this->actingAs($this->user)->get(route('budgets.index'))->getContent();
 
-        $this->assertMatchesRegularExpression('/<a href="[^"]*\/budgets" class="fv-tab" aria-current="page">Budgets<\/a>/', $html);
+        $this->assertMatchesRegularExpression('/<a href="[^"]*\/budgets"\s+class="fv-tab"\s+aria-current="page"\s*>Budgets<\/a>/', $html);
     }
 
     public function test_accounts_area_has_cards_and_bank_tabs(): void
@@ -82,14 +82,26 @@ class NavigationTest extends TestCase
         $this->actingAs($this->user)->get(route('credit-cards.index'))->assertOk()->assertSee('Bankabruf');
     }
 
-    public function test_order_area_groups_categories_payees_tags_and_rules(): void
+    public function test_settings_area_groups_general_categories_payees_tags_and_rules(): void
+    {
+        foreach (['settings.index', 'categories.index', 'payees.index', 'tags.index', 'category-rules.index'] as $route) {
+            $this->actingAs($this->user)
+                ->get(route($route))
+                ->assertOk()
+                ->assertSee('Allgemein')
+                ->assertSee('Kategorien')
+                ->assertSee('Empfänger')
+                ->assertSee('Tags')
+                ->assertSee('Regeln');
+        }
+    }
+
+    public function test_settings_subpages_have_no_tab_strip(): void
     {
         $this->actingAs($this->user)
-            ->get(route('payees.index'))
+            ->get(route('settings.profile'))
             ->assertOk()
-            ->assertSee('Kategorien')
-            ->assertSee('Tags')
-            ->assertSee('Regeln');
+            ->assertDontSee('aria-label="Bereich"', false);
     }
 
     public function test_forms_and_detail_pages_have_no_tab_strip(): void
@@ -120,6 +132,7 @@ class NavigationTest extends TestCase
 
         $this->assertStringContainsString('Planung', $bar);
         $this->assertStringContainsString('Kredite', $bar);
-        $this->assertStringContainsString('Ordnung', $bar);
+        $this->assertStringContainsString('Einstellungen', $bar);
+        $this->assertStringNotContainsString('Ordnung', $bar);
     }
 }

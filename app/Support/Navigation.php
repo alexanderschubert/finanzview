@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Hauptnavigation: sieben Bereiche, innerhalb eines Bereichs wechselt man mit Tabs.
+ * Hauptnavigation: sechs Bereiche plus Einstellungen, innerhalb eines Bereichs wechselt man mit Tabs.
  *
  * Tab: [Beschriftung, Route, aktive Routen]
  */
@@ -72,12 +72,13 @@ final class Navigation
                     ['Analysen', 'reports.index', ['reports.index']],
                 ],
             ],
-            'order' => [
-                'label' => 'Ordnung',
-                'icon' => 'tag',
-                'route' => 'categories.index',
-                'patterns' => ['categories.*', 'category-rules.*', 'tags.*', 'payees.*'],
+            'settings' => [
+                'label' => 'Einstellungen',
+                'icon' => 'settings',
+                'route' => 'settings.index',
+                'patterns' => ['settings.*', 'categories.*', 'category-rules.*', 'tags.*', 'payees.*'],
                 'tabs' => [
+                    ['Allgemein', 'settings.index', ['settings.index']],
                     ['Kategorien', 'categories.index', ['categories.index']],
                     ['Empfänger', 'payees.index', ['payees.index']],
                     ['Tags', 'tags.index', ['tags.index']],
