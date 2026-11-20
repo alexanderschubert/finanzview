@@ -41,10 +41,6 @@
         ['settings.index', $areas['settings']['patterns'], 'settings', 'Einstellungen'],
     ];
 
-    if ($user->isAdmin()) {
-        $systemNavigation[] = ['admin.index', 'admin.*', 'shield', 'Administration'];
-    }
-
     /*
      * Handy: Tab-Leiste unten. Alles andere liegt unter "Mehr".
      */
@@ -231,39 +227,6 @@
                 </a>
             @endforeach
 
-            <div class="mt-2 flex items-center gap-3 rounded-xl px-3 py-2">
-
-                @if ($avatarUrl)
-                    <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full object-cover">
-                @else
-                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-semibold">
-                        {{ $initials }}
-                    </div>
-                @endif
-
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-slate-900 dark:text-white truncate">
-                        {{ $user->name }}
-                    </p>
-                    <p class="text-xs text-slate-500 truncate">
-                        {{ $user->email }}
-                    </p>
-                </div>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button
-                        type="submit"
-                        title="Abmelden"
-                        aria-label="Abmelden"
-                        class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-900/5 dark:hover:text-white dark:hover:bg-white/5 transition"
-                    >
-                        <x-icon name="logout" class="w-[18px] h-[18px]" />
-                    </button>
-                </form>
-
-            </div>
-
         </div>
 
     </aside>
@@ -343,6 +306,28 @@
             {{-- RECHTS --}}
 
             <div class="flex items-center gap-2">
+
+                {{-- SUCHE / BEFEHLE --}}
+
+                <button
+                    type="button"
+                    data-palette-open
+                    class="hidden md:flex items-center gap-2 rounded-full border border-slate-200/80 dark:border-white/10 bg-slate-900/[0.03] dark:bg-white/5 pl-3 pr-2 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 transition w-56 lg:w-64"
+                    aria-label="Suchen und Befehle (Strg+K)"
+                >
+                    <x-icon name="search" class="w-4 h-4" />
+                    <span class="flex-1 text-left">Suchen …</span>
+                    <kbd class="rounded-md border border-slate-200 dark:border-white/10 px-1.5 text-[11px] font-medium text-slate-400" data-palette-kbd>⌘K</kbd>
+                </button>
+
+                <button
+                    type="button"
+                    data-palette-open
+                    class="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 transition"
+                    aria-label="Suchen"
+                >
+                    <x-icon name="search" class="w-5 h-5" />
+                </button>
 
                 <a
                     href="{{ route('transactions.create') }}"
@@ -617,6 +602,32 @@
     </div>
 
 </nav>
+
+
+{{-- =========================================================
+     BEFEHLSPALETTE (Strg/⌘ + K oder „/“)
+========================================================= --}}
+
+<dialog id="command-palette" class="fv-dialog w-[min(92vw,560px)] p-0" aria-label="Suchen und Befehle"
+    data-items='@json(\App\Support\Navigation::paletteItems($user->isAdmin()))'
+    data-search-url="{{ route('search') }}"
+    data-transactions-url="{{ route('transactions.index') }}">
+    <div class="flex items-center gap-3 border-b border-slate-200/80 dark:border-white/10 px-4">
+        <x-icon name="search" class="w-5 h-5 text-slate-400" />
+        <input type="text" data-palette-input placeholder="Seite, Konto, Kategorie oder Buchung suchen …" autocomplete="off" spellcheck="false"
+            class="flex-1 bg-transparent py-4 text-[15px] text-slate-900 dark:text-white placeholder:text-slate-400 outline-none" aria-label="Suche">
+        <kbd class="hidden sm:block rounded-md border border-slate-200 dark:border-white/10 px-1.5 text-[11px] text-slate-400">Esc</kbd>
+    </div>
+
+    <ul data-palette-list class="max-h-[50vh] overflow-y-auto p-2" role="listbox"></ul>
+
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-200/80 dark:border-white/10 px-4 py-2.5 text-[11px] text-slate-500 dark:text-slate-400">
+        <span><kbd class="font-semibold">↑↓</kbd> wählen</span>
+        <span><kbd class="font-semibold">↵</kbd> öffnen</span>
+        <span><kbd class="font-semibold">G</kbd> dann <kbd class="font-semibold">D</kbd> Übersicht, <kbd class="font-semibold">B</kbd> Buchungen, <kbd class="font-semibold">P</kbd> Plan, <kbd class="font-semibold">K</kbd> Konten</span>
+        <span><kbd class="font-semibold">N</kbd> neue Buchung</span>
+    </div>
+</dialog>
 
 
 {{-- =========================================================

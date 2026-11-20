@@ -52,7 +52,7 @@
             @endforeach
         </div>
 
-        <p data-ps-empty hidden class="text-sm text-slate-500 dark:text-slate-400">Kein passender Anbieter – in der Administration kannst du weitere anlegen.</p>
+        <p data-ps-empty hidden class="text-sm text-slate-500 dark:text-slate-400">Kein passender Anbieter – Administratoren legen weitere unter Einstellungen → Anbieter an.</p>
     </div>
 </div>
 

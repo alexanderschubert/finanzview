@@ -19,13 +19,43 @@
 
     <x-page-header :title="$user->name" :subtitle="$user->email">
         <x-slot:leading>
-            <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold" data-avatar>
-                {{ $initials ?: '?' }}
-            </div>
+            @if ($user->profile_photo_url)
+                <img src="{{ $user->profile_photo_url }}" alt="" class="w-14 h-14 rounded-full object-cover" data-avatar>
+            @else
+                <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold" data-avatar>
+                    {{ $initials ?: '?' }}
+                </div>
+            @endif
         </x-slot:leading>
     </x-page-header>
 
     <x-flash />
+
+    <section class="fv-card p-5 sm:p-6">
+        <h3 class="font-semibold text-slate-900 dark:text-white">Profilbild</h3>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Erscheint oben rechts. JPG, PNG oder WebP, bis 3 MB.</p>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+            <form method="POST" action="{{ route('settings.profile.photo.update') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+                @csrf
+                <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required aria-label="Profilbild auswählen"
+                    class="block text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-emerald-700">
+                <button type="submit" class="fv-btn fv-btn-secondary text-sm py-2">Hochladen</button>
+            </form>
+
+            @if ($user->profile_photo_path)
+                <form method="POST" action="{{ route('settings.profile.photo.destroy') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:underline">Entfernen</button>
+                </form>
+            @endif
+        </div>
+
+        @error('photo')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+        @enderror
+    </section>
 
     <form method="POST" action="{{ route('settings.profile.update') }}" class="space-y-5">
         @csrf

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Finanzanbieter – Administration – FinanzView')
+@section('title', 'Finanzanbieter – FinanzView')
 @section('eyebrow', 'Einstellungen')
 @section('page_title', 'Finanzanbieter')
 
