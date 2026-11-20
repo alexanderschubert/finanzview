@@ -54,6 +54,7 @@ final class Navigation
                     ['Monatsplan', 'plan.index', ['plan.index']],
                     ['Budgets', 'budgets.index', ['budgets.index']],
                     ['Wiederkehrend', 'recurring-transactions.index', ['recurring-transactions.index']],
+                    ['Kalender', 'plan.calendar', ['plan.calendar']],
                 ],
             ],
             'loans' => [

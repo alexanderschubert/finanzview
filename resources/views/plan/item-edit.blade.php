@@ -36,6 +36,10 @@
             </select>
         </x-field>
 
+        <x-field label="Zahlungstag im Monat" for="due_day" error="due_day" hint="Optional. Damit erscheint der Posten im Kalender an diesem Tag. In kürzeren Monaten gilt der letzte Tag.">
+            <input id="due_day" name="due_day" type="number" min="1" max="31" step="1" inputmode="numeric" value="{{ old('due_day', $item->due_day) }}" placeholder="z. B. 1" class="fv-input tabular-nums sm:max-w-[10rem]">
+        </x-field>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <x-field label="Beginn / erste Zahlung" for="starts_on" error="starts_on" hint="Bei Krediten und Raten der Start. Bei jährlich, halbjährlich oder vierteljährlich legt der Monat fest, wann gezahlt wird.">
                 <input id="starts_on" name="starts_on" type="date" value="{{ old('starts_on', $item->starts_on?->format('Y-m-d')) }}" class="fv-input">
