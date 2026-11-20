@@ -18,6 +18,20 @@
         'Einnahmen' => $roots->where('type', 'income'),
         'Einnahmen und Ausgaben' => $roots->where('type', 'both'),
     ];
+
+    $fmt = fn ($value) => number_format((float) $value, 2, ',', '.') . ' €';
+
+    // Summe einer Hauptkategorie inklusive ihrer Unterkategorien.
+    $statsOf = function ($category) use ($stats, $children) {
+        $ids = collect([$category->id])->merge($children->get($category->id, collect())->pluck('id'));
+
+        return [
+            'total' => (int) $ids->sum(fn ($id) => $stats[$id]->total ?? 0),
+            'month' => (float) $ids->sum(fn ($id) => $stats[$id]->month_sum ?? 0),
+        ];
+    };
+
+    $unused = $categories->filter(fn ($c) => ! isset($stats[$c->id]))->count();
 @endphp
 
 @section('content')
@@ -41,6 +55,19 @@
 
     <x-flash />
 
+    @if ($categories->isNotEmpty())
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div class="relative flex-1">
+                <x-icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input type="search" id="category-search" placeholder="Kategorie suchen …" aria-label="Kategorien durchsuchen" class="fv-input !pl-10" autocomplete="off">
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                {{ $categories->count() }} Kategorien @if ($unused > 0) · {{ $unused }} ohne Buchungen @endif
+            </p>
+        </div>
+    @endif
+
     @if ($categories->isEmpty())
 
         <div class="fv-card">
@@ -62,7 +89,7 @@
 
                 <ul class="fv-card overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
                     @foreach ($groupCategories as $category)
-                        <li>
+                        <li data-category-item data-search="{{ mb_strtolower($category->name . ' ' . $children->get($category->id, collect())->pluck('name')->implode(' ')) }}">
                             <div class="flex items-center {{ $category->is_active ? '' : 'opacity-60' }}">
                                 <a href="{{ route('categories.edit', $category) }}" class="flex-1 min-w-0 flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition">
                                     <x-emoji-tile :emoji="$category->icon" fallback="tag" :color="$category->color" />
@@ -75,6 +102,12 @@
                                                 {{ $category->is_active ? $category->description : 'Deaktiviert' }}
                                             </p>
                                         @endif
+                                    </div>
+
+                                    @php($rootStats = $statsOf($category))
+                                    <div class="hidden shrink-0 text-right sm:block">
+                                        <p class="text-sm font-semibold tabular-nums {{ $rootStats['month'] == 0 ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white' }}">{{ $fmt($rootStats['month']) }}</p>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ $rootStats['total'] }} {{ $rootStats['total'] === 1 ? 'Buchung' : 'Buchungen' }} · {{ $monthLabel }}</p>
                                     </div>
 
                                     <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
@@ -105,6 +138,10 @@
                                         @endif
                                     </div>
 
+                                    <p class="hidden shrink-0 text-right text-xs tabular-nums text-slate-500 dark:text-slate-400 sm:block">
+                                        {{ $fmt($stats[$child->id]->month_sum ?? 0) }} · {{ (int) ($stats[$child->id]->total ?? 0) }}
+                                    </p>
+
                                     <x-icon name="chevron-right" class="w-4 h-4 text-slate-300 dark:text-slate-600" />
                                 </a>
                             @endforeach
@@ -117,5 +154,26 @@
     @endif
 
 </div>
+
+<script>
+    // Filtert die Liste beim Tippen; Gruppen ohne Treffer werden ausgeblendet.
+    (function () {
+        const input = document.getElementById('category-search');
+        if (!input) return;
+
+        input.addEventListener('input', () => {
+            const q = input.value.trim().toLowerCase();
+
+            document.querySelectorAll('[data-category-item]').forEach(item => {
+                item.hidden = q !== '' && !item.dataset.search.includes(q);
+            });
+
+            document.querySelectorAll('section').forEach(section => {
+                const items = section.querySelectorAll('[data-category-item]');
+                if (items.length) section.hidden = [...items].every(i => i.hidden);
+            });
+        });
+    })();
+</script>
 
 @endsection
