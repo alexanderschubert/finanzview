@@ -320,6 +320,13 @@ class AdminController extends Controller
         return view('admin.providers.index', compact('providers'));
     }
 
+    public function syncProviderCatalog(): RedirectResponse
+    {
+        $result = \App\Support\ProviderCatalog::sync();
+
+        return back()->with('success', "{$result['created']} Anbieter neu angelegt, {$result['updated']} ergänzt.");
+    }
+
     public function toggleProviderActive(
         FinancialProvider $provider
     ): RedirectResponse {

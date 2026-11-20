@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\BankConnection;
 use App\Models\BankConnectionAccount;
+use App\Services\Fints\BankSyncService;
 use App\Services\Fints\BankTransactionImporter;
 use App\Services\Fints\FintsClient;
 use App\Services\Fints\FintsConfig;
@@ -29,6 +30,7 @@ class BankConnectionController extends Controller
         private FintsClient $client,
         private PendingFintsSession $pending,
         private BankTransactionImporter $importer,
+        private BankSyncService $sync,
     ) {
     }
 
@@ -529,66 +531,9 @@ class BankConnectionController extends Controller
             return redirect()->route('bank-connections.accounts', $connection);
         }
 
-        $messages = [];
-        $totalImported = 0;
-
-        foreach ($connection->linkedAccounts()->with('account')->get() as $link) {
-            $result = $data[$link->id] ?? $data[(string) $link->id] ?? null;
-
-            if ($result === null) {
-                continue;
-            }
-
-            $summary = $this->importer->import($connection->user_id, $link->account_id, $link->iban, $result['transactions'] ?? []);
-            $totalImported += $summary['imported'];
-
-            $link->last_synced_at = now();
-            $link->last_error = ($result['errors'] ?? []) === [] ? null : implode(' · ', $result['errors']);
-
-            if (($result['balance'] ?? null) !== null) {
-                $link->bank_balance = $result['balance']['amount'];
-                $link->balance_date = $result['balance']['date'];
-            }
-
-            $link->save();
-
-            // Neu angelegtes Konto: Startsaldo so setzen, dass es zur Bank passt.
-            if ($link->adopt_balance && $link->bank_balance !== null) {
-                $difference = $link->fresh('account')->balanceDifference();
-                $link->account->opening_balance = round((float) $link->account->opening_balance + (float) $difference, 2);
-                $link->account->save();
-                $link->update(['adopt_balance' => false]);
-            }
-
-            $part = $link->account->name . ': ' . match ($summary['imported']) {
-                0 => 'keine neuen Umsätze',
-                1 => '1 neue Buchung',
-                default => "{$summary['imported']} neue Buchungen",
-            };
-
-            if ($summary['possible'] > 0) {
-                $part .= " ({$summary['possible']} schon erfasst, übersprungen)";
-            }
-
-            $messages[] = $part;
-        }
+        $message = $this->sync->apply($connection, $data)['message'];
 
         $this->pending->forget(Auth::id());
-
-        $message = implode(' · ', $messages) ?: 'Keine neuen Umsätze.';
-
-        $transfers = app(\App\Services\TransferMatcher::class)->count(Auth::id());
-
-        if ($transfers > 0) {
-            $message .= $transfers === 1
-                ? ' · 1 mögliche Umbuchung gefunden (unter Buchungen prüfen)'
-                : " · {$transfers} mögliche Umbuchungen gefunden (unter Buchungen prüfen)";
-        }
-
-        $connection->update([
-            'last_synced_at' => now(),
-            'last_result' => $message,
-        ]);
 
         return redirect()
             ->route('bank-connections.index')

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AppConnectController;
 use App\Http\Controllers\BankConnectionController;
 use App\Http\Controllers\FintsInstituteController;
 use App\Http\Controllers\Auth\OidcController;
@@ -106,6 +107,11 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
             AdminController::class,
             'storeProvider',
         ])->name('providers.store');
+
+        Route::post('/providers/sync-catalog', [
+            AdminController::class,
+            'syncProviderCatalog',
+        ])->name('providers.sync-catalog');
 
         Route::get('/providers/{provider}/edit', [
             AdminController::class,
@@ -294,6 +300,21 @@ Route::get('/settings/dashboard', [
         'updateProfile',
     ])->name('settings.profile.update');
 
+    Route::get('/settings/profile/photo', [
+        SettingsController::class,
+        'profilePhoto',
+    ])->name('settings.profile.photo');
+
+    Route::post('/settings/profile/photo', [
+        SettingsController::class,
+        'updateProfilePhoto',
+    ])->name('settings.profile.photo.update');
+
+    Route::delete('/settings/profile/photo', [
+        SettingsController::class,
+        'destroyProfilePhoto',
+    ])->name('settings.profile.photo.destroy');
+
 
     /*
      * =========================================================
@@ -305,6 +326,11 @@ Route::get('/settings/dashboard', [
         SettingsController::class,
         'security',
     ])->name('settings.security');
+
+    // Native App verbinden (Bestätigung nach der Anmeldung) und Verbindungen trennen.
+    Route::get('/app/connect', [AppConnectController::class, 'show'])->name('app.connect');
+    Route::post('/app/connect', [AppConnectController::class, 'approve'])->middleware('throttle:20,1')->name('app.connect.approve');
+    Route::delete('/settings/security/apps/{apiToken}', [AppConnectController::class, 'destroy'])->name('settings.security.apps.destroy');
 
     Route::put('/settings/security', [
         SettingsController::class,
@@ -361,6 +387,8 @@ Route::get('/settings/dashboard', [
      * KONTEN
      * =========================================================
      */
+
+    Route::get('/search', \App\Http\Controllers\SearchController::class)->name('search');
 
     Route::resource('accounts', AccountController::class)->except('show');
 

@@ -33,11 +33,6 @@
         ],
     ];
 
-    if ($user->isAdmin()) {
-        $groups['Verwaltung'] = [
-            ['admin.index', 'shield', 'bg-red-500', 'Administration', 'Benutzer, Registrierung und Anbieter'],
-        ];
-    }
 @endphp
 
 @section('content')
@@ -50,9 +45,13 @@
     {{-- PROFILKARTE --}}
 
     <a href="{{ route('settings.profile') }}" class="fv-card flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition">
-        <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold">
-            {{ $initials ?: '?' }}
-        </div>
+        @if ($user->profile_photo_url)
+            <img src="{{ $user->profile_photo_url }}" alt="" class="w-14 h-14 rounded-full object-cover">
+        @else
+            <div class="w-14 h-14 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold">
+                {{ $initials ?: '?' }}
+            </div>
+        @endif
 
         <div class="flex-1 min-w-0">
             <p class="text-[17px] font-semibold text-slate-900 dark:text-white truncate">{{ $user->name }}</p>

@@ -33,6 +33,63 @@ class SettingsController extends Controller
 
 
     /**
+     * Profilbild ausliefern (nur das eigene).
+     */
+    public function profilePhoto(Request $request)
+    {
+        $path = $request->user()->profile_photo_path;
+
+        abort_unless($path && \Illuminate\Support\Facades\Storage::disk('local')->exists($path), 404);
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($path, null, [
+            'Cache-Control' => 'private, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * Profilbild hochladen.
+     */
+    public function updateProfilePhoto(Request $request)
+    {
+        $validated = $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+        ], [
+            'photo.required' => 'Bitte ein Bild auswählen.',
+            'photo.image' => 'Die Datei muss ein Bild sein.',
+            'photo.mimes' => 'Erlaubt sind JPG, PNG und WebP.',
+            'photo.max' => 'Das Bild darf höchstens 3 MB groß sein.',
+        ]);
+
+        $user = $request->user();
+        $this->deleteProfilePhotoFile($user);
+
+        $path = $validated['photo']->store('profile-photos', 'local');
+        $user->forceFill(['profile_photo_path' => $path])->save();
+
+        return redirect()->route('settings.profile')->with('success', 'Profilbild wurde gespeichert.');
+    }
+
+    /**
+     * Profilbild entfernen.
+     */
+    public function destroyProfilePhoto(Request $request)
+    {
+        $user = $request->user();
+        $this->deleteProfilePhotoFile($user);
+        $user->forceFill(['profile_photo_path' => null])->save();
+
+        return redirect()->route('settings.profile')->with('success', 'Profilbild wurde entfernt.');
+    }
+
+    private function deleteProfilePhotoFile($user): void
+    {
+        if ($user->profile_photo_path) {
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($user->profile_photo_path);
+        }
+    }
+
+    /**
      * Profil speichern
      */
     public function updateProfile(Request $request)
@@ -82,6 +139,7 @@ class SettingsController extends Controller
         return view('settings.security', [
             'sessions' => $sessions->forUser($request),
             'sessionsAvailable' => $sessions->available(),
+            'apiTokens' => $request->user()->apiTokens()->latest('id')->get(),
         ]);
     }
 

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $user->name . ' – Administration – FinanzView')
-@section('eyebrow', 'Administration')
+@section('title', $user->name . ' – Benutzer – FinanzView')
+@section('eyebrow', 'Einstellungen')
 @section('page_title', 'Benutzer bearbeiten')
 
 @php
@@ -23,7 +23,7 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    <x-back-link :href="route('admin.index')" label="Administration" />
+    <x-back-link :href="route('admin.index')" label="Benutzer" />
 
     <x-page-header :title="$user->name" :subtitle="'Registriert am ' . $user->created_at?->format('d.m.Y') . ' · ' . ($user->last_login_at ? 'zuletzt ' . $user->last_login_at->format('d.m.Y H:i') : 'noch nie angemeldet')">
         <x-slot:leading>
