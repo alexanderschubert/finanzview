@@ -240,7 +240,7 @@
                 <span class="flex-1 min-w-0">
                     <span class="block font-semibold text-slate-900 dark:text-white">Tilgungsplan</span>
                     <span class="block text-[13px] text-slate-500 dark:text-slate-400 truncate">
-                        {{ $planTotals['count'] }} Raten · {{ $paidCount }} bezahlt@if ($lastPlanned) · letzte Rate {{ $lastPlanned->due_date?->format('m/Y') }}@endif
+                        {{ $planTotals['count'] }} Raten · {{ $paidCount }} bezahlt @if ($lastPlanned) · letzte Rate {{ $lastPlanned->due_date?->format('m/Y') }} @endif
                     </span>
                 </span>
 
