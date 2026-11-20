@@ -10,6 +10,7 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\PayeeController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\TransactionQuickController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -416,6 +417,12 @@ Route::get('/settings/dashboard', [
 
     Route::delete('/transactions/import/{token}', [TransactionImportController::class, 'destroy'])
         ->name('transactions.import.destroy');
+
+    Route::get('/transactions/quick', [TransactionQuickController::class, 'form'])->name('transactions.quick');
+
+    Route::get('/transactions/{transaction}/panel', [TransactionQuickController::class, 'panel'])->name('transactions.panel');
+
+    Route::patch('/transactions/{transaction}/quick', [TransactionQuickController::class, 'update'])->name('transactions.quick-update');
 
     Route::get('/transactions/review', [ReviewController::class, 'index'])->name('transactions.review');
 

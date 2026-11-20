@@ -42,7 +42,7 @@
 
 @section('content')
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5">
+<div class="max-w-5xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5">
 
     <x-page-header title="Buchungen" subtitle="Deine Einnahmen, Ausgaben und Umbuchungen.">
         {{-- Auf dem Handy nebeneinander, jeweils halbe Breite mit Beschriftung. --}}
@@ -208,7 +208,9 @@
 
     @else
 
-        <div class="space-y-5">
+        <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6 xl:items-start">
+
+        <div class="space-y-5 min-w-0">
             @foreach ($transactionsByDay as $day => $dayTransactions)
                 <section>
                     <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
@@ -243,6 +245,8 @@
                             <li>
                                 <a
                                     href="{{ route('transactions.edit', $transaction) }}"
+                                    data-tx-panel="{{ route('transactions.panel', $transaction) }}"
+                                    data-category="{{ $isTransfer ? '' : $transaction->category?->display_name }}"
                                     class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition"
                                 >
                                     @if ($isTransfer)
@@ -263,7 +267,7 @@
                                             @endif
                                         </div>
 
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                        <p data-tx-details class="text-xs text-slate-500 dark:text-slate-400 truncate">
                                             {{ $details ?: ($isTransfer ? 'Umbuchung' : 'Ohne Kategorie') }}
                                         </p>
 
@@ -291,6 +295,18 @@
                     </ul>
                 </section>
             @endforeach
+        </div>
+
+        <aside id="tx-panel" class="hidden xl:block fv-card p-5 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto" aria-label="Details zur Buchung">
+            <div class="py-10 text-center">
+                <span class="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400">
+                    <x-icon name="arrows" class="w-6 h-6" />
+                </span>
+                <p class="mt-3 text-sm font-medium text-slate-900 dark:text-white">Buchung wählen</p>
+                <p class="mt-1 text-[13px] text-slate-500 dark:text-slate-400">Klicke links eine Buchung an, um Kategorie und Notiz direkt hier zu ändern.</p>
+            </div>
+        </aside>
+
         </div>
 
         <x-pagination :paginator="$transactions" class="pt-2" />
