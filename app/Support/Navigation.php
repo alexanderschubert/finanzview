@@ -78,13 +78,15 @@ final class Navigation
                 'label' => 'Einstellungen',
                 'icon' => 'settings',
                 'route' => 'settings.index',
-                'patterns' => ['settings.*', 'categories.*', 'category-rules.*', 'tags.*', 'payees.*'],
+                'patterns' => ['settings.*', 'categories.*', 'category-rules.*', 'tags.*', 'payees.*', 'admin.providers.*'],
                 'tabs' => [
                     ['Allgemein', 'settings.index', ['settings.index']],
                     ['Kategorien', 'categories.index', ['categories.index']],
                     ['Empfänger', 'payees.index', ['payees.index']],
                     ['Tags', 'tags.index', ['tags.index']],
                     ['Regeln', 'category-rules.index', ['category-rules.index']],
+                    // Anbieter gelten für alle Benutzer – nur Administratoren pflegen sie.
+                    ['Anbieter', 'admin.providers.index', ['admin.providers.index'], 'admin'],
                 ],
             ],
         ];
@@ -114,6 +116,9 @@ final class Navigation
     {
         $key = self::current();
         $tabs = $key ? self::areas()[$key]['tabs'] : [];
+
+        $isAdmin = (bool) request()->user()?->is_admin;
+        $tabs = array_values(array_filter($tabs, fn (array $tab) => ($tab[3] ?? null) !== 'admin' || $isAdmin));
 
         if (count($tabs) < 2) {
             return [];
