@@ -79,4 +79,17 @@ class CategoryListAndProviderCatalogTest extends TestCase
             ->assertSee('data-provider-select', false)
             ->assertSee('Postbank');
     }
+
+    public function test_providers_tab_in_settings_is_only_visible_for_admins(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'is_active' => true]);
+        $user = User::factory()->create(['is_admin' => false, 'is_active' => true]);
+
+        $this->actingAs($admin)->get(route('admin.providers.index'))
+            ->assertOk()
+            ->assertSee(route('admin.providers.index'), false);
+
+        $this->actingAs($admin)->get(route('categories.index'))->assertOk()->assertSee('>Anbieter<', false);
+        $this->actingAs($user)->get(route('categories.index'))->assertOk()->assertDontSee('>Anbieter<', false);
+    }
 }

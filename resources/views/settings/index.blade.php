@@ -35,7 +35,7 @@
 
     if ($user->isAdmin()) {
         $groups['Verwaltung'] = [
-            ['admin.index', 'shield', 'bg-red-500', 'Administration', 'Benutzer, Registrierung und Anbieter'],
+            ['admin.index', 'shield', 'bg-red-500', 'Administration', 'Benutzer und Registrierung'],
         ];
     }
 @endphp
