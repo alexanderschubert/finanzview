@@ -139,6 +139,7 @@ class SettingsController extends Controller
         return view('settings.security', [
             'sessions' => $sessions->forUser($request),
             'sessionsAvailable' => $sessions->available(),
+            'apiTokens' => $request->user()->apiTokens()->latest('id')->get(),
         ]);
     }
 

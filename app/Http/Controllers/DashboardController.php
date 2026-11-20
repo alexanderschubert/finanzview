@@ -720,22 +720,7 @@ class DashboardController extends Controller
 
             if ($dashboardWidgets['upcoming'] ?? false) {
 
-                $collect = function (Carbon $forMonth, int $fromDay) use ($planService, $user) {
-                    $calendar = $planService->calendar($user, $forMonth);
-
-                    return collect($calendar['days'])
-                        ->filter(fn ($entries, $day) => $day >= $fromDay)
-                        ->flatMap(fn ($entries, $day) => collect($entries)->map(fn ($entry) => $entry + ['date' => $forMonth->copy()->day($day)]));
-                };
-
-                $upcoming = $collect($month, $isCurrentMonth ? $today->day : 1);
-
-                // Wenig übrig? Dann den Anfang des Folgemonats anhängen (nur im laufenden Monat).
-                if ($isCurrentMonth && $upcoming->count() < 5) {
-                    $upcoming = $upcoming->merge($collect($month->copy()->addMonth()->startOfMonth(), 1));
-                }
-
-                $upcoming = $upcoming->take(5)->values();
+                $upcoming = $planService->upcoming($user, $month);
             }
         }
 
