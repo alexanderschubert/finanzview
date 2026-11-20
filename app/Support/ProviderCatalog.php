@@ -62,6 +62,7 @@ class ProviderCatalog
             ['slug' => 'hanseatic-bank', 'name' => 'Hanseatic Bank', 'type' => 'card', 'color' => '#e30613'],
             ['slug' => 'advanzia', 'name' => 'Advanzia Bank', 'type' => 'card', 'color' => '#003a70'],
             ['slug' => 'bank-norwegian', 'name' => 'Bank Norwegian', 'type' => 'card', 'color' => '#e60000'],
+            ['slug' => 'auxmoney', 'name' => 'auxmoney', 'type' => 'lender', 'color' => '#00a5b5'],
             ['slug' => 'santander-consumer', 'name' => 'Santander Consumer Bank', 'type' => 'lender', 'color' => '#ec0000'],
             ['slug' => 'bmw-bank', 'name' => 'BMW Bank', 'type' => 'lender', 'color' => '#1c69d4'],
             ['slug' => 'mercedes-benz-bank', 'name' => 'Mercedes-Benz Bank', 'type' => 'lender', 'color' => '#222222'],
