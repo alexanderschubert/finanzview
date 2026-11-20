@@ -55,9 +55,9 @@
 
             {{-- Marke --}}
             <div class="flex flex-col items-center text-center mb-8">
-                <x-logo class="w-16 h-16 rounded-[18px] shadow-lg shadow-emerald-900/20" />
+                <x-logo class="w-16 h-16 rounded-[18px] shadow-xl shadow-emerald-900/30 ring-1 ring-white/20" />
 
-                <h1 class="mt-5 text-[28px] font-semibold tracking-tight">
+                <h1 class="mt-5 fv-display text-[30px] font-extrabold tracking-tight">
                     @yield('heading')
                 </h1>
 
