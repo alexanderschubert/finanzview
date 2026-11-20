@@ -23,6 +23,7 @@ class User extends Authenticatable implements PasskeyUser
         'email',
         'password',
         'theme',
+        'profile_photo_path',
         'last_login_at',
     ];
 
@@ -133,4 +134,16 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasOne(DashboardSetting::class);
     }
 
+
+    /**
+     * Adresse des Profilbilds (geschützte Route, nur für den Besitzer) oder null.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (! $this->profile_photo_path) {
+            return null;
+        }
+
+        return route('settings.profile.photo') . '?v=' . $this->updated_at?->timestamp;
+    }
 }
