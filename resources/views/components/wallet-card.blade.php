@@ -34,20 +34,20 @@
 
 {{-- Karte im Stil der Apple-Wallet (Seitenverhältnis einer echten Karte). --}}
 <div
-    {{ $attributes->merge(['class' => "relative aspect-[1.586] overflow-hidden rounded-3xl p-5 shadow-2xl shadow-black/30 ring-1 ring-inset " . ($isLight ? 'ring-black/5' : 'ring-white/15') . " $text"]) }}
+    {{ $attributes->merge(['class' => "relative aspect-[1.586] overflow-hidden rounded-2xl p-4 shadow-xl shadow-black/30 ring-1 ring-inset " . ($isLight ? 'ring-black/5' : 'ring-white/15') . " $text"]) }}
     style="background: linear-gradient(135deg, {{ $base }}, color-mix(in srgb, {{ $base }} {{ $isLight ? '80%, black' : '55%, black' }}));"
 >
     <div aria-hidden="true" class="absolute inset-0" style="background: radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / {{ $isLight ? '0.55' : '0.2' }}), transparent 55%);"></div>
-    <div aria-hidden="true" class="absolute -right-12 -bottom-16 w-52 h-52 rounded-full {{ $isLight ? 'bg-black/5' : 'bg-white/10' }}"></div>
-    <div aria-hidden="true" class="absolute -right-2 -bottom-24 w-52 h-52 rounded-full {{ $isLight ? 'bg-black/[0.03]' : 'bg-white/5' }}"></div>
+    <div aria-hidden="true" class="absolute -right-10 -bottom-14 w-40 h-40 rounded-full {{ $isLight ? 'bg-black/5' : 'bg-white/10' }}"></div>
+    <div aria-hidden="true" class="absolute -right-2 -bottom-20 w-40 h-40 rounded-full {{ $isLight ? 'bg-black/[0.03]' : 'bg-white/5' }}"></div>
 
     <div class="relative flex h-full flex-col justify-between">
 
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-                <p class="font-semibold truncate">{{ $title }}</p>
+                <p class="text-sm font-semibold truncate">{{ $title }}</p>
                 @if ($subtitle)
-                    <p class="text-xs truncate {{ $muted }}">{{ $subtitle }}</p>
+                    <p class="text-[11px] truncate {{ $muted }}">{{ $subtitle }}</p>
                 @endif
             </div>
 
@@ -57,7 +57,7 @@
                 @endif
 
                 @if ($provider?->logo)
-                    <span class="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center overflow-hidden">
+                    <span class="w-7 h-7 rounded-lg bg-white/90 flex items-center justify-center overflow-hidden">
                         <img src="{{ asset($provider->logo) }}" alt="{{ $provider->name }}" class="w-2/3 h-2/3 object-contain">
                     </span>
                 @elseif ($provider?->emoji)
@@ -67,13 +67,13 @@
         </div>
 
         <div>
-            <p class="text-xs {{ $muted }}">{{ $amountLabel }}</p>
-            <p class="fv-display text-2xl font-extrabold tabular-nums">{{ $amount }}</p>
+            <p class="text-[11px] {{ $muted }}">{{ $amountLabel }}</p>
+            <p class="fv-display text-lg font-extrabold tabular-nums">{{ $amount }}</p>
         </div>
 
         {{-- Zeile immer vorhanden, damit der Saldo bei allen Karten
              mittig steht – auch ohne IBAN bzw. Kartennummer. --}}
-        <p class="font-mono text-sm tracking-[0.2em] min-h-5 {{ $muted }}" @if (blank($number)) aria-hidden="true" @endif>{{ $number }}</p>
+        <p class="font-mono text-[11px] tracking-[0.18em] min-h-4 {{ $muted }}" @if (blank($number)) aria-hidden="true" @endif>{{ $number }}</p>
 
     </div>
 </div>

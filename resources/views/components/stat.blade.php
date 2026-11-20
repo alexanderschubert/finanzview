@@ -27,7 +27,7 @@
         @endif
     </div>
 
-    <p class="mt-3 text-[26px] leading-tight font-semibold tracking-tight tabular-nums {{ $valueClass }}">
+    <p class="mt-3 fv-display text-[26px] leading-tight font-extrabold tabular-nums {{ $valueClass }}">
         {{ $slot }}
     </p>
 

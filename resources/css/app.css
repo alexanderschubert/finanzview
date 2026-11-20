@@ -405,6 +405,46 @@
 
 
     /*
+     * Tabs innerhalb eines Bereichs (Kopfzeile bzw. oberhalb des Inhalts am Handy).
+     */
+    .fv-tab {
+        flex: none;
+        border-radius: 9999px;
+        padding: 0.375rem 0.875rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-slate-500);
+        transition: background-color 150ms, color 150ms;
+    }
+
+    .fv-tab:hover {
+        background-color: color-mix(in srgb, var(--color-slate-900) 6%, transparent);
+        color: var(--color-slate-900);
+    }
+
+    .fv-tab[aria-current="page"] {
+        background-color: color-mix(in srgb, var(--color-emerald-500) 16%, transparent);
+        color: var(--color-emerald-700);
+        font-weight: 600;
+    }
+
+    .dark .fv-tab {
+        color: var(--color-slate-400);
+    }
+
+    .dark .fv-tab:hover {
+        background-color: color-mix(in srgb, white 8%, transparent);
+        color: white;
+    }
+
+    .dark .fv-tab[aria-current="page"] {
+        background-color: color-mix(in srgb, white 11%, transparent);
+        color: var(--color-emerald-300);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, white 8%, transparent);
+    }
+
+
+    /*
     |--------------------------------------------------------------------------
     | Karten, Formulare und Buttons
     |--------------------------------------------------------------------------

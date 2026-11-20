@@ -12,7 +12,7 @@
 
 {{-- Monatsauswahl mit Pfeilen, im Stil eines iOS-Segmented-Controls. --}}
 <div {{ $attributes->merge(['class' => 'inline-flex items-center gap-1']) }}>
-    <div class="inline-flex items-center rounded-full bg-white dark:bg-slate-900 p-1 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+    <div class="inline-flex items-center rounded-full bg-white/60 dark:bg-white/5 p-1 ring-1 ring-slate-900/10 dark:ring-white/10 backdrop-blur-xl">
         <a
             href="{{ route($route, array_merge($params, ['month' => $current->copy()->subMonth()->format('Y-m')])) }}"
             class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white transition"
