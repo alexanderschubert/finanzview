@@ -43,6 +43,9 @@ class CategoryListAndProviderCatalogTest extends TestCase
 
     public function test_catalog_creates_known_banks_once_and_keeps_existing_values(): void
     {
+        // Die Migration hat den Katalog schon geladen – für den Test leeren.
+        FinancialProvider::query()->delete();
+
         FinancialProvider::create(['name' => 'ING', 'slug' => 'meine-ing', 'type' => 'bank', 'color' => '#123456', 'is_active' => true]);
 
         $first = ProviderCatalog::sync();
