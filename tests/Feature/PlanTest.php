@@ -468,7 +468,7 @@ class PlanTest extends TestCase
         $this->assertStringContainsString('finanzview-monatsplan-2026-11.csv', $response->headers->get('Content-Disposition'));
 
         $csv = $response->streamedContent();
-        $this->assertStringStartsWith("\xEF\xBB\xBFGruppe;Typ;Beschreibung;Betrag;Bemerkung;Rhythmus;Beginn;Letzte Rate", $csv);
+        $this->assertStringStartsWith("\xEF\xBB\xBFGruppe;Typ;Beschreibung;Betrag;Bemerkung;Rhythmus;Beginn;\"Letzte Rate\"", $csv);
         $this->assertStringContainsString('Kredite;Kredit;Sparkasse;407,00;;Monatlich;20.01.2023;17.01.2033', $csv);
         $this->assertStringContainsString('Auto;Ausgabe;KFZ-Steuer;98,50;;Jährlich;08.05.2026;', $csv);
         $this->assertStringContainsString("'=HYPERLINK", $csv);
