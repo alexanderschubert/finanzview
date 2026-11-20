@@ -103,14 +103,7 @@
 
         @if ($providers->isNotEmpty())
             <x-field label="Finanzanbieter" for="provider_id" error="provider_id" hint="Optional – zeigt Logo und Farbe des Anbieters.">
-                <select id="provider_id" name="provider_id" class="fv-input">
-                    <option value="">Kein Anbieter</option>
-                    @foreach ($providers as $provider)
-                        <option value="{{ $provider->id }}" @selected((string) $value('provider_id') === (string) $provider->id)>
-                            {{ $provider->emoji }} {{ $provider->name }}
-                        </option>
-                    @endforeach
-                </select>
+                <x-provider-select :providers="$providers" :selected="$value('provider_id')" />
             </x-field>
         @endif
 

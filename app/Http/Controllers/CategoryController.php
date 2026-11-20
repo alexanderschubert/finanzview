@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -19,8 +20,22 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->get();
 
+        $monthStart = now()->startOfMonth()->toDateString();
+        $monthEnd = now()->endOfMonth()->toDateString();
+
+        // Buchungen je Kategorie (gesamt) und Betrag im laufenden Monat – eine Abfrage für alle.
+        $stats = Transaction::query()
+            ->where('user_id', $request->user()->id)
+            ->whereNotNull('category_id')
+            ->selectRaw('category_id, count(*) as total, sum(case when transaction_date between ? and ? then amount else 0 end) as month_sum', [$monthStart, $monthEnd])
+            ->groupBy('category_id')
+            ->get()
+            ->keyBy('category_id');
+
         return view('categories.index', [
             'categories' => $categories,
+            'stats' => $stats,
+            'monthLabel' => now()->translatedFormat('F'),
         ]);
     }
 

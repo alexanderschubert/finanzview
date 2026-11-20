@@ -107,6 +107,11 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
             'storeProvider',
         ])->name('providers.store');
 
+        Route::post('/providers/sync-catalog', [
+            AdminController::class,
+            'syncProviderCatalog',
+        ])->name('providers.sync-catalog');
+
         Route::get('/providers/{provider}/edit', [
             AdminController::class,
             'editProvider',

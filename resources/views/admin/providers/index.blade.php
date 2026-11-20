@@ -21,6 +21,14 @@
     <x-back-link :href="route('admin.index')" label="Administration" />
 
     <x-page-header title="Finanzanbieter" subtitle="Banken und Dienste mit Logo und Farbe für Konten, Karten und Kredite.">
+        <form method="POST" action="{{ route('admin.providers.sync-catalog') }}">
+            @csrf
+            <button type="submit" class="fv-btn fv-btn-secondary text-sm py-2.5">
+                <x-icon name="download" class="w-4 h-4" />
+                Katalog laden
+            </button>
+        </form>
+
         <a href="{{ route('admin.providers.create') }}" class="fv-btn fv-btn-primary text-sm py-2.5">
             <x-icon name="plus" class="w-4 h-4" />
             Neuer Anbieter
