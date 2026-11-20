@@ -34,19 +34,18 @@
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    <div class="flex items-center gap-4">
-        <x-emoji-tile :emoji="$budget->icon" fallback="target" :color="$budget->color" size="lg" />
+    <x-back-link :href="route('budgets.index', ['month' => $selectedMonth])" label="Budgets" />
 
-        <div class="flex-1 min-w-0">
-            <h2 class="text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white truncate">{{ $budget->name }}</h2>
-            <p class="text-[15px] text-slate-500 dark:text-slate-400">{{ $periodLabel }}</p>
-        </div>
+    <x-page-header :title="$budget->name" :subtitle="$periodLabel">
+        <x-slot:leading>
+            <x-emoji-tile :emoji="$budget->icon" fallback="target" :color="$budget->color" size="lg" />
+        </x-slot:leading>
 
         <a href="{{ route('budgets.edit', $budget) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
             <x-icon name="pencil" class="w-4 h-4" />
-            <span class="hidden sm:inline">Bearbeiten</span>
+            Bearbeiten
         </a>
-    </div>
+    </x-page-header>
 
     <div class="flex justify-center sm:justify-start">
         <x-month-switcher route="budgets.show" :month="$selectedMonth" :params="['budget' => $budget->id]" />

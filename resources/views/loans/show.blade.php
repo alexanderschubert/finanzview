@@ -38,22 +38,18 @@
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    <div class="flex items-center gap-4">
-        <x-financial-provider :provider="$loan->provider" :fallback-icon="$loan->creditor_icon ?: '🏦'" size="md" />
+    <x-back-link :href="route('loans.index')" label="Kredite" />
 
-        <div class="flex-1 min-w-0">
-            <h2 class="text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white truncate">{{ $loan->name }}</h2>
-            <p class="text-[15px] text-slate-500 dark:text-slate-400 truncate">
-                {{ $loan->creditor_name ?: ($typeLabels[$loan->type] ?? 'Kredit') }}
-                @unless ($loan->is_active) · abgeschlossen @endunless
-            </p>
-        </div>
+    <x-page-header :title="$loan->name" :subtitle="($loan->creditor_name ?: ($typeLabels[$loan->type] ?? 'Kredit')) . ($loan->is_active ? '' : ' · abgeschlossen')">
+        <x-slot:leading>
+            <x-financial-provider :provider="$loan->provider" :fallback-icon="$loan->creditor_icon ?: '🏦'" size="md" />
+        </x-slot:leading>
 
         <a href="{{ route('loans.edit', $loan) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">
             <x-icon name="pencil" class="w-4 h-4" />
-            <span class="hidden sm:inline">Bearbeiten</span>
+            Bearbeiten
         </a>
-    </div>
+    </x-page-header>
 
     <x-flash />
 
@@ -80,7 +76,7 @@
 
         <div class="w-full flex-1">
             <p class="text-sm text-slate-500 dark:text-slate-400">Restschuld</p>
-            <p class="text-[34px] leading-tight font-semibold tracking-tight tabular-nums text-slate-900 dark:text-white">{{ $money($remaining) }}</p>
+            <p class="fv-display text-[34px] leading-tight font-extrabold tabular-nums text-slate-900 dark:text-white">{{ $money($remaining) }}</p>
             <p class="text-sm text-slate-500 dark:text-slate-400 tabular-nums">von {{ $money($principal) }}</p>
 
             <dl class="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
