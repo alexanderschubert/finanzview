@@ -74,21 +74,58 @@
 
         {{-- KENNZAHLEN --}}
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <x-stat label="Saldo im Monat" icon="wallet" :tone="$totals['balance'] < 0 ? 'negative' : 'positive'" class="col-span-2 lg:col-span-2">
-                {{ $totals['balance'] < 0 ? '−' : '+' }}{{ $money(abs($totals['balance'])) }}
-            </x-stat>
-            <x-stat label="Einkünfte" icon="trending-up" tone="positive">{{ $money($totals['income']) }}</x-stat>
-            <x-stat label="Ausgaben" icon="trending-down" tone="negative">{{ $money($totals['expense']) }}</x-stat>
+        @php
+            $planned = $totals['income'] > 0 ? round($totals['expense'] / $totals['income'] * 100) : null;
+            $barWidth = $planned === null ? ($totals['expense'] > 0 ? 100 : 0) : min($planned, 100);
+            $over = $totals['balance'] < 0;
+        @endphp
 
-            @if ($totals['has_rates'])
-                <x-stat label="Raten" icon="repeat" class="col-span-1">{{ $money($totals['rates']) }}</x-stat>
-            @endif
+        <section class="fv-card relative overflow-hidden p-5 sm:p-6">
+            <div aria-hidden="true" class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full blur-3xl {{ $over ? 'bg-red-500/15' : 'bg-emerald-500/15' }}"></div>
 
-            @if ($totals['has_loans'])
-                <x-stat label="Kredite" icon="banknote" class="col-span-1">{{ $money($totals['loans']) }}</x-stat>
-            @endif
-        </div>
+            <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ $over ? 'Fehlbetrag im Monat' : 'Bleibt im Monat übrig' }}</p>
+                    <p class="mt-1 fv-display text-[38px] leading-none font-extrabold tabular-nums {{ $over ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                        {{ $over ? '−' : '+' }}{{ $money(abs($totals['balance'])) }}
+                    </p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Plan für {{ $month->translatedFormat('F Y') }} – bucht nichts.</p>
+                </div>
+
+                <div>
+                    <div class="flex items-baseline justify-between text-sm">
+                        <span class="font-medium text-slate-700 dark:text-slate-200">Verplant</span>
+                        <span class="tabular-nums text-slate-500 dark:text-slate-400">{{ $planned !== null ? $planned . ' % der Einkünfte' : '–' }}</span>
+                    </div>
+                    <div class="mt-2 h-3 overflow-hidden rounded-full bg-slate-200/70 dark:bg-white/10" role="img" aria-label="Anteil der Ausgaben an den Einkünften">
+                        <div class="h-full rounded-full {{ $over ? 'bg-linear-to-r from-red-400 to-red-600' : 'bg-linear-to-r from-emerald-400 to-emerald-600' }}" style="width: {{ $barWidth }}%"></div>
+                    </div>
+
+                    <dl class="mt-4 grid grid-cols-2 gap-3 {{ ($totals['has_rates'] || $totals['has_loans']) ? 'sm:grid-cols-4' : 'sm:grid-cols-2' }}">
+                        <div class="rounded-2xl bg-emerald-500/10 px-3 py-2.5">
+                            <dt class="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300"><x-icon name="trending-up" class="w-3.5 h-3.5" /> Einkünfte</dt>
+                            <dd class="mt-0.5 font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($totals['income']) }}</dd>
+                        </div>
+                        <div class="rounded-2xl bg-red-500/10 px-3 py-2.5">
+                            <dt class="flex items-center gap-1.5 text-[11px] font-medium text-red-700 dark:text-red-300"><x-icon name="trending-down" class="w-3.5 h-3.5" /> Ausgaben</dt>
+                            <dd class="mt-0.5 font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($totals['expense']) }}</dd>
+                        </div>
+                        @if ($totals['has_rates'])
+                            <div class="rounded-2xl bg-slate-900/5 dark:bg-white/5 px-3 py-2.5">
+                                <dt class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400"><x-icon name="repeat" class="w-3.5 h-3.5" /> davon Raten</dt>
+                                <dd class="mt-0.5 font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($totals['rates']) }}</dd>
+                            </div>
+                        @endif
+                        @if ($totals['has_loans'])
+                            <div class="rounded-2xl bg-slate-900/5 dark:bg-white/5 px-3 py-2.5">
+                                <dt class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400"><x-icon name="banknote" class="w-3.5 h-3.5" /> davon Kredite</dt>
+                                <dd class="mt-0.5 font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($totals['loans']) }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+        </section>
 
 
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-4 items-start">
@@ -97,7 +134,7 @@
 
             <div class="space-y-4">
                 @foreach ($plan->groups->reject->isIncome() as $group)
-                    @include('plan._group', ['group' => $group, 'color' => $palette[$loop->index % count($palette)]])
+                    @include('plan._group', ['group' => $group, 'color' => $palette[$loop->index % count($palette)], 'incomeTotal' => $totals['income']])
                 @endforeach
 
                 <form method="POST" action="{{ route('plan.groups.store', $plan) }}" class="fv-card p-4 flex flex-col sm:flex-row gap-3">
@@ -120,14 +157,14 @@
 
             <div class="space-y-4 lg:sticky lg:top-4">
                 @foreach ($plan->groups->filter->isIncome() as $group)
-                    @include('plan._group', ['group' => $group, 'color' => '#34d399'])
+                    @include('plan._group', ['group' => $group, 'color' => '#34d399', 'incomeTotal' => $totals['income']])
                 @endforeach
 
                 @if ($totals['groups']->where('sum', '>', 0)->isNotEmpty())
                     @php
                         $parts = $totals['groups']->where('sum', '>', 0)->sortByDesc('sum')->values();
                         $scale = max($totals['income'], $totals['expense'], 0.01);
-                        $colorOf = fn ($group) => $palette[$plan->groups->reject->isIncome()->values()->search(fn ($g) => $g->id === $group->id) % count($palette)];
+                        $colorOf = fn ($group) => (preg_match('/^#[0-9a-fA-F]{6}$/', (string) $group->color) ? $group->color : null) ?? $palette[$plan->groups->reject->isIncome()->values()->search(fn ($g) => $g->id === $group->id) % count($palette)];
                     @endphp
 
                     <section class="fv-card p-5">
