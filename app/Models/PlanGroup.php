@@ -31,6 +31,8 @@ class PlanGroup extends Model
         'plan_month_id',
         'name',
         'kind',
+        'icon',
+        'color',
         'sort_order',
     ];
 
