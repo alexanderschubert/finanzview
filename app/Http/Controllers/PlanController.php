@@ -57,6 +57,23 @@ class PlanController extends Controller
         return redirect()->route('plan.index', ['month' => $month->format('Y-m')]);
     }
 
+    /**
+     * Kalender: Zahlungen des Monats aus dem Plan (mit Zahlungstag) und die Raten der Kredite.
+     */
+    public function calendar(Request $request)
+    {
+        $month = $this->month($request->query('month'));
+        $user = Auth::user();
+
+        $calendar = $this->plans->calendar($user, $month);
+
+        return view('plan.calendar', [
+            'month' => $month,
+            'monthKey' => $month->format('Y-m'),
+            'calendar' => $calendar,
+        ]);
+    }
+
     public function destroy(PlanMonth $planMonth)
     {
         $this->authorizeMonth($planMonth);
@@ -148,6 +165,7 @@ class PlanController extends Controller
             'amount' => ['nullable', 'string', 'max:30'],
             'note' => ['nullable', 'string', 'max:255'],
             'interval' => ['nullable', Rule::in(array_keys(PlanItem::INTERVALS))],
+            'due_day' => ['nullable', 'integer', 'between:1,31'],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', ...($request->filled('starts_on') ? ['after_or_equal:starts_on'] : [])],
         ], $this->messages());
@@ -159,6 +177,7 @@ class PlanController extends Controller
             'amount' => $this->amount($validated['amount'] ?? null, allowEmpty: true),
             'note' => $this->text($validated['note'] ?? null),
             'interval' => $validated['interval'] ?? PlanItem::MONTHLY,
+            'due_day' => $validated['due_day'] ?? null,
             'starts_on' => $validated['starts_on'] ?? null,
             'ends_on' => $validated['ends_on'] ?? null,
             'sort_order' => $this->plans->nextItemSortOrder($planGroup),
@@ -192,6 +211,7 @@ class PlanController extends Controller
             'amount' => ['required', 'string', 'max:30'],
             'note' => ['nullable', 'string', 'max:255'],
             'interval' => ['nullable', Rule::in(array_keys(PlanItem::INTERVALS))],
+            'due_day' => ['nullable', 'integer', 'between:1,31'],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', ...($request->filled('starts_on') ? ['after_or_equal:starts_on'] : [])],
         ], $this->messages());
@@ -204,6 +224,7 @@ class PlanController extends Controller
             $data['name'] = trim($validated['name']);
             $data['note'] = $this->text($validated['note'] ?? null);
             $data['interval'] = $validated['interval'] ?? PlanItem::MONTHLY;
+            $data['due_day'] = $validated['due_day'] ?? null;
             $data['starts_on'] = $validated['starts_on'] ?? null;
             $data['ends_on'] = $validated['ends_on'] ?? null;
         }

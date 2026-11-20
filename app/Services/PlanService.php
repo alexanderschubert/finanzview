@@ -170,6 +170,87 @@ class PlanService
     }
 
     /**
+     * Zahlungen eines Monats für den Kalender.
+     *
+     * Plan-Posten mit Zahlungstag liegen auf ihrem Tag (kürzere Monate: letzter Tag),
+     * Posten ohne Tag stehen in „unscheduled“. Dazu kommen die Raten der Kredite.
+     *
+     * @return array{days: array<int, list<array{title: string, amount: float, kind: string, group: string, source: string}>>, unscheduled: list<array{title: string, amount: float, kind: string, group: string}>, plan: ?PlanMonth, totals: array{income: float, expense: float}}
+     */
+    public function calendar(User $user, Carbon $month): array
+    {
+        $month = $month->copy()->startOfMonth();
+        $lastDay = $month->daysInMonth;
+
+        $days = [];
+        $unscheduled = [];
+        $plan = $this->find($user, $month);
+
+        if ($plan) {
+            foreach ($plan->groups as $group) {
+                foreach ($group->items as $item) {
+                    if (! $item->isDueIn($month)) {
+                        continue;
+                    }
+
+                    $entry = [
+                        'title' => $item->name,
+                        'amount' => round((float) $item->amount, 2),
+                        'kind' => $group->kind,
+                        'group' => $group->name,
+                        'source' => 'plan',
+                    ];
+
+                    if ($item->due_day) {
+                        $days[min($item->due_day, $lastDay)][] = $entry;
+                    } else {
+                        $unscheduled[] = $entry;
+                    }
+                }
+            }
+        }
+
+        // Kreditraten des Monats (nur wenn der Plan keinen Kredit-Posten gleichen Namens enthält).
+        $planned = collect($days)->flatten(1)->merge($unscheduled)->pluck('title')->map(fn ($title) => mb_strtolower($title))->all();
+
+        $payments = \App\Models\LoanPayment::query()
+            ->whereHas('loan', fn ($query) => $query->where('user_id', $user->id)->where('is_active', true))
+            ->where('payment_type', 'regular')
+            ->whereBetween('due_date', [$month->toDateString(), $month->copy()->endOfMonth()->toDateString()])
+            ->with('loan:id,name')
+            ->orderBy('due_date')
+            ->get();
+
+        foreach ($payments as $payment) {
+            if (in_array(mb_strtolower($payment->loan->name), $planned, true)) {
+                continue;
+            }
+
+            $days[(int) $payment->due_date->format('j')][] = [
+                'title' => $payment->loan->name,
+                'amount' => round((float) $payment->amount, 2),
+                'kind' => PlanGroup::KIND_LOAN,
+                'group' => 'Kredite',
+                'source' => 'loan',
+            ];
+        }
+
+        ksort($days);
+
+        $all = collect($days)->flatten(1)->merge($unscheduled);
+
+        return [
+            'days' => $days,
+            'unscheduled' => $unscheduled,
+            'plan' => $plan,
+            'totals' => [
+                'income' => round($all->where('kind', PlanGroup::KIND_INCOME)->sum('amount'), 2),
+                'expense' => round($all->where('kind', '!=', PlanGroup::KIND_INCOME)->sum('amount'), 2),
+            ],
+        ];
+    }
+
+    /**
      * Summe einer Gruppe im Monat: nur Posten, die in diesem Monat fällig sind.
      */
     public static function groupSum(PlanGroup $group, Carbon $month): float
@@ -264,7 +345,7 @@ class PlanService
         PlanGroup::KIND_LOAN => 'Kredit',
     ];
 
-    public const CSV_HEADER = ['Gruppe', 'Typ', 'Beschreibung', 'Betrag', 'Bemerkung', 'Rhythmus', 'Beginn', 'Letzte Rate'];
+    public const CSV_HEADER = ['Gruppe', 'Typ', 'Beschreibung', 'Betrag', 'Bemerkung', 'Rhythmus', 'Tag', 'Beginn', 'Letzte Rate'];
 
     /**
      * Zeilen für den CSV-Export des Plans, im selben Aufbau wie der Import
@@ -288,6 +369,7 @@ class PlanService
                     number_format((float) $item->amount, 2, ',', ''),
                     CsvCell::safe((string) $item->note),
                     $item->intervalLabel(),
+                    $item->due_day ? (string) $item->due_day : '',
                     $item->starts_on?->format('d.m.Y') ?? '',
                     $item->ends_on?->format('d.m.Y') ?? '',
                 ];
@@ -300,7 +382,7 @@ class PlanService
     /**
      * Posten aus einer CSV-Datei in den Plan übernehmen (bestehende
      * Posten bleiben). Spalten: Gruppe, Typ, Beschreibung, Betrag,
-     * Bemerkung, Rhythmus, Beginn, Letzte Rate. Alles außer Gruppe,
+     * Bemerkung, Rhythmus, Tag, Beginn, Letzte Rate. Alles außer Gruppe,
      * Beschreibung und Betrag ist optional.
      *
      * @return array{groups: int, items: int, skipped: int}
@@ -324,6 +406,7 @@ class PlanService
         $note = $column(['bemerkung', 'notiz']);
         $ends = $column(['letzte rate', 'ende']);
         $starts = $column(['beginn', 'start', 'erste fälligkeit']);
+        $day = $column(['tag', 'zahlungstag']);
         $rhythm = $column(['rhythmus', 'intervall']);
 
         if ($group === null || $name === null || $amount === null) {
@@ -332,7 +415,7 @@ class PlanService
 
         $stats = ['groups' => 0, 'items' => 0, 'skipped' => 0];
 
-        DB::transaction(function () use ($plan, $rows, $group, $kind, $name, $amount, $note, $ends, $starts, $rhythm, &$stats) {
+        DB::transaction(function () use ($plan, $rows, $group, $kind, $name, $amount, $note, $ends, $starts, $rhythm, $day, &$stats) {
             $groups = $plan->groups()->get()->keyBy(fn (PlanGroup $g) => mb_strtolower($g->name));
             $sort = $this->nextSortOrder($plan);
 
@@ -375,6 +458,7 @@ class PlanService
                     'name' => mb_substr($itemName, 0, 255),
                     'amount' => $value,
                     'interval' => $interval,
+                    'due_day' => $day !== null && ctype_digit(trim($row[$day] ?? '')) && (int) trim($row[$day]) >= 1 && (int) trim($row[$day]) <= 31 ? (int) trim($row[$day]) : null,
                     'starts_on' => $startsOn?->toDateString(),
                     'note' => $note !== null && trim($row[$note] ?? '') !== '' ? mb_substr(trim($row[$note]), 0, 255) : null,
                     'ends_on' => $ends !== null ? $this->csv->parseDate($row[$ends] ?? '')?->toDateString() : null,

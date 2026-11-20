@@ -475,6 +475,7 @@ Route::get('/settings/dashboard', [
     Route::controller(PlanController::class)->prefix('plan')->name('plan.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
+        Route::get('/calendar', 'calendar')->name('calendar');
         Route::get('/export', 'export')->name('export');
         Route::get('/import', 'importForm')->name('import');
         Route::post('/import', 'import')->middleware('throttle:20,1')->name('import.store');
