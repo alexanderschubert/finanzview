@@ -221,67 +221,164 @@
     {{-- TILGUNGSPLAN --}}
 
     @if ($regularPayments->isNotEmpty())
-        <section>
-            <div class="flex items-center justify-between px-1 pb-2">
-                <h3 class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">Tilgungsplan · {{ $regularPayments->count() }} Raten</h3>
-                <a href="{{ route('loans.plan.export', $loan) }}" class="fv-link text-[13px] inline-flex items-center gap-1">
-                    <x-icon name="download" class="w-3.5 h-3.5" />
-                    CSV exportieren
-                </a>
+        @php
+            $byYear = $regularPayments->groupBy(fn ($payment) => $payment->due_date?->format('Y') ?? '–');
+            $currentYear = now()->format('Y');
+            $openYear = $byYear->has($currentYear) ? $currentYear : $byYear->keys()->first();
+            $maxYearTotal = max(1, (float) $byYear->map(fn ($year) => $year->sum('amount'))->max());
+            $paidCount = $regularPayments->where('status', 'paid')->count();
+            $nextPayment = $regularPayments->whereIn('status', ['planned', 'overdue'])->sortBy('due_date')->first();
+        @endphp
+
+        <details class="fv-card group overflow-hidden" open data-plan>
+
+            <summary class="cursor-pointer list-none flex items-center gap-3 px-5 py-4">
+                <span class="w-10 h-10 shrink-0 rounded-2xl bg-linear-to-br from-emerald-400 to-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-900/20">
+                    <x-icon name="calendar" class="w-5 h-5" />
+                </span>
+
+                <span class="flex-1 min-w-0">
+                    <span class="block font-semibold text-slate-900 dark:text-white">Tilgungsplan</span>
+                    <span class="block text-[13px] text-slate-500 dark:text-slate-400 truncate">
+                        {{ $planTotals['count'] }} Raten · {{ $paidCount }} bezahlt @if ($lastPlanned) · letzte Rate {{ $lastPlanned->due_date?->format('m/Y') }} @endif
+                    </span>
+                </span>
+
+                <span class="hidden sm:flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400" aria-hidden="true">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>Tilgung</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 dark:bg-amber-400"></span>Zinsen</span>
+                </span>
+
+                <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
+            </summary>
+
+            <div class="border-t border-slate-100 dark:border-white/5">
+
+                {{-- WERKZEUGE --}}
+
+                <div class="flex items-center justify-between gap-3 px-5 py-2.5 text-[13px]">
+                    <div class="flex items-center gap-3">
+                        <button type="button" class="fv-link" onclick="this.closest('[data-plan]').querySelectorAll('details[data-year]').forEach(d => d.open = true)">Alle Jahre aufklappen</button>
+                        <button type="button" class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" onclick="this.closest('[data-plan]').querySelectorAll('details[data-year]').forEach(d => d.open = false)">Alle zuklappen</button>
+                    </div>
+
+                    <a href="{{ route('loans.plan.export', $loan) }}" class="fv-link inline-flex items-center gap-1">
+                        <x-icon name="download" class="w-3.5 h-3.5" />
+                        CSV
+                    </a>
+                </div>
+
+
+                {{-- JAHRE --}}
+
+                @foreach ($byYear as $year => $yearPayments)
+                    @php
+                        $yearInterest = (float) $yearPayments->sum('interest_amount');
+                        $yearPrincipal = (float) $yearPayments->sum('principal_amount');
+                        $yearTotal = (float) $yearPayments->sum('amount');
+                        $yearPaid = $yearPayments->where('status', 'paid')->count();
+                        $barWidth = max(8, round($yearTotal / $maxYearTotal * 100));
+                    @endphp
+
+                    <details class="group/year border-t border-slate-100 dark:border-white/5" data-year @if ((string) $year === (string) $openYear) open @endif>
+
+                        <summary class="cursor-pointer list-none px-5 py-3 hover:bg-slate-900/[0.03] dark:hover:bg-white/[0.04] transition">
+                            <div class="flex items-center gap-3">
+                                <x-icon name="chevron-right" class="w-4 h-4 shrink-0 text-slate-400 transition group-open/year:rotate-90" />
+
+                                <span class="w-12 shrink-0 font-semibold tabular-nums text-slate-900 dark:text-white">{{ $year }}</span>
+
+                                <span class="flex-1 min-w-0">
+                                    <span class="block h-2.5 rounded-full bg-slate-900/5 dark:bg-white/10 overflow-hidden">
+                                        <span class="flex h-full rounded-full overflow-hidden" style="width: {{ $barWidth }}%">
+                                            <span class="h-full bg-emerald-500 dark:bg-emerald-400" style="width: {{ $yearTotal > 0 ? round($yearPrincipal / $yearTotal * 100, 1) : 0 }}%"></span>
+                                            <span class="h-full bg-amber-500 dark:bg-amber-400 flex-1"></span>
+                                        </span>
+                                    </span>
+                                </span>
+
+                                <span class="shrink-0 text-right">
+                                    <span class="block text-sm font-semibold tabular-nums text-slate-900 dark:text-white">{{ $money($yearTotal) }}</span>
+                                    <span class="block text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
+                                        {{ $yearPaid }}/{{ $yearPayments->count() }} bezahlt
+                                    </span>
+                                </span>
+                            </div>
+
+                            <p class="mt-1 pl-[4.75rem] text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
+                                Tilgung {{ $money($yearPrincipal) }} · Zinsen {{ $money($yearInterest) }}
+                            </p>
+                        </summary>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm tabular-nums">
+                                <thead class="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                                    <tr class="text-left">
+                                        <th class="pl-5 pr-2 py-1.5 font-medium">Nr.</th>
+                                        <th class="px-2 py-1.5 font-medium">Fällig</th>
+                                        <th class="px-2 py-1.5 font-medium text-right">Rate</th>
+                                        <th class="px-2 py-1.5 font-medium text-right hidden sm:table-cell">Zinsen</th>
+                                        <th class="px-2 py-1.5 font-medium text-right hidden sm:table-cell">Tilgung</th>
+                                        <th class="px-2 py-1.5 font-medium text-right">Rest</th>
+                                        <th class="pl-2 pr-5 py-1.5 font-medium text-right"><span class="sr-only">Status</span></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="divide-y divide-slate-100/80 dark:divide-white/5">
+                                    @foreach ($yearPayments as $payment)
+                                        @php
+                                            $isNext = $nextPayment && $payment->id === $nextPayment->id;
+                                            $done = in_array($payment->status, ['paid', 'cancelled'], true);
+                                        @endphp
+
+                                        <tr class="{{ $isNext ? 'bg-emerald-500/10' : '' }} {{ $done ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200' }}">
+                                            <td class="pl-5 pr-2 py-2 {{ $isNext ? 'border-l-2 border-emerald-500' : '' }}">{{ $payment->installment_number }}</td>
+                                            <td class="px-2 py-2">
+                                                {{ $payment->due_date?->format('d.m.Y') }}
+                                                <span class="block sm:hidden text-[11px] text-slate-400 dark:text-slate-500">Z {{ number_format((float) $payment->interest_amount, 2, ',', '.') }} · T {{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</span>
+                                            </td>
+                                            <td class="px-2 py-2 text-right font-medium">{{ number_format((float) $payment->amount, 2, ',', '.') }}</td>
+                                            <td class="px-2 py-2 text-right hidden sm:table-cell text-amber-600 dark:text-amber-400/90">{{ number_format((float) $payment->interest_amount, 2, ',', '.') }}</td>
+                                            <td class="px-2 py-2 text-right hidden sm:table-cell text-emerald-600 dark:text-emerald-400/90">{{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</td>
+                                            <td class="px-2 py-2 text-right">{{ number_format((float) $payment->remaining_amount, 2, ',', '.') }}</td>
+                                            <td class="pl-2 pr-5 py-2 text-right whitespace-nowrap">
+                                                @if ($payment->status === 'paid')
+                                                    <x-icon name="check-circle" class="inline w-4 h-4 text-emerald-500" />
+                                                    <span class="sr-only">Bezahlt</span>
+                                                @elseif ($payment->status === 'overdue')
+                                                    <span class="rounded-full px-2 py-0.5 text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300">Überfällig</span>
+                                                @elseif ($payment->status === 'cancelled')
+                                                    <span class="rounded-full px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500">Entfällt</span>
+                                                @elseif ($isNext)
+                                                    <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Nächste</span>
+                                                @else
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" aria-hidden="true"></span>
+                                                    <span class="sr-only">Geplant</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </details>
+                @endforeach
+
+
+                {{-- SUMME --}}
+
+                <div class="border-t border-slate-200 dark:border-white/10 px-5 py-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-sm font-semibold text-slate-900 dark:text-white tabular-nums">
+                    <span>Summe aller Raten</span>
+                    <span class="flex items-center gap-4">
+                        <span class="text-amber-600 dark:text-amber-400">Zinsen {{ $money($planTotals['interest']) }}</span>
+                        <span class="text-emerald-600 dark:text-emerald-400">Tilgung {{ $money($planTotals['principal']) }}</span>
+                        <span>{{ $money($planTotals['total']) }}</span>
+                    </span>
+                </div>
+
             </div>
-
-            <div class="fv-card overflow-hidden overflow-x-auto">
-                <table class="w-full text-sm tabular-nums">
-                    <thead class="text-xs text-slate-500 dark:text-slate-400">
-                        <tr class="text-left">
-                            <th class="px-4 py-2 font-medium">Nr.</th>
-                            <th class="px-2 py-2 font-medium">Fällig</th>
-                            <th class="px-2 py-2 font-medium text-right">Rate</th>
-                            <th class="px-2 py-2 font-medium text-right hidden sm:table-cell">Zinsen</th>
-                            <th class="px-2 py-2 font-medium text-right hidden sm:table-cell">Tilgung</th>
-                            <th class="px-2 py-2 font-medium text-right">Rest</th>
-                            <th class="px-4 py-2 font-medium text-right">Status</th>
-                        </tr>
-                    </thead>
-
-                    @foreach ($regularPayments->groupBy(fn ($payment) => $payment->due_date?->format('Y') ?? '–') as $year => $yearPayments)
-                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                            <tr class="bg-slate-900/[0.03] dark:bg-white/[0.04] text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                <td colspan="7" class="px-4 py-1.5">
-                                    {{ $year }}
-                                    <span class="font-normal">· Zinsen {{ $money($yearPayments->sum('interest_amount')) }} · Tilgung {{ $money($yearPayments->sum('principal_amount')) }}</span>
-                                </td>
-                            </tr>
-
-                            @foreach ($yearPayments as $payment)
-                                @php [$statusLabel, $statusClass] = $statusLabels[$payment->status] ?? $statusLabels['planned']; @endphp
-                                <tr class="{{ in_array($payment->status, ['paid', 'cancelled'], true) ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200' }}">
-                                    <td class="px-4 py-2">{{ $payment->installment_number }}</td>
-                                    <td class="px-2 py-2">{{ $payment->due_date?->format('d.m.Y') }}</td>
-                                    <td class="px-2 py-2 text-right">{{ number_format((float) $payment->amount, 2, ',', '.') }}</td>
-                                    <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->interest_amount, 2, ',', '.') }}</td>
-                                    <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</td>
-                                    <td class="px-2 py-2 text-right">{{ number_format((float) $payment->remaining_amount, 2, ',', '.') }}</td>
-                                    <td class="px-4 py-2 text-right">
-                                        <span class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    @endforeach
-
-                    <tfoot>
-                        <tr class="border-t border-slate-200 dark:border-white/10 font-semibold text-slate-900 dark:text-white">
-                            <td colspan="2" class="px-4 py-2.5">Summe</td>
-                            <td class="px-2 py-2.5 text-right">{{ number_format($planTotals['total'], 2, ',', '.') }}</td>
-                            <td class="px-2 py-2.5 text-right hidden sm:table-cell">{{ number_format($planTotals['interest'], 2, ',', '.') }}</td>
-                            <td class="px-2 py-2.5 text-right hidden sm:table-cell">{{ number_format($planTotals['principal'], 2, ',', '.') }}</td>
-                            <td colspan="2"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </section>
+        </details>
     @endif
 
 
