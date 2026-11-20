@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DashboardSetting;
 use App\Models\Transaction;
 use App\Services\BudgetService;
+use App\Services\PlanService;
 use App\Services\TransferMatcher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -137,7 +138,8 @@ class DashboardController extends Controller
         $needsAccounts =
             $dashboardWidgets['summary'] ||
             $dashboardWidgets['accounts'] ||
-            $dashboardWidgets['wealth_chart'];
+            $dashboardWidgets['wealth_chart'] ||
+            ($dashboardWidgets['cockpit'] ?? false);
 
         if ($needsAccounts) {
 
@@ -160,7 +162,7 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        if ($dashboardWidgets['summary']) {
+        if ($dashboardWidgets['summary'] || ($dashboardWidgets['cockpit'] ?? false)) {
 
             $totalBalance = $accounts
                 ->where('include_in_total', true)
@@ -212,7 +214,8 @@ class DashboardController extends Controller
             $dashboardWidgets['monthly_balance'] ||
             $dashboardWidgets['yearly'] ||
             $dashboardWidgets['income_expense_chart'] ||
-            ($dashboardWidgets['plan'] ?? false);
+            ($dashboardWidgets['plan'] ?? false) ||
+            ($dashboardWidgets['cockpit'] ?? false);
 
         $needsMonthlyExpense =
             $dashboardWidgets['expenses'] ||
@@ -220,7 +223,8 @@ class DashboardController extends Controller
             $dashboardWidgets['monthly_balance'] ||
             $dashboardWidgets['yearly'] ||
             $dashboardWidgets['income_expense_chart'] ||
-            ($dashboardWidgets['plan'] ?? false);
+            ($dashboardWidgets['plan'] ?? false) ||
+            ($dashboardWidgets['cockpit'] ?? false);
 
 
         if ($needsMonthlyIncome) {
@@ -267,7 +271,7 @@ class DashboardController extends Controller
          * =========================================================
          */
 
-        if ($dashboardWidgets['savings_rate']) {
+        if ($dashboardWidgets['savings_rate'] || ($dashboardWidgets['cockpit'] ?? false)) {
 
             $savingsRate = $monthlyIncome > 0
                 ? ($monthlyBalance / $monthlyIncome) * 100
@@ -636,14 +640,103 @@ class DashboardController extends Controller
          * =========================================================
          */
 
+        $reviewItems = collect();
+        $reviewChips = ['expense' => collect(), 'income' => collect()];
+
         if ($dashboardWidgets['review'] ?? false) {
 
             $reviewTransfers = app(TransferMatcher::class)->count($user->id);
 
-            $reviewUncategorized = $user->transactions()
+            $uncategorized = $user->transactions()
                 ->whereNull('category_id')
-                ->whereIn('type', ['income', 'expense'])
-                ->count();
+                ->whereIn('type', ['income', 'expense']);
+
+            $reviewUncategorized = (clone $uncategorized)->count();
+
+            // Die drei neuesten zum direkten Zuordnen, dazu die meistgenutzten Kategorien.
+            $reviewItems = $uncategorized
+                ->with(['account:id,name', 'payee:id,name'])
+                ->orderByDesc('transaction_date')
+                ->orderByDesc('id')
+                ->limit(3)
+                ->get();
+
+            if ($reviewItems->isNotEmpty()) {
+                $popular = $user->categories()
+                    ->where('is_active', true)
+                    ->withCount('transactions')
+                    ->orderByDesc('transactions_count')
+                    ->get();
+
+                foreach (['expense', 'income'] as $type) {
+                    $reviewChips[$type] = $popular
+                        ->filter(fn ($category) => in_array($category->type, [$type, 'both'], true))
+                        ->take(2)
+                        ->values();
+                }
+            }
+        }
+
+
+        /*
+         * =========================================================
+         * COCKPIT UND NÄCHSTE ZAHLUNGEN
+         * =========================================================
+         */
+
+        $cockpit = null;
+        $upcoming = collect();
+
+        if (($dashboardWidgets['cockpit'] ?? false) || ($dashboardWidgets['upcoming'] ?? false)) {
+
+            $planService = app(PlanService::class);
+            $today = now();
+            $isCurrentMonth = $month->isSameMonth($today);
+
+            if ($dashboardWidgets['cockpit'] ?? false) {
+
+                $plan = $planService->find($user, $month);
+                $planTotals = $plan ? $planService->totals($plan) : null;
+
+                $spent = (float) $monthlyExpense;
+                $remaining = $planTotals
+                    ? round($planTotals['expense'] - $spent, 2)
+                    : round((float) $monthlyIncome - $spent, 2);
+
+                $base = $planTotals ? $planTotals['expense'] : (float) $monthlyIncome;
+                $daysLeft = $isCurrentMonth ? $month->daysInMonth - $today->day : 0;
+
+                $cockpit = [
+                    'has_plan' => $planTotals !== null,
+                    'planned' => $planTotals['expense'] ?? null,
+                    'spent' => $spent,
+                    'remaining' => $remaining,
+                    'ratio' => $base > 0 ? round($spent / $base * 100) : 0,
+                    'days_left' => $daysLeft,
+                    'per_day' => $daysLeft > 0 && $remaining > 0 ? round($remaining / $daysLeft, 2) : null,
+                    'is_current' => $isCurrentMonth,
+                ];
+            }
+
+            if ($dashboardWidgets['upcoming'] ?? false) {
+
+                $collect = function (Carbon $forMonth, int $fromDay) use ($planService, $user) {
+                    $calendar = $planService->calendar($user, $forMonth);
+
+                    return collect($calendar['days'])
+                        ->filter(fn ($entries, $day) => $day >= $fromDay)
+                        ->flatMap(fn ($entries, $day) => collect($entries)->map(fn ($entry) => $entry + ['date' => $forMonth->copy()->day($day)]));
+                };
+
+                $upcoming = $collect($month, $isCurrentMonth ? $today->day : 1);
+
+                // Wenig übrig? Dann den Anfang des Folgemonats anhängen (nur im laufenden Monat).
+                if ($isCurrentMonth && $upcoming->count() < 5) {
+                    $upcoming = $upcoming->merge($collect($month->copy()->addMonth()->startOfMonth(), 1));
+                }
+
+                $upcoming = $upcoming->take(5)->values();
+            }
         }
 
 
@@ -666,6 +759,11 @@ class DashboardController extends Controller
 
         return view('dashboard', [
 
+            'cockpit' => $cockpit,
+            'upcoming' => $upcoming,
+            'reviewItems' => $reviewItems,
+            'reviewChips' => $reviewChips,
+            'showLayoutHint' => ! array_key_exists('cockpit', $dashboardSetting->widgets ?? []) || ! $user->dashboardSetting,
             'planCompare' => $planCompare,
             'weekDays' => $weekDays,
             'reviewTransfers' => $reviewTransfers,

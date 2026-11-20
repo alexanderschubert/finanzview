@@ -36,6 +36,18 @@ class DashboardSetting extends Model
     public static function availableWidgets(): array
     {
         return [
+            'cockpit' => [
+                'label' => 'Cockpit',
+                'description' => 'Was bis Monatsende noch frei ist (aus Plan und Ausgaben)',
+                'icon' => '🧭',
+            ],
+
+            'upcoming' => [
+                'label' => 'Nächste Zahlungen',
+                'description' => 'Fällige Zahlungen aus Monatsplan und Krediten',
+                'icon' => '🗓️',
+            ],
+
             'summary' => [
                 'label' => 'Gesamtvermögen',
                 'description' => 'Aktuelles Gesamtvermögen',
@@ -140,6 +152,34 @@ class DashboardSetting extends Model
                 'description' => 'Direkte Zugriffe auf wichtige Bereiche',
                 'icon' => '⚡',
             ],
+        ];
+    }
+
+    /**
+     * Fertige Anordnungen: „Cockpit“ (ruhig, das Wichtigste) und „Klassisch“ (Bento mit allen Kacheln).
+     *
+     * @return array{label: string, widgets: array<string, bool>, order: list<string>}
+     */
+    public static function preset(string $name): array
+    {
+        $all = array_keys(static::availableWidgets());
+
+        if ($name === 'cockpit') {
+            $order = ['cockpit', 'upcoming', 'review', 'plan', 'accounts', 'loans', 'categories'];
+
+            return [
+                'label' => 'Cockpit',
+                'widgets' => array_merge(array_fill_keys($all, false), array_fill_keys($order, true)),
+                'order' => array_merge($order, array_values(array_diff($all, $order))),
+            ];
+        }
+
+        $modern = ['cockpit', 'upcoming'];
+
+        return [
+            'label' => 'Klassisch',
+            'widgets' => array_merge(array_fill_keys($all, true), array_fill_keys($modern, false)),
+            'order' => array_merge(array_values(array_diff($all, $modern)), $modern),
         ];
     }
 

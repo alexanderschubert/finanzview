@@ -62,6 +62,7 @@ class ReviewController extends Controller
         $validated = $request->validate([
             'category_id' => ['required', 'integer'],
             'remember' => ['nullable', 'boolean'],
+            'back' => ['nullable', 'in:dashboard,review'],
         ], ['category_id.required' => 'Bitte eine Kategorie wählen.']);
 
         $category = Category::query()
@@ -91,6 +92,8 @@ class ReviewController extends Controller
                 : " Für „{$payee->name}“ gemerkt.";
         }
 
-        return redirect()->route('transactions.review')->with('success', $message);
+        $target = $request->input('back') === 'dashboard' ? 'dashboard' : 'transactions.review';
+
+        return redirect()->route($target)->with('success', $message);
     }
 }
