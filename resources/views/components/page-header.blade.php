@@ -2,6 +2,11 @@
 
 {{-- Großer Seitentitel im Stil von iOS/macOS, rechts optionale Aktionen. --}}
 <div {{ $attributes->merge(['class' => 'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between']) }}>
+    <div class="flex min-w-0 items-center gap-4">
+    @isset($leading)
+        <div class="shrink-0">{{ $leading }}</div>
+    @endisset
+
     <div class="min-w-0">
         <h2 class="text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-slate-900 dark:text-white">
             {{ $title }}
@@ -12,6 +17,7 @@
                 {{ $subtitle }}
             </p>
         @endif
+    </div>
     </div>
 
     @if (trim($slot) !== '')

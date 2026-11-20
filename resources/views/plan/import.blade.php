@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Plan importieren – FinanzView')
-@section('eyebrow', 'Monatsplan')
+@section('eyebrow', 'Planung')
 @section('page_title', 'Plan importieren')
 
 @section('content')

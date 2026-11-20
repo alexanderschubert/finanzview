@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Wiederkehrende Buchungen – FinanzView')
-@section('eyebrow', 'Finanzplanung')
+@section('eyebrow', 'Planung')
 @section('page_title', 'Wiederkehrend')
 
 @php

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Konten – FinanzView')
-@section('eyebrow', 'Finanzverwaltung')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Konten')
 
 @php
@@ -71,7 +71,7 @@
 
             <div class="relative">
                 <p class="text-sm font-medium text-white/80">Gesamtvermögen</p>
-                <p class="mt-1 text-[34px] leading-tight font-semibold tracking-tight tabular-nums">
+                <p class="mt-1 fv-display text-[34px] leading-tight font-extrabold tabular-nums">
                     {{ number_format($totalBalance, 2, ',', '.') }} €
                 </p>
                 <p class="mt-1 text-xs text-white/70">

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Freigabe – FinanzView')
-@section('eyebrow', 'Bankverbindungen')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Freigabe')
 
 @section('content')

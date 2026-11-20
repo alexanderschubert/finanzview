@@ -1,14 +1,13 @@
 @extends('layouts.app')
 
 @section('title', 'Bankverbindungen – FinanzView')
-@section('eyebrow', 'Einstellungen')
+@section('eyebrow', 'Konten')
 @section('page_title', 'Bankverbindungen')
 
 @section('content')
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    <x-back-link :href="route('settings.index')" label="Einstellungen" />
 
     <x-page-header title="Bankverbindungen" subtitle="Umsätze per FinTS direkt von deiner Bank abrufen.">
         @if ($enabled)

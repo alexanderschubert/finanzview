@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $creditCard->name . ' – Kreditkarte – FinanzView')
-@section('eyebrow', 'Kreditkarten')
+@section('eyebrow', 'Konten')
 @section('page_title', $creditCard->name)
 
 @php
@@ -30,6 +30,8 @@
 @section('content')
 
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <x-back-link :href="route('credit-cards.index')" label="Kreditkarten" />
 
     <x-page-header :title="$creditCard->name" :subtitle="$creditCard->is_active ? 'Kreditkarte' : 'Kreditkarte · inaktiv'">
         <a href="{{ route('credit-cards.edit', $creditCard) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $recurringTransaction->description . ' – Wiederkehrend – FinanzView')
-@section('eyebrow', 'Wiederkehrend')
+@section('eyebrow', 'Planung')
 @section('page_title', $recurringTransaction->description)
 
 @php
@@ -39,7 +39,15 @@
 
 @section('content')
 
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <x-back-link :href="route('recurring-transactions.index')" label="Wiederkehrend" />
+
+    <x-page-header :title="$item->description" :subtitle="($frequencyLabels[$item->frequency] ?? $item->frequency) . ($item->is_active ? '' : ' · pausiert')">
+        <x-slot:leading>
+            <x-emoji-tile :emoji="$item->category?->icon" fallback="repeat" size="lg" />
+        </x-slot:leading>
+    </x-page-header>
 
     <x-flash />
 
@@ -47,11 +55,7 @@
     {{-- KOPF --}}
 
     <div class="fv-card p-6 flex flex-col items-center text-center {{ $item->is_active ? '' : 'opacity-80' }}">
-        <x-emoji-tile :emoji="$item->category?->icon" fallback="repeat" size="lg" />
-
-        <h2 class="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $item->description }}</h2>
-
-        <p class="mt-1 text-4xl font-semibold tracking-tight tabular-nums {{ $isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
+        <p class="fv-display text-4xl font-extrabold tabular-nums {{ $isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white' }}">
             {{ $isIncome ? '+' : '−' }}{{ number_format((float) $item->amount, 2, ',', '.') }} €
         </p>
 

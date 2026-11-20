@@ -1,12 +1,14 @@
 @extends('layouts.app')
 
 @section('title', 'Budget bearbeiten – FinanzView')
-@section('eyebrow', 'Budgets')
+@section('eyebrow', 'Planung')
 @section('page_title', 'Budget bearbeiten')
 
 @section('content')
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <x-back-link :href="route('budgets.index')" label="Budgets" />
 
     <x-page-header :title="$budget->name" subtitle="Budget bearbeiten">
         <a href="{{ route('budgets.show', $budget) }}" class="fv-btn fv-btn-secondary text-sm py-2.5">Details</a>
