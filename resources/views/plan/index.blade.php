@@ -14,6 +14,12 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Monatsplan" subtitle="Deine festen Einnahmen und Ausgaben pro Monat. Der Plan bucht nichts.">
+        @if ($plan)
+            <a href="{{ route('plan.export', ['month' => $monthKey]) }}" class="fv-btn fv-btn-secondary text-sm py-2">
+                <x-icon name="download" class="w-4 h-4" />
+                CSV exportieren
+            </a>
+        @endif
         <x-month-switcher route="plan.index" :month="$monthKey" />
     </x-page-header>
 
