@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AppConnectController;
 use App\Http\Controllers\BankConnectionController;
 use App\Http\Controllers\FintsInstituteController;
 use App\Http\Controllers\Auth\OidcController;
@@ -325,6 +326,11 @@ Route::get('/settings/dashboard', [
         SettingsController::class,
         'security',
     ])->name('settings.security');
+
+    // Native App verbinden (Bestätigung nach der Anmeldung) und Verbindungen trennen.
+    Route::get('/app/connect', [AppConnectController::class, 'show'])->name('app.connect');
+    Route::post('/app/connect', [AppConnectController::class, 'approve'])->middleware('throttle:20,1')->name('app.connect.approve');
+    Route::delete('/settings/security/apps/{apiToken}', [AppConnectController::class, 'destroy'])->name('settings.security.apps.destroy');
 
     Route::put('/settings/security', [
         SettingsController::class,

@@ -251,6 +251,34 @@ class PlanService
     }
 
     /**
+     * Nächste Zahlungen für das Cockpit: ab heute (laufender Monat) bzw. ab dem
+     * Monatsersten; sind es wenige, folgt der Anfang des nächsten Monats.
+     *
+     * @return Collection<int, array>
+     */
+    public function upcoming(User $user, Carbon $month, int $limit = 5): Collection
+    {
+        $today = now();
+        $isCurrentMonth = $month->isSameMonth($today);
+
+        $collect = function (Carbon $forMonth, int $fromDay) use ($user) {
+            $calendar = $this->calendar($user, $forMonth);
+
+            return collect($calendar['days'])
+                ->filter(fn ($entries, $day) => $day >= $fromDay)
+                ->flatMap(fn ($entries, $day) => collect($entries)->map(fn ($entry) => $entry + ['date' => $forMonth->copy()->day($day)]));
+        };
+
+        $upcoming = $collect($month, $isCurrentMonth ? $today->day : 1);
+
+        if ($isCurrentMonth && $upcoming->count() < $limit) {
+            $upcoming = $upcoming->merge($collect($month->copy()->addMonth()->startOfMonth(), 1));
+        }
+
+        return $upcoming->take($limit)->values();
+    }
+
+    /**
      * Summe einer Gruppe im Monat: nur Posten, die in diesem Monat fällig sind.
      */
     public static function groupSum(PlanGroup $group, Carbon $month): float

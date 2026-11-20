@@ -129,6 +129,11 @@ class User extends Authenticatable implements PasskeyUser
         return $this->hasOne(Setting::class);
     }
 
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
     public function dashboardSetting(): HasOne
     {
         return $this->hasOne(DashboardSetting::class);

@@ -315,6 +315,33 @@
     </section>
 
 
+    <section id="apps">
+        <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">Verbundene Apps</h3>
+
+        <div class="fv-card overflow-hidden">
+            @forelse ($apiTokens as $apiToken)
+                <form method="POST" action="{{ route('settings.security.apps.destroy', $apiToken) }}"
+                    class="flex items-center gap-3 px-5 sm:px-6 py-3 {{ $loop->first ? '' : 'border-t border-slate-100 dark:border-white/5' }}"
+                    onsubmit="return confirm('Diese App trennen? Sie muss danach neu verbunden werden.')">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-slate-900 dark:text-white truncate">{{ $apiToken->name }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            Verbunden {{ $apiToken->created_at->diffForHumans() }} · {{ $apiToken->last_used_at ? 'zuletzt genutzt ' . $apiToken->last_used_at->diffForHumans() : 'noch nicht genutzt' }}
+                        </p>
+                    </div>
+                    <button type="submit" class="fv-btn fv-btn-secondary">Trennen</button>
+                </form>
+            @empty
+                <p class="px-5 sm:px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    Noch keine App verbunden. Die native FinanzView-App erscheint hier, sobald du sie anmeldest.
+                </p>
+            @endforelse
+        </div>
+    </section>
+
+
     {{-- ========================================================= --}}
     {{-- PASSWORT --}}
     {{-- ========================================================= --}}
