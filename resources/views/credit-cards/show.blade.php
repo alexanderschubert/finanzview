@@ -45,7 +45,7 @@
 
     {{-- KARTE UND AUSLASTUNG --}}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center [&>:first-child]:max-w-[340px]">
         <x-wallet-card
             :color="$creditCard->color"
             :fallback-color="$creditCard->provider?->color ?: '#3f3f45'"

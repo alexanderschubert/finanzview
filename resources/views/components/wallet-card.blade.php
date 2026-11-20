@@ -44,7 +44,7 @@
 
 {{-- Karte im Look einer echten Bankkarte: Chip, Kontaktlos-Symbol, geprägte Nummer. --}}
 <div
-    {{ $attributes->merge(['class' => "@container relative aspect-[1.586] overflow-hidden rounded-[18px] p-[5.5cqw] shadow-xl shadow-black/30 ring-1 ring-inset " . ($isLight ? 'ring-black/10' : 'ring-white/20') . " $text"]) }}
+    {{ $attributes->merge(['class' => "@container relative aspect-[1.586] overflow-hidden rounded-[18px] shadow-xl shadow-black/30 ring-1 ring-inset " . ($isLight ? 'ring-black/10' : 'ring-white/20') . " $text"]) }}
     style="background: linear-gradient(135deg, {{ $base }}, color-mix(in srgb, {{ $base }} {{ $isLight ? '78%, black' : '50%, black' }}));"
 >
     {{-- Glanz und feine Linienstruktur --}}
@@ -53,7 +53,7 @@
     <div aria-hidden="true" class="absolute -right-[18%] -bottom-[48%] aspect-square w-[75%] rounded-full {{ $isLight ? 'bg-black/[0.05]' : 'bg-white/[0.07]' }}"></div>
     <div aria-hidden="true" class="absolute -right-[4%] -bottom-[60%] aspect-square w-[75%] rounded-full {{ $isLight ? 'bg-black/[0.03]' : 'bg-white/[0.04]' }}"></div>
 
-    <div class="relative flex h-full flex-col justify-between">
+    <div class="absolute inset-0 flex flex-col justify-between p-[5.5cqw]">
 
         {{-- Kopf: Anbieter links, Kontaktlos rechts --}}
         <div class="flex items-start justify-between gap-3">
