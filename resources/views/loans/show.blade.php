@@ -106,6 +106,17 @@
     </div>
 
 
+    {{-- KENNZAHLEN DES TILGUNGSPLANS --}}
+
+    @if ($planTotals['count'] > 0)
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <x-stat label="Zinsen insgesamt" icon="percent" tone="negative">{{ $money($planTotals['interest']) }}</x-stat>
+            <x-stat label="Alle Raten zusammen" icon="banknote">{{ $money($planTotals['total']) }}</x-stat>
+            <x-stat label="Laufzeit" icon="calendar" :hint="$lastPlanned ? 'bis ' . $lastPlanned->due_date?->format('m/Y') : null">{{ $planTotals['count'] }} Monate</x-stat>
+        </div>
+    @endif
+
+
     {{-- NÄCHSTE RATEN --}}
 
     <section>
@@ -210,15 +221,16 @@
     {{-- TILGUNGSPLAN --}}
 
     @if ($regularPayments->isNotEmpty())
-        <details class="fv-card group overflow-hidden">
-            <summary class="cursor-pointer list-none flex items-center gap-3 px-4 py-4">
-                <x-emoji-tile fallback="calendar" size="sm" />
-                <span class="flex-1 font-medium text-slate-900 dark:text-white">Kompletter Tilgungsplan</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">{{ $regularPayments->count() }} Raten</span>
-                <x-icon name="chevron-right" class="w-4 h-4 text-slate-400 transition group-open:rotate-90" />
-            </summary>
+        <section>
+            <div class="flex items-center justify-between px-1 pb-2">
+                <h3 class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">Tilgungsplan · {{ $regularPayments->count() }} Raten</h3>
+                <a href="{{ route('loans.plan.export', $loan) }}" class="fv-link text-[13px] inline-flex items-center gap-1">
+                    <x-icon name="download" class="w-3.5 h-3.5" />
+                    CSV exportieren
+                </a>
+            </div>
 
-            <div class="border-t border-slate-100 dark:border-white/5 overflow-x-auto">
+            <div class="fv-card overflow-hidden overflow-x-auto">
                 <table class="w-full text-sm tabular-nums">
                     <thead class="text-xs text-slate-500 dark:text-slate-400">
                         <tr class="text-left">
@@ -231,25 +243,45 @@
                             <th class="px-4 py-2 font-medium text-right">Status</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-white/5">
-                        @foreach ($regularPayments as $payment)
-                            @php [$statusLabel, $statusClass] = $statusLabels[$payment->status] ?? $statusLabels['planned']; @endphp
-                            <tr class="{{ in_array($payment->status, ['paid', 'cancelled'], true) ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200' }}">
-                                <td class="px-4 py-2">{{ $payment->installment_number }}</td>
-                                <td class="px-2 py-2">{{ $payment->due_date?->format('d.m.Y') }}</td>
-                                <td class="px-2 py-2 text-right">{{ number_format((float) $payment->amount, 2, ',', '.') }}</td>
-                                <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->interest_amount, 2, ',', '.') }}</td>
-                                <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</td>
-                                <td class="px-2 py-2 text-right">{{ number_format((float) $payment->remaining_amount, 2, ',', '.') }}</td>
-                                <td class="px-4 py-2 text-right">
-                                    <span class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
+
+                    @foreach ($regularPayments->groupBy(fn ($payment) => $payment->due_date?->format('Y') ?? '–') as $year => $yearPayments)
+                        <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                            <tr class="bg-slate-900/[0.03] dark:bg-white/[0.04] text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                <td colspan="7" class="px-4 py-1.5">
+                                    {{ $year }}
+                                    <span class="font-normal">· Zinsen {{ $money($yearPayments->sum('interest_amount')) }} · Tilgung {{ $money($yearPayments->sum('principal_amount')) }}</span>
                                 </td>
                             </tr>
-                        @endforeach
-                    </tbody>
+
+                            @foreach ($yearPayments as $payment)
+                                @php [$statusLabel, $statusClass] = $statusLabels[$payment->status] ?? $statusLabels['planned']; @endphp
+                                <tr class="{{ in_array($payment->status, ['paid', 'cancelled'], true) ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200' }}">
+                                    <td class="px-4 py-2">{{ $payment->installment_number }}</td>
+                                    <td class="px-2 py-2">{{ $payment->due_date?->format('d.m.Y') }}</td>
+                                    <td class="px-2 py-2 text-right">{{ number_format((float) $payment->amount, 2, ',', '.') }}</td>
+                                    <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->interest_amount, 2, ',', '.') }}</td>
+                                    <td class="px-2 py-2 text-right hidden sm:table-cell">{{ number_format((float) $payment->principal_amount, 2, ',', '.') }}</td>
+                                    <td class="px-2 py-2 text-right">{{ number_format((float) $payment->remaining_amount, 2, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <span class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $statusClass }}">{{ $statusLabel }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    @endforeach
+
+                    <tfoot>
+                        <tr class="border-t border-slate-200 dark:border-white/10 font-semibold text-slate-900 dark:text-white">
+                            <td colspan="2" class="px-4 py-2.5">Summe</td>
+                            <td class="px-2 py-2.5 text-right">{{ number_format($planTotals['total'], 2, ',', '.') }}</td>
+                            <td class="px-2 py-2.5 text-right hidden sm:table-cell">{{ number_format($planTotals['interest'], 2, ',', '.') }}</td>
+                            <td class="px-2 py-2.5 text-right hidden sm:table-cell">{{ number_format($planTotals['principal'], 2, ',', '.') }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-        </details>
+        </section>
     @endif
 
 
@@ -264,6 +296,36 @@
             <dt class="text-slate-500 dark:text-slate-400">Beginn</dt>
             <dd class="font-medium text-slate-900 dark:text-white">{{ $loan->start_date?->format('d.m.Y') ?? '–' }}</dd>
         </div>
+        @if ($loan->effective_rate !== null)
+            <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-slate-500 dark:text-slate-400">Effektiver Jahreszins laut Vertrag</dt>
+                <dd class="font-medium text-slate-900 dark:text-white">{{ number_format((float) $loan->effective_rate, 2, ',', '.') }} %</dd>
+            </div>
+        @endif
+        @if ($loan->financed_costs !== null)
+            <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-slate-500 dark:text-slate-400">Mitfinanzierte Kosten</dt>
+                <dd class="font-medium text-slate-900 dark:text-white">{{ $money($loan->financed_costs) }}</dd>
+            </div>
+        @endif
+        @if ($loan->contract_total !== null)
+            @php $difference = $planTotals['total'] - (float) $loan->contract_total; @endphp
+            <div class="px-4 py-3">
+                <div class="flex items-center justify-between gap-4">
+                    <dt class="text-slate-500 dark:text-slate-400">Gesamtbetrag laut Vertrag</dt>
+                    <dd class="font-medium text-slate-900 dark:text-white">{{ $money($loan->contract_total) }}</dd>
+                </div>
+                @if ($planTotals['count'] > 0)
+                    <p class="mt-1 text-xs {{ abs($difference) > 1 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400' }}">
+                        @if (abs($difference) > 1)
+                            Der berechnete Plan liegt bei {{ $money($planTotals['total']) }} ({{ $difference > 0 ? '+' : '−' }}{{ $money(abs($difference)) }}). Prüfe Zinssatz, Monatsrate und Anzahl der Raten.
+                        @else
+                            Passt zum berechneten Tilgungsplan.
+                        @endif
+                    </p>
+                @endif
+            </div>
+        @endif
         <div class="flex items-center justify-between gap-4 px-4 py-3">
             <dt class="text-slate-500 dark:text-slate-400">Abbuchung von</dt>
             <dd class="font-medium text-slate-900 dark:text-white">{{ $loan->account?->name ?? '–' }}</dd>
