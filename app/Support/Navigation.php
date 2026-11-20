@@ -40,6 +40,7 @@ final class Navigation
                 'patterns' => ['transactions.*'],
                 'tabs' => [
                     ['Liste', 'transactions.index', ['transactions.index']],
+                    ['Zu prüfen', 'transactions.review', ['transactions.review']],
                     ['Umbuchungen', 'transactions.transfers', ['transactions.transfers']],
                     ['Importieren', 'transactions.import.create', ['transactions.import.*']],
                 ],
@@ -106,7 +107,7 @@ final class Navigation
      * Tabs des aktuellen Bereichs – nur auf den Hauptseiten des Bereichs
      * (nicht auf Formularen und Detailseiten).
      *
-     * @return list<array{label: string, route: string, active: bool}>
+     * @return list<array{label: string, route: string, active: bool, badge: int|null}>
      */
     public static function visibleTabs(): array
     {
@@ -121,9 +122,22 @@ final class Navigation
             'label' => $tab[0],
             'route' => $tab[1],
             'active' => request()->routeIs(...$tab[2]),
+            'badge' => $tab[1] === 'transactions.review' ? self::uncategorizedCount() : null,
         ], $tabs);
 
         return in_array(true, array_column($items, 'active'), true) ? $items : [];
+    }
+
+    /**
+     * Buchungen ohne Kategorie (Zähler am Tab „Zu prüfen“).
+     */
+    private static function uncategorizedCount(): int
+    {
+        $user = request()->user();
+
+        return $user
+            ? $user->transactions()->whereNull('category_id')->whereIn('type', ['income', 'expense'])->count()
+            : 0;
     }
 
     /**

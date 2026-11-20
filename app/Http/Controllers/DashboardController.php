@@ -211,14 +211,16 @@ class DashboardController extends Controller
             $dashboardWidgets['savings_rate'] ||
             $dashboardWidgets['monthly_balance'] ||
             $dashboardWidgets['yearly'] ||
-            $dashboardWidgets['income_expense_chart'];
+            $dashboardWidgets['income_expense_chart'] ||
+            ($dashboardWidgets['plan'] ?? false);
 
         $needsMonthlyExpense =
             $dashboardWidgets['expenses'] ||
             $dashboardWidgets['savings_rate'] ||
             $dashboardWidgets['monthly_balance'] ||
             $dashboardWidgets['yearly'] ||
-            $dashboardWidgets['income_expense_chart'];
+            $dashboardWidgets['income_expense_chart'] ||
+            ($dashboardWidgets['plan'] ?? false);
 
 
         if ($needsMonthlyIncome) {
@@ -645,8 +647,26 @@ class DashboardController extends Controller
         }
 
 
+        /*
+         * =========================================================
+         * PLAN GEGEN TATSÄCHLICH
+         * =========================================================
+         */
+
+        $planCompare = null;
+
+        if ($dashboardWidgets['plan'] ?? false) {
+
+            $planService = app(\App\Services\PlanService::class);
+            $plan = $planService->find($user, $month);
+
+            $planCompare = $plan ? $planService->totals($plan) : null;
+        }
+
+
         return view('dashboard', [
 
+            'planCompare' => $planCompare,
             'weekDays' => $weekDays,
             'reviewTransfers' => $reviewTransfers,
             'reviewUncategorized' => $reviewUncategorized,

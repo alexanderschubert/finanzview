@@ -65,6 +65,11 @@ class DashboardSetting extends Model
                 'description' => 'Mögliche Umbuchungen und Buchungen ohne Kategorie',
                 'icon' => '✅',
             ],
+            'plan' => [
+                'label' => 'Plan gegen tatsächlich',
+                'description' => 'Geplante und bisherige Einnahmen und Ausgaben des Monats',
+                'icon' => '🗓️',
+            ],
             'weekly' => [
                 'label' => 'Diese Woche',
                 'description' => 'Ausgaben der letzten sieben Tage',

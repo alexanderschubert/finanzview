@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryRuleController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\PayeeController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TransactionController;
@@ -415,6 +416,10 @@ Route::get('/settings/dashboard', [
 
     Route::delete('/transactions/import/{token}', [TransactionImportController::class, 'destroy'])
         ->name('transactions.import.destroy');
+
+    Route::get('/transactions/review', [ReviewController::class, 'index'])->name('transactions.review');
+
+    Route::post('/transactions/review/{transaction}', [ReviewController::class, 'assign'])->name('transactions.review.assign');
 
     Route::get('/transactions/transfers', [TransferSuggestionController::class, 'index'])
         ->name('transactions.transfers');

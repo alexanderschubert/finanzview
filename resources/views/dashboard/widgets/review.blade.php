@@ -21,7 +21,7 @@
 
                 @if ($reviewUncategorized > 0)
                     <li>
-                        <a href="{{ route('transactions.index', ['uncategorized' => 1]) }}" class="flex items-center justify-between gap-2 rounded-xl bg-black/20 px-3 py-2 hover:bg-black/30 transition">
+                        <a href="{{ route('transactions.review') }}" class="flex items-center justify-between gap-2 rounded-xl bg-black/20 px-3 py-2 hover:bg-black/30 transition">
                             <span>{{ $reviewUncategorized }} ohne Kategorie</span>
                             <x-icon name="chevron-right" class="w-4 h-4 shrink-0" />
                         </a>

@@ -58,6 +58,7 @@
             'savings_rate' => 'lg:col-span-3',
             'review' => 'lg:col-span-3',
             'weekly' => 'lg:col-span-3',
+            'plan' => 'lg:col-span-6',
 
             // Große Auswertungen
             'monthly_balance' => 'lg:col-span-8',
