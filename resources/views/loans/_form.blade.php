@@ -148,7 +148,7 @@
                 <input id="start_date" name="start_date" type="date" value="{{ $startDate }}" class="fv-input" data-calc>
             </x-field>
 
-            <x-field label="Anzahl Raten" for="total_installments" error="total_installments" hint="Nötig für den Tilgungsplan.">
+            <x-field label="Anzahl Raten" for="total_installments" error="total_installments" hint="Laufzeit in Monaten. Nötig für den Tilgungsplan.">
                 <input id="total_installments" name="total_installments" type="number" step="1" min="1" inputmode="numeric"
                     value="{{ $value('total_installments') }}" placeholder="Optional" class="fv-input tabular-nums">
             </x-field>
@@ -168,6 +168,35 @@
                 @endforeach
             </select>
         </x-field>
+
+    </div>
+
+
+    {{-- VERTRAGSANGABEN --}}
+
+    <div class="fv-card p-5 sm:p-6 space-y-4">
+
+        <div>
+            <p class="font-medium text-slate-900 dark:text-white">Vertragsangaben</p>
+            <p class="text-[13px] text-slate-500 dark:text-slate-400">Optional. Zur Kontrolle: FinanzView vergleicht sie mit dem berechneten Tilgungsplan.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <x-field label="Effektiver Jahreszins (%)" for="effective_rate" error="effective_rate">
+                <input id="effective_rate" name="effective_rate" type="number" step="0.001" min="0" max="100" inputmode="decimal"
+                    value="{{ $value('effective_rate') }}" placeholder="z. B. 11,24" class="fv-input tabular-nums">
+            </x-field>
+
+            <x-field label="Gesamtbetrag laut Vertrag" for="contract_total" error="contract_total" hint="Alle Raten zusammen.">
+                <input id="contract_total" name="contract_total" type="number" step="0.01" min="0" inputmode="decimal"
+                    value="{{ $value('contract_total') }}" placeholder="0,00" class="fv-input tabular-nums">
+            </x-field>
+
+            <x-field label="Mitfinanzierte Kosten" for="financed_costs" error="financed_costs" hint="z. B. Restkreditversicherung. Steckt schon im Kreditbetrag.">
+                <input id="financed_costs" name="financed_costs" type="number" step="0.01" min="0" inputmode="decimal"
+                    value="{{ $value('financed_costs') }}" placeholder="0,00" class="fv-input tabular-nums">
+            </x-field>
+        </div>
 
     </div>
 

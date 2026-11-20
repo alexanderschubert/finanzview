@@ -506,6 +506,8 @@ Route::get('/settings/dashboard', [
      * =========================================================
      */
 
+    Route::get('/loans/{loan}/plan.csv', [LoanController::class, 'exportPlan'])->name('loans.plan.export');
+
     Route::resource('loans', LoanController::class);
 
 
