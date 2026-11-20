@@ -48,7 +48,10 @@
                 @endif
 
                 @if ($cockpit['days_left'] > 0)
-                    · <span class="font-medium text-slate-700 dark:text-slate-200">{{ $cockpit['days_left'] }} {{ $cockpit['days_left'] === 1 ? 'Tag' : 'Tage' }}</span> übrig@if ($cockpit['per_day']), etwa <span class="font-medium text-slate-700 dark:text-slate-200">{{ $moneyShort($cockpit['per_day']) }} pro Tag</span>@endif
+                    · <span class="font-medium text-slate-700 dark:text-slate-200">{{ $cockpit['days_left'] }} {{ $cockpit['days_left'] === 1 ? 'Tag' : 'Tage' }}</span> übrig
+                    @if ($cockpit['per_day'])
+                        , etwa <span class="font-medium text-slate-700 dark:text-slate-200">{{ $moneyShort($cockpit['per_day']) }} pro Tag</span>
+                    @endif
                 @elseif (! $cockpit['is_current'])
                     · Monat abgeschlossen
                 @endif
