@@ -47,6 +47,32 @@ class DashboardSettingsController extends Controller
     }
 
     /**
+     * Fertige Anordnung übernehmen (Cockpit oder Klassisch).
+     */
+    public function preset(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'preset' => ['required', 'in:cockpit,classic'],
+        ]);
+
+        $preset = DashboardSetting::preset($validated['preset']);
+        $user = $request->user();
+
+        DashboardSetting::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'widgets' => $preset['widgets'],
+                'widget_order' => $preset['order'],
+                'display_mode' => $user->dashboardSetting?->display_mode ?? 'standard',
+            ]
+        );
+
+        return redirect()
+            ->route('dashboard')
+            ->with('success', 'Dashboard-Layout „' . $preset['label'] . '“ ist aktiv. Unter Einstellungen → Dashboard lässt sich alles anpassen.');
+    }
+
+    /**
      * Dashboard-Einstellungen speichern.
      */
     public function update(Request $request): RedirectResponse

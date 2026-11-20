@@ -258,6 +258,8 @@ Route::get('/settings/dashboard', [
         'edit',
     ])->name('settings.dashboard');
 
+    Route::post('/settings/dashboard/preset', [DashboardSettingsController::class, 'preset'])->name('settings.dashboard.preset');
+
     Route::put('/settings/dashboard', [
         DashboardSettingsController::class,
         'update',

@@ -33,6 +33,35 @@
         <x-month-switcher route="dashboard" :month="$selectedMonth" />
     </x-page-header>
 
+    <x-flash class="mt-4" />
+
+    @if ($showLayoutHint)
+        <div class="fv-card mt-4 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
+            <span class="w-11 h-11 shrink-0 rounded-2xl bg-linear-to-br from-emerald-400 to-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-900/20">
+                <x-icon name="target" class="w-5 h-5" />
+            </span>
+
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-slate-900 dark:text-white">Neu: das Cockpit-Layout</p>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400">Oben steht, was bis Monatsende noch frei ist, daneben die nächsten Zahlungen und das, was noch zu prüfen ist. Alles andere bleibt unter Einstellungen → Dashboard wählbar.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <form method="POST" action="{{ route('settings.dashboard.preset') }}">
+                    @csrf
+                    <input type="hidden" name="preset" value="cockpit">
+                    <button type="submit" class="fv-btn fv-btn-primary text-sm py-2">Cockpit nutzen</button>
+                </form>
+
+                <form method="POST" action="{{ route('settings.dashboard.preset') }}">
+                    @csrf
+                    <input type="hidden" name="preset" value="classic">
+                    <button type="submit" class="fv-btn fv-btn-secondary text-sm py-2">Beim bisherigen bleiben</button>
+                </form>
+            </div>
+        </div>
+    @endif
+
 
     {{-- ========================================================= --}}
     {{-- ========================================================= --}}
@@ -52,11 +81,13 @@
          */
         $dashboardWidgetWidths = [
             // Hauptkachel: zwei Zeilen hoch, daneben die Kennzahlen
+            'cockpit' => 'md:col-span-2 lg:col-span-7',
+            'upcoming' => 'md:col-span-2 lg:col-span-5',
             'summary' => 'md:col-span-2 lg:col-span-6 lg:row-span-2',
             'income' => 'lg:col-span-3',
             'expenses' => 'lg:col-span-3',
             'savings_rate' => 'lg:col-span-3',
-            'review' => 'lg:col-span-3',
+            'review' => 'lg:col-span-6',
             'weekly' => 'lg:col-span-3',
             'plan' => 'lg:col-span-6',
 
@@ -91,7 +122,16 @@
 
             @if($dashboardWidgets[$widget] ?? false)
 
-                <div class="{{ $dashboardWidgetWidths[$widget] ?? 'lg:col-span-12' }}">
+                @php
+                    $widgetWidth = $dashboardWidgetWidths[$widget] ?? 'lg:col-span-12';
+
+                    // „Zu prüfen“ ist nur im Cockpit-Layout breit (mit direkter Zuordnung).
+                    if ($widget === 'review' && ! ($dashboardWidgets['cockpit'] ?? false)) {
+                        $widgetWidth = 'lg:col-span-3';
+                    }
+                @endphp
+
+                <div class="{{ $widgetWidth }}">
                     @include('dashboard.widgets.' . $widget)
                 </div>
 
