@@ -93,6 +93,7 @@ class DashboardCockpitTest extends TestCase
         $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->assertSee('Neu: das Cockpit-Layout');
 
         $this->cockpit();
+        $this->user = $this->user->fresh(); // die Beziehung wurde bei der ersten Anfrage geladen
 
         $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->assertDontSee('Neu: das Cockpit-Layout');
 
@@ -205,6 +206,7 @@ class DashboardCockpitTest extends TestCase
     {
         $this->spend(6.8, 'Bäckerei Schmidt');
         $this->actingAs($this->user)->post(route('settings.dashboard.preset'), ['preset' => 'classic']);
+        $this->user = $this->user->fresh();
 
         $this->actingAs($this->user)
             ->get(route('dashboard'))
