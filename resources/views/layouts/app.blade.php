@@ -346,6 +346,7 @@
 
                 <a
                     href="{{ route('transactions.create') }}"
+                    data-quick-add
                     class="
                         hidden
                         sm:inline-flex
@@ -515,6 +516,7 @@
         <div class="flex items-center justify-center">
             <a
                 href="{{ route('transactions.create') }}"
+                data-quick-add
                 class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-900/25 active:scale-95 transition"
                 aria-label="Neue Buchung"
             >
@@ -615,6 +617,15 @@
     </div>
 
 </nav>
+
+
+{{-- =========================================================
+     SCHNELLERFASSUNG (Taste N oder Knopf „Buchung“)
+========================================================= --}}
+
+<dialog id="quick-add" class="fv-dialog print:hidden" data-quick-url="{{ route('transactions.quick') }}" data-fallback-url="{{ route('transactions.create') }}" aria-label="Neue Buchung">
+    <div data-quick-body class="p-5 sm:p-6"></div>
+</dialog>
 
 
 {{-- =========================================================
