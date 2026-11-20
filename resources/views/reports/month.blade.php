@@ -29,7 +29,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
     <x-page-header title="Monatsbericht" :subtitle="$report['average_months'] > 0 ? 'Verglichen mit dem Vormonat und deinem üblichen Monat (Ø der letzten ' . $report['average_months'] . ' Monate).' : 'Dein Monat auf einen Blick.'">
         <x-month-switcher route="reports.month" :month="$monthKey" />

@@ -62,7 +62,7 @@ class PlanTest extends TestCase
     {
         $this->actingAs($this->user)
             ->get('/dashboard')
-            ->assertSee('Monatsplan');
+            ->assertSee(route('plan.index'), false);
     }
 
     public function test_empty_plan_is_created_with_an_income_group(): void

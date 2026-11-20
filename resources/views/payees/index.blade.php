@@ -11,7 +11,7 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-32">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-32">
 
     <x-page-header title="Empfänger" subtitle="Einheitliche Namen für Händler und Auftraggeber – mit Standardkategorie, die bei neuen Buchungen automatisch greift. Der Buchungstext der Bank bleibt dabei unverändert." />
 
