@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BankConnectionController;
+use App\Http\Controllers\Api\LoanController;
+use App\Http\Controllers\Api\PlanningController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReadController;
 use App\Http\Controllers\Api\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +30,14 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
     Route::post('/transactions', [TransactionController::class, 'store']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show'])->whereNumber('id');
     Route::patch('/transactions/{id}', [TransactionController::class, 'update'])->whereNumber('id');
+
+    Route::get('/plan', [PlanningController::class, 'plan']);
+    Route::patch('/plan/items/{id}', [PlanningController::class, 'updateItem'])->whereNumber('id');
+
+    Route::get('/loans', [LoanController::class, 'index']);
+    Route::get('/loans/{id}', [LoanController::class, 'show'])->whereNumber('id');
+
+    Route::get('/reports/month', [ReportController::class, 'month']);
 
     Route::get('/bank-connections', [BankConnectionController::class, 'index']);
     Route::post('/bank-connections/challenge', [BankConnectionController::class, 'confirm'])->middleware('throttle:30,1');
