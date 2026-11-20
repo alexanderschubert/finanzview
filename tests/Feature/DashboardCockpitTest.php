@@ -100,7 +100,7 @@ class DashboardCockpitTest extends TestCase
         // „Beim bisherigen bleiben“ speichert das klassische Layout und blendet den Hinweis aus.
         $other = User::factory()->create(['is_active' => true]);
         $this->actingAs($other)->post(route('settings.dashboard.preset'), ['preset' => 'classic']);
-        $this->actingAs($other)->get(route('dashboard'))->assertDontSee('Neu: das Cockpit-Layout');
+        $this->actingAs($other->fresh())->get(route('dashboard'))->assertDontSee('Neu: das Cockpit-Layout');
     }
 
     public function test_cockpit_shows_what_is_left_until_month_end(): void
