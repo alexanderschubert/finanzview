@@ -82,4 +82,9 @@ class AuthPagesTest extends TestCase
             ->assertForbidden()
             ->assertSee('Kein Zugriff');
     }
+
+    public function test_auth_pages_use_the_display_font_for_the_heading(): void
+    {
+        $this->get('/login')->assertOk()->assertSee('fv-display', false)->assertSee('Willkommen bei FinanzView');
+    }
 }
