@@ -64,7 +64,7 @@
 
     {{-- LIVE-VORSCHAU --}}
 
-    <div class="mx-auto max-w-sm" data-account-preview data-type-colors='@json($typeColors)'>
+    <div class="mx-auto max-w-[300px]" data-account-preview data-type-colors='@json($typeColors)'>
         <x-wallet-card
             :color="$color"
             :fallback-color="$typeColors[$type] ?? '#3f3f45'"
