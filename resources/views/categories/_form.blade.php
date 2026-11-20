@@ -15,10 +15,6 @@
         'both' => 'Beides',
     ];
 
-    $emojiSuggestions = ['🛒', '🏠', '🚗', '⛽', '🍽️', '☕', '🎬', '🎮', '🛍️', '👕', '💡', '📱', '🛡️', '❤️', '💊', '✈️', '🎁', '🐶', '👶', '📚', '💰', '💶', '📈', '↩️', '🏦', '📦'];
-
-    $colorSuggestions = ['#16a57a', '#1f5fa8', '#5b3fa8', '#c2410c', '#b91c1c', '#be185d', '#0e7490', '#8a6516', '#3f3f45'];
-
     $color = $value('color');
     $hasColor = is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) && strtolower($color) !== '#f1f5f9';
 @endphp
@@ -100,42 +96,8 @@
 
     {{-- SYMBOL UND FARBE --}}
 
-    <div class="fv-card p-5 sm:p-6 space-y-5">
-
-        <x-field label="Symbol" for="icon" error="icon" hint="Tippe ein Emoji an oder gib ein eigenes ein.">
-            <input id="icon" name="icon" type="text" maxlength="20" value="{{ $value('icon') }}" placeholder="🏷️" class="fv-input text-xl">
-        </x-field>
-
-        <div class="grid grid-cols-9 sm:grid-cols-13 gap-1.5 -mt-2" aria-label="Emoji-Vorschläge">
-            @foreach ($emojiSuggestions as $emoji)
-                <button type="button" data-emoji="{{ $emoji }}"
-                    class="aspect-square rounded-lg text-xl hover:bg-slate-100 dark:hover:bg-white/10 transition">{{ $emoji }}</button>
-            @endforeach
-        </div>
-
-        <div>
-            <span class="fv-label">Farbe</span>
-            <div class="flex flex-wrap items-center gap-2">
-                <button type="button" data-color=""
-                    class="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-400 flex items-center justify-center"
-                    aria-label="Keine Farbe" title="Keine Farbe">
-                    <x-icon name="x" class="w-4 h-4" />
-                </button>
-
-                @foreach ($colorSuggestions as $suggestion)
-                    <button type="button" data-color="{{ $suggestion }}"
-                        class="w-8 h-8 rounded-full ring-offset-2 ring-offset-white dark:ring-offset-slate-900 transition {{ $hasColor && strtolower($color) === $suggestion ? 'ring-2 ring-slate-900 dark:ring-white' : '' }}"
-                        style="background-color: {{ $suggestion }}" aria-label="Farbe {{ $suggestion }}"></button>
-                @endforeach
-
-                <label class="relative w-8 h-8 rounded-full overflow-hidden cursor-pointer bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]" title="Eigene Farbe">
-                    <input type="color" value="{{ $hasColor ? $color : '#16a57a' }}" class="absolute inset-0 opacity-0 cursor-pointer" data-color-picker>
-                    <span class="sr-only">Eigene Farbe</span>
-                </label>
-            </div>
-            <input type="hidden" name="color" value="{{ $hasColor ? $color : '' }}" data-color-value>
-        </div>
-
+    <div class="fv-card p-5 sm:p-6">
+        <x-symbol-picker :icon="$value('icon')" :color="$hasColor ? $color : null" />
     </div>
 
 
@@ -198,15 +160,11 @@
 
 
 <script>
-    // Live-Vorschau, Emoji- und Farbauswahl.
+    // Live-Vorschau von Name, Symbol und Farbe.
     (function () {
         const tile = document.querySelector('[data-preview-tile]');
         const name = document.querySelector('[data-preview-name]');
         const nameInput = document.getElementById('name');
-        const iconInput = document.getElementById('icon');
-        const colorValue = document.querySelector('[data-color-value]');
-        const colorPicker = document.querySelector('[data-color-picker]');
-        const swatches = document.querySelectorAll('[data-color]');
 
         nameInput.addEventListener('input', () => name.textContent = nameInput.value || 'Neue Kategorie');
 
@@ -227,28 +185,11 @@
 
         parentSelect.addEventListener('change', syncParent);
         syncParent();
-        iconInput.addEventListener('input', () => tile.textContent = iconInput.value || '🏷️');
 
-        document.querySelectorAll('[data-emoji]').forEach(button => {
-            button.addEventListener('click', () => {
-                iconInput.value = button.dataset.emoji;
-                tile.textContent = button.dataset.emoji;
-            });
+        // Vorschau oben folgt dem Symbol- und Farbwähler.
+        document.querySelector('[data-symbol-picker]').addEventListener('symbolchange', event => {
+            tile.textContent = event.detail.icon || '🏷️';
+            tile.style.backgroundColor = event.detail.color ? event.detail.color + '26' : '';
         });
-
-        function setColor(hex) {
-            colorValue.value = hex;
-            tile.style.backgroundColor = hex ? hex + '26' : '';
-
-            swatches.forEach(swatch => {
-                const active = swatch.dataset.color && swatch.dataset.color === hex;
-                swatch.classList.toggle('ring-2', active);
-                swatch.classList.toggle('ring-slate-900', active);
-                swatch.classList.toggle('dark:ring-white', active);
-            });
-        }
-
-        swatches.forEach(swatch => swatch.addEventListener('click', () => setColor(swatch.dataset.color)));
-        colorPicker.addEventListener('input', () => setColor(colorPicker.value));
     })();
 </script>

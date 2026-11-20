@@ -118,7 +118,7 @@ class PlanService
             }
 
             foreach ($source->groups()->with('items')->get() as $group) {
-                $copy = $plan->groups()->create($group->only(['name', 'kind', 'sort_order']));
+                $copy = $plan->groups()->create($group->only(['name', 'kind', 'icon', 'color', 'sort_order']));
 
                 foreach ($group->items as $item) {
                     if ($item->ends_on && $item->ends_on->lt($start)) {

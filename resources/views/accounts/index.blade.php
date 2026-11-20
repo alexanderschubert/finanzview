@@ -89,7 +89,7 @@
             <section>
                 <h3 class="px-1 pb-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">{{ $group }}</h3>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                     @foreach ($groupAccounts as $account)
                         @php
                             $iban = preg_replace('/\s+/', '', (string) $account->iban);
@@ -98,7 +98,7 @@
                                 : ($account->account_number ? '•••• ' . substr((string) $account->account_number, -4) : null);
                         @endphp
 
-                        <a href="{{ route('accounts.edit', $account) }}" class="group block {{ $account->is_active ? '' : 'opacity-60' }}">
+                        <a href="{{ route('accounts.edit', $account) }}" class="group block max-w-xs sm:max-w-none {{ $account->is_active ? '' : 'opacity-60' }}">
                             <x-wallet-card
                                 :color="$account->color"
                                 :fallback-color="$account->provider?->color ?: ($typeColors[$account->type] ?? '#3f3f45')"

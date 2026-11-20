@@ -53,7 +53,7 @@
 
         {{-- KARTEN --}}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             @foreach ($creditCards as $creditCard)
                 @php
                     $limit = (float) ($creditCard->credit_limit ?? 0);
@@ -63,7 +63,7 @@
 
                 @endphp
 
-                <a href="{{ route('credit-cards.show', $creditCard) }}" class="group block {{ $creditCard->is_active ? '' : 'opacity-60' }}">
+                <a href="{{ route('credit-cards.show', $creditCard) }}" class="group block max-w-xs sm:max-w-none {{ $creditCard->is_active ? '' : 'opacity-60' }}">
 
                     <x-wallet-card
                         :color="$creditCard->color"

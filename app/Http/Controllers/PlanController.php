@@ -100,11 +100,15 @@ class PlanController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'kind' => ['required', Rule::in(array_keys(PlanGroup::KINDS))],
+            'icon' => ['nullable', 'string', 'max:20'],
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], ['name.required' => 'Bitte einen Namen für die Gruppe eingeben.']);
 
         $group = $planMonth->groups()->create([
             'name' => trim($validated['name']),
             'kind' => $validated['kind'],
+            'icon' => $validated['icon'] ?? null,
+            'color' => $validated['color'] ?? null,
             'sort_order' => $this->plans->nextSortOrder($planMonth),
         ]);
 
@@ -129,11 +133,15 @@ class PlanController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'kind' => ['required', Rule::in(array_keys(PlanGroup::KINDS))],
+            'icon' => ['nullable', 'string', 'max:20'],
+            'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], ['name.required' => 'Bitte einen Namen eingeben.']);
 
         $planGroup->update([
             'name' => trim($validated['name']),
             'kind' => $validated['kind'],
+            'icon' => filled($validated['icon'] ?? null) ? trim($validated['icon']) : null,
+            'color' => filled($validated['color'] ?? null) ? $validated['color'] : null,
         ]);
 
         return $this->backTo($planGroup->planMonth, $planGroup);

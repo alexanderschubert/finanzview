@@ -28,6 +28,8 @@
             </select>
         </x-field>
 
+        <x-symbol-picker :icon="old('icon', $group->icon)" :color="old('color', $group->color)" fallback="📁" />
+
         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
             <a href="{{ route('plan.index', ['month' => $monthKey]) }}#group-{{ $group->id }}" class="fv-btn fv-btn-secondary">Abbrechen</a>
             <button type="submit" class="fv-btn fv-btn-primary">Speichern</button>
