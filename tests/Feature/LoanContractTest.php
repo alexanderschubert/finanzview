@@ -128,7 +128,7 @@ class LoanContractTest extends TestCase
         $loan = $this->createLoan();
         $other = User::factory()->create(['is_active' => true]);
 
-        $this->actingAs($other)->get("/loans/{$loan->id}/plan.csv")->assertStatus(404);
+        $this->actingAs($other)->get("/loans/{$loan->id}/plan.csv")->assertForbidden();
     }
 
     public function test_backup_keeps_contract_fields_and_the_plan_split(): void
