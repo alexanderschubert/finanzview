@@ -94,7 +94,7 @@ class AccountCategoryFormTest extends TestCase
         $this->actingAs($this->user)
             ->get(route('categories.create'))
             ->assertOk()
-            ->assertSee('data-emoji="🛒"', false)
+            ->assertSee('data-sp-emoji="🛒"', false)
             ->assertSee('role="radiogroup"', false);
 
         $this->actingAs($this->user)
