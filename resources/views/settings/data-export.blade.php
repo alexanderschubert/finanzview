@@ -74,8 +74,20 @@
 
         <div class="fv-card p-5 sm:p-6 space-y-4">
             <p class="text-sm text-slate-600 dark:text-slate-300">
-                JSON-Datei mit allen Konten, Buchungen, Kategorien, Budgets, Krediten, Kreditkarten, wiederkehrenden Buchungen und Dashboard-Einstellungen.
+                JSON-Datei mit allen Konten, Buchungen, Kategorien (mit Unterkategorien), Empfängern, Tags, Regeln, Budgets, Krediten, Kreditkarten, wiederkehrenden Buchungen, Monatsplänen, Einstellungen und dem Dashboard.
             </p>
+
+            <div class="rounded-2xl bg-slate-100 dark:bg-white/5 p-4 text-sm text-slate-600 dark:text-slate-300 space-y-2">
+                <p class="font-medium text-slate-900 dark:text-white">Umzug in eine neue FinanzView-Instanz</p>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>Hier das Backup herunterladen.</li>
+                    <li>In der neuen Instanz registrieren (der erste Benutzer wird Administrator) und anmelden.</li>
+                    <li>Unter <span class="font-medium">Einstellungen → Daten &amp; Export</span> das Backup hochladen, die Vorschau prüfen und bestätigen.</li>
+                </ol>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Nicht im Backup: Passwort, Zwei-Faktor-Schlüssel, Passkeys und Bankverbindungen (FinTS). Diese richtest du in der neuen Instanz neu ein.
+                </p>
+            </div>
 
             <form method="POST" action="{{ route('settings.data-export.json') }}" class="flex justify-end">
                 @csrf
