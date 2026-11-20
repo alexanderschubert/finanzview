@@ -6,6 +6,7 @@ use App\Models\PlanGroup;
 use App\Models\PlanItem;
 use App\Models\PlanMonth;
 use App\Models\User;
+use App\Support\CsvCell;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -255,6 +256,46 @@ class PlanService
         'halbjährlich' => 'semiannual',
         'jährlich' => 'yearly',
     ];
+
+    private const KIND_LABELS = [
+        PlanGroup::KIND_EXPENSE => 'Ausgabe',
+        PlanGroup::KIND_INCOME => 'Einnahme',
+        PlanGroup::KIND_RATE => 'Rate',
+        PlanGroup::KIND_LOAN => 'Kredit',
+    ];
+
+    public const CSV_HEADER = ['Gruppe', 'Typ', 'Beschreibung', 'Betrag', 'Bemerkung', 'Rhythmus', 'Beginn', 'Letzte Rate'];
+
+    /**
+     * Zeilen für den CSV-Export des Plans, im selben Aufbau wie der Import
+     * (Betrag mit Komma, Datum als TT.MM.JJJJ), damit sich die Datei wieder
+     * einlesen lässt. Texte sind gegen Formeln in Tabellenprogrammen geschützt.
+     *
+     * @return list<list<string>>
+     */
+    public function csvRows(PlanMonth $plan): array
+    {
+        $plan->loadMissing('groups.items');
+
+        $rows = [];
+
+        foreach ($plan->groups as $group) {
+            foreach ($group->items as $item) {
+                $rows[] = [
+                    CsvCell::safe($group->name),
+                    self::KIND_LABELS[$group->kind] ?? self::KIND_LABELS[PlanGroup::KIND_EXPENSE],
+                    CsvCell::safe($item->name),
+                    number_format((float) $item->amount, 2, ',', ''),
+                    CsvCell::safe((string) $item->note),
+                    $item->intervalLabel(),
+                    $item->starts_on?->format('d.m.Y') ?? '',
+                    $item->ends_on?->format('d.m.Y') ?? '',
+                ];
+            }
+        }
+
+        return $rows;
+    }
 
     /**
      * Posten aus einer CSV-Datei in den Plan übernehmen (bestehende

@@ -14,7 +14,7 @@ Hell und dunkel, als Web-App installierbar auf iPhone, iPad, Mac und Android. De
 [![Letzter Commit](https://img.shields.io/github/last-commit/alexanderschubert/finanzview?label=Letzter%20Commit)](https://github.com/alexanderschubert/finanzview/commits/main)
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Node](https://img.shields.io/badge/Node-24-5FA04E?logo=nodedotjs&logoColor=white)
@@ -287,7 +287,7 @@ Migrationen laufen beim Start automatisch.
 
 ## Entwicklung
 
-**Technik:** Laravel 13 (PHP 8.4), Fortify (2FA, Passkeys), Blade, Tailwind CSS 4, Vite, PostgreSQL. FinTS über [php-fints](https://github.com/nemiah/phpFinTS).
+**Technik:** Laravel 13 (PHP 8.5), Fortify (2FA, Passkeys), Blade, Tailwind CSS 4, Vite, PostgreSQL. FinTS über [php-fints](https://github.com/nemiah/phpFinTS).
 
 Das Docker-Image hat eine eigene Test-Stufe, die auch in der CI läuft:
 
