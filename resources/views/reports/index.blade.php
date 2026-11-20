@@ -2,7 +2,7 @@
 
 @section('title', 'Analysen – FinanzView')
 
-@section('eyebrow', 'Auswertungen')
+@section('eyebrow', 'Auswertung')
 
 @section('page_title', 'Analysen')
 

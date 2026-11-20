@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $creditCard->name . ' – Kreditkarte – FinanzView')
-@section('eyebrow', 'Kreditkarten')
+@section('eyebrow', 'Konten')
 @section('page_title', $creditCard->name)
 
 @php

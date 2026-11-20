@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $recurringTransaction->description . ' – Wiederkehrend – FinanzView')
-@section('eyebrow', 'Wiederkehrend')
+@section('eyebrow', 'Planung')
 @section('page_title', $recurringTransaction->description)
 
 @php

@@ -8,6 +8,8 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <x-back-link :href="route('accounts.index')" label="Konten" />
+
     <x-page-header title="Neues Konto" subtitle="Bankkonto, Bargeld, PayPal oder Depot hinzufügen." />
 
     @include('accounts._form', ['account' => new \App\Models\Account()])

@@ -8,6 +8,8 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <x-back-link :href="route('transactions.index')" label="Buchungen" />
+
     <x-page-header title="Neue Buchung" subtitle="Erfasse eine Ausgabe, Einnahme oder Umbuchung." />
 
     @include('transactions._form', [

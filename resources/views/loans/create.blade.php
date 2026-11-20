@@ -8,6 +8,8 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <x-back-link :href="route('loans.index')" label="Kredite" />
+
     <x-page-header title="Neuer Kredit" subtitle="Kredit, Finanzierung oder Ratenzahlung erfassen." />
 
     @include('loans._form', ['loan' => new \App\Models\Loan()])

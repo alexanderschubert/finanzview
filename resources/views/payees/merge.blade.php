@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Empfänger zusammenführen – FinanzView')
-@section('eyebrow', 'Empfänger')
+@section('eyebrow', 'Einstellungen')
 @section('page_title', 'Zusammenführen')
 
 @php

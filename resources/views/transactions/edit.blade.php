@@ -8,6 +8,8 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
+    <x-back-link :href="route('transactions.index')" label="Buchungen" />
+
     <x-page-header title="Buchung bearbeiten" :subtitle="'Erfasst am ' . $transaction->created_at?->format('d.m.Y')" />
 
     @if ($transaction->recurring_transaction_id)

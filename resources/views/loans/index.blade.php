@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Kredite – FinanzView')
-@section('eyebrow', 'Finanzplanung')
+@section('eyebrow', 'Kredite')
 @section('page_title', 'Kredite')
 
 @php

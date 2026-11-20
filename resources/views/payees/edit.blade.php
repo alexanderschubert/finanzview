@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $payee->name . ' – Empfänger – FinanzView')
-@section('eyebrow', 'Empfänger')
+@section('eyebrow', 'Einstellungen')
 @section('page_title', 'Empfänger')
 
 @php

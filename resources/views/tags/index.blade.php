@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Tags – FinanzView')
-@section('eyebrow', 'Kategorien')
+@section('eyebrow', 'Einstellungen')
 @section('page_title', 'Tags')
 
 @php
@@ -12,7 +12,6 @@
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
-    <x-back-link :href="route('categories.index')" label="Kategorien" />
 
     <x-page-header title="Tags" subtitle="Schlagwörter quer zu Kategorien – z. B. für einen Urlaub, ein Projekt oder Geschäftliches." />
 

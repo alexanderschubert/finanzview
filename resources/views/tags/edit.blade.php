@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Tag bearbeiten – FinanzView')
-@section('eyebrow', 'Tags')
+@section('eyebrow', 'Einstellungen')
 @section('page_title', 'Tag bearbeiten')
 
 @section('content')
