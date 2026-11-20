@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CategoryRule;
 use App\Models\Payee;
 use App\Models\PayeeAlias;
+use App\Models\PlanGroup;
+use App\Models\PlanMonth;
 use App\Models\CreditCard;
 use App\Models\Loan;
 use App\Models\Tag;
@@ -230,6 +232,7 @@ class DataExportController extends Controller
                         'is_recurring',
                         'recurring_transaction_id',
                         'external_id',
+                        'transfer_dismissed',
                     ]),
                     [
                         'payee' => $item->payee?->name,
@@ -376,6 +379,39 @@ class DataExportController extends Controller
             'display_mode',
         ]);
 
+        $setting = $user->setting?->only([
+            'currency',
+            'decimal_places',
+            'date_format',
+            'first_day_of_week',
+            'month_start_day',
+            'default_account_id',
+            'default_category_id',
+        ]);
+
+        $planMonths = PlanMonth::query()
+            ->where('user_id', $user->id)
+            ->with('groups.items')
+            ->orderBy('month')
+            ->get()
+            ->map(fn (PlanMonth $month) => [
+                'month' => $month->month->toDateString(),
+                'groups' => $month->groups->map(fn (PlanGroup $group) => [
+                    'name' => $group->name,
+                    'kind' => $group->kind,
+                    'sort_order' => $group->sort_order,
+                    'items' => $group->items->map(fn ($item) => [
+                        'name' => $item->name,
+                        'amount' => $item->amount,
+                        'note' => $item->note,
+                        'interval' => $item->interval,
+                        'starts_on' => $item->starts_on?->toDateString(),
+                        'ends_on' => $item->ends_on?->toDateString(),
+                        'sort_order' => $item->sort_order,
+                    ])->values()->all(),
+                ])->values()->all(),
+            ]);
+
         $payload = [
             'metadata' => [
                 'application' => 'FinanzView',
@@ -395,6 +431,8 @@ class DataExportController extends Controller
             'credit_cards' => $creditCards->values()->all(),
             'loans' => $loans->values()->all(),
             'dashboard_settings' => $dashboardSetting,
+            'settings' => $setting,
+            'plan_months' => $planMonths->values()->all(),
         ];
 
         $filename = 'finanzview-backup-' .
@@ -539,7 +577,7 @@ class DataExportController extends Controller
             ->with(
                 'success',
                 sprintf(
-                    'Backup erfolgreich wiederhergestellt: %d Konten, %d Transaktionen, %d Kategorien, %d Regeln, %d Budgets, %d wiederkehrende Buchungen, %d Kreditkarten und %d Kredite.',
+                    'Backup erfolgreich wiederhergestellt: %d Konten, %d Transaktionen, %d Kategorien, %d Regeln, %d Budgets, %d wiederkehrende Buchungen, %d Kreditkarten, %d Kredite und %d Plan-Posten.',
                     $result['accounts'],
                     $result['transactions'],
                     $result['categories'],
@@ -547,7 +585,8 @@ class DataExportController extends Controller
                     $result['budgets'],
                     $result['recurring_transactions'],
                     $result['credit_cards'],
-                    $result['loans']
+                    $result['loans'],
+                    $result['plan_items']
                 )
             );
     }
@@ -622,6 +661,19 @@ class DataExportController extends Controller
             ]);
         }
 
+        // Seit dem Monatsplan bzw. den Einstellungen; ältere Backups enthalten die Bereiche nicht.
+        foreach (['plan_months' => 'Monatsplan', 'settings' => 'Einstellungen'] as $key => $label) {
+            if (
+                array_key_exists($key, $payload) &&
+                $payload[$key] !== null &&
+                !is_array($payload[$key])
+            ) {
+                throw ValidationException::withMessages([
+                    'backup' => "Der Bereich '{$label}' ist ungültig.",
+                ]);
+            }
+        }
+
         if (
             array_key_exists('dashboard_settings', $payload) &&
             $payload['dashboard_settings'] !== null &&
@@ -670,6 +722,12 @@ class DataExportController extends Controller
             'loan_payments' => $countNested('loans', 'payments'),
             'dashboard_settings' =>
                 !empty($payload['dashboard_settings']) ? 1 : 0,
+            'settings' => !empty($payload['settings']) ? 1 : 0,
+            'plan_months' => count($payload['plan_months'] ?? []),
+            'plan_items' => collect($payload['plan_months'] ?? [])
+                ->sum(fn ($month) => is_array($month)
+                    ? collect($month['groups'] ?? [])->sum(fn ($group) => is_array($group) ? count($group['items'] ?? []) : 0)
+                    : 0),
         ];
     }
 
@@ -697,6 +755,8 @@ class DataExportController extends Controller
             'credit_card_statements' => 0,
             'loans' => 0,
             'loan_payments' => 0,
+            'plan_months' => 0,
+            'plan_items' => 0,
         ];
 
         $accountMap = [];
@@ -1216,6 +1276,7 @@ class DataExportController extends Controller
                 'recurring_transaction_id' => $recurringId,
                 'transfer_account_id' => $transferAccountId,
                 'external_id' => $externalId,
+                'transfer_dismissed' => (bool) ($item['transfer_dismissed'] ?? false),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -1690,6 +1751,121 @@ class DataExportController extends Controller
                     ['user_id' => $user->id],
                     $values
                 );
+        }
+
+        /*
+         * =========================================================
+         * EINSTELLUNGEN
+         * =========================================================
+         */
+
+        if (!empty($payload['settings']) && is_array($payload['settings'])) {
+            $source = $payload['settings'];
+
+            $values = array_filter([
+                'currency' => is_string($source['currency'] ?? null) && preg_match('/^[A-Z]{3}$/', $source['currency']) ? $source['currency'] : null,
+                'decimal_places' => in_array($source['decimal_places'] ?? null, [0, 2], true) ? $source['decimal_places'] : null,
+                'date_format' => in_array($source['date_format'] ?? null, ['d.m.Y', 'Y-m-d', 'd/m/Y', 'm/d/Y'], true) ? $source['date_format'] : null,
+                'first_day_of_week' => in_array($source['first_day_of_week'] ?? null, [1, 6, 7], true) ? $source['first_day_of_week'] : null,
+                'month_start_day' => is_int($source['month_start_day'] ?? null) && $source['month_start_day'] >= 1 && $source['month_start_day'] <= 28 ? $source['month_start_day'] : null,
+                'default_account_id' => $accountMap[$source['default_account_id'] ?? 0] ?? null,
+                'default_category_id' => $categoryMap[$source['default_category_id'] ?? 0] ?? null,
+            ], fn ($value) => $value !== null);
+
+            if ($values !== []) {
+                $exists = DB::table('settings')->where('user_id', $user->id)->exists();
+
+                DB::table('settings')->updateOrInsert(
+                    ['user_id' => $user->id],
+                    $values + ['updated_at' => now()] + ($exists ? [] : ['created_at' => now()])
+                );
+            }
+        }
+
+
+        /*
+         * =========================================================
+         * MONATSPLAN
+         * =========================================================
+         *
+         * Vorhandene Monate, Gruppen (gleicher Name) und Posten
+         * (gleicher Name, Betrag, Rhythmus und Beginn) werden ergänzt,
+         * nicht dupliziert.
+         */
+
+        foreach ($payload['plan_months'] ?? [] as $monthItem) {
+            if (!is_array($monthItem) || !$isFilled($monthItem['month'] ?? null)) {
+                continue;
+            }
+
+            try {
+                $monthStart = \Carbon\Carbon::parse($monthItem['month'])->startOfMonth();
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $planMonth = PlanMonth::query()
+                ->where('user_id', $user->id)
+                ->whereDate('month', $monthStart->toDateString())
+                ->first();
+
+            if (!$planMonth) {
+                $planMonth = PlanMonth::create(['user_id' => $user->id, 'month' => $monthStart->toDateString()]);
+                $result['plan_months']++;
+            }
+
+            foreach ((array) ($monthItem['groups'] ?? []) as $groupItem) {
+                if (!is_array($groupItem) || !$isFilled($groupItem['name'] ?? null)) {
+                    continue;
+                }
+
+                $groupName = Str::limit(trim((string) $groupItem['name']), 255, '');
+
+                $group = $planMonth->groups()->get()
+                    ->first(fn (PlanGroup $existingGroup) => mb_strtolower($existingGroup->name) === mb_strtolower($groupName));
+
+                $group ??= $planMonth->groups()->create([
+                    'name' => $groupName,
+                    'kind' => array_key_exists($groupItem['kind'] ?? '', PlanGroup::KINDS) ? $groupItem['kind'] : PlanGroup::KIND_EXPENSE,
+                    'sort_order' => (int) ($groupItem['sort_order'] ?? 0),
+                ]);
+
+                $existingItems = $group->items()->get();
+
+                foreach ((array) ($groupItem['items'] ?? []) as $planItem) {
+                    if (!is_array($planItem) || !$isFilled($planItem['name'] ?? null)) {
+                        continue;
+                    }
+
+                    $name = Str::limit(trim((string) $planItem['name']), 255, '');
+                    $amount = round((float) ($planItem['amount'] ?? 0), 2);
+                    $interval = array_key_exists($planItem['interval'] ?? '', \App\Models\PlanItem::INTERVALS) ? $planItem['interval'] : \App\Models\PlanItem::MONTHLY;
+                    $startsOn = $isFilled($planItem['starts_on'] ?? null) ? substr((string) $planItem['starts_on'], 0, 10) : null;
+                    $endsOn = $isFilled($planItem['ends_on'] ?? null) ? substr((string) $planItem['ends_on'], 0, 10) : null;
+
+                    $duplicate = $existingItems->first(fn ($existingItem) => mb_strtolower($existingItem->name) === mb_strtolower($name)
+                        && round((float) $existingItem->amount, 2) === $amount
+                        && $existingItem->interval === $interval
+                        && $existingItem->starts_on?->toDateString() === $startsOn);
+
+                    if ($duplicate) {
+                        continue;
+                    }
+
+                    $created = $group->items()->create([
+                        'name' => $name,
+                        'amount' => $amount,
+                        'note' => $isFilled($planItem['note'] ?? null) ? Str::limit((string) $planItem['note'], 255, '') : null,
+                        'interval' => $interval,
+                        'starts_on' => $startsOn,
+                        'ends_on' => $endsOn,
+                        'sort_order' => (int) ($planItem['sort_order'] ?? 0),
+                    ]);
+
+                    $existingItems->push($created);
+                    $result['plan_items']++;
+                }
+            }
         }
 
         // Ältere Backups ohne Empfänger: Händlernamen den Empfängern zuordnen.

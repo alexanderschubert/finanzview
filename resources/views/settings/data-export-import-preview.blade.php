@@ -20,6 +20,9 @@
         'loans' => 'Kredite',
         'loan_payments' => 'Kreditzahlungen',
         'dashboard_settings' => 'Dashboard-Einstellungen',
+        'settings' => 'Einstellungen (Währung, Datumsformat, Standardkonto)',
+        'plan_months' => 'Monatspläne',
+        'plan_items' => 'Plan-Posten',
     ];
 @endphp
 
