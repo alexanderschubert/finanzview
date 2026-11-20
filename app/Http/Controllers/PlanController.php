@@ -226,9 +226,41 @@ class PlanController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | CSV-Import
+    | CSV-Export und -Import
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Plan eines Monats als CSV (Semikolon, UTF-8 mit BOM für Excel) –
+     * im selben Aufbau wie der Import.
+     */
+    public function export(Request $request)
+    {
+        $month = $this->month($request->query('month'));
+        $plan = $this->plans->find(Auth::user(), $month);
+
+        if (! $plan) {
+            return redirect()
+                ->route('plan.index', ['month' => $month->format('Y-m')])
+                ->with('error', 'Für diesen Monat gibt es noch keinen Plan.');
+        }
+
+        $rows = $this->plans->csvRows($plan);
+
+        return response()->streamDownload(function () use ($rows) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, PlanService::CSV_HEADER, ';', '"', '');
+
+            foreach ($rows as $row) {
+                fputcsv($handle, $row, ';', '"', '');
+            }
+
+            fclose($handle);
+        }, 'finanzview-monatsplan-' . $month->format('Y-m') . '.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
 
     public function importForm(Request $request)
     {

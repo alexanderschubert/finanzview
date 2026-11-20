@@ -452,4 +452,67 @@ class PlanTest extends TestCase
         $this->assertSame('2023-01-20', $items['Sparkasse']->starts_on->toDateString());
         $this->assertSame('2033-01-17', $items['Sparkasse']->ends_on->toDateString());
     }
+
+    public function test_plan_can_be_exported_as_csv_and_imported_again(): void
+    {
+        $plan = $this->plan('2026-11');
+        $this->item($this->group($plan, 'Einnahmen', 'income'), 'Gehalt', 2400);
+        $this->item($this->group($plan, 'Kredite', 'loan'), 'Sparkasse', 407, '2033-01-17', 'monthly', '2023-01-20');
+        $this->item($this->group($plan, 'Auto'), 'KFZ-Steuer', 98.5, null, 'yearly', '2026-05-08');
+        $this->item($this->group($plan, 'Abos'), '=HYPERLINK("x")', 5);
+
+        $response = $this->actingAs($this->user)->get('/plan/export?month=2026-11');
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('finanzview-monatsplan-2026-11.csv', $response->headers->get('Content-Disposition'));
+
+        $csv = $response->streamedContent();
+        $this->assertStringStartsWith("\xEF\xBB\xBFGruppe;Typ;Beschreibung;Betrag;Bemerkung;Rhythmus;Beginn;Letzte Rate", $csv);
+        $this->assertStringContainsString('Kredite;Kredit;Sparkasse;407,00;;Monatlich;20.01.2023;17.01.2033', $csv);
+        $this->assertStringContainsString('Auto;Ausgabe;KFZ-Steuer;98,50;;Jährlich;08.05.2026;', $csv);
+        $this->assertStringContainsString("'=HYPERLINK", $csv);
+
+        // Die Datei lässt sich in einen anderen Benutzer wieder einlesen.
+        $other = User::factory()->create(['is_active' => true]);
+        $this->actingAs($other)->post('/plan/import', [
+            'month' => '2026-11',
+            'file' => UploadedFile::fake()->createWithContent('plan.csv', $csv),
+        ])->assertRedirect();
+
+        $items = PlanItem::whereHas('group.planMonth', fn ($q) => $q->where('user_id', $other->id))->get()->keyBy('name');
+
+        $this->assertSame('yearly', $items['KFZ-Steuer']->interval);
+        $this->assertSame('2026-05-08', $items['KFZ-Steuer']->starts_on->toDateString());
+        $this->assertSame('98.50', $items['KFZ-Steuer']->amount);
+        $this->assertSame('2023-01-20', $items['Sparkasse']->starts_on->toDateString());
+        $this->assertSame('2033-01-17', $items['Sparkasse']->ends_on->toDateString());
+        $this->assertSame('loan', $items['Sparkasse']->group->kind);
+        $this->assertSame('income', $items['Gehalt']->group->kind);
+    }
+
+    public function test_export_without_a_plan_redirects_back(): void
+    {
+        $this->actingAs($this->user)
+            ->get('/plan/export?month=2026-11')
+            ->assertRedirect('/plan?month=2026-11')
+            ->assertSessionHas('error');
+    }
+
+    public function test_export_only_contains_own_data(): void
+    {
+        $other = User::factory()->create(['is_active' => true]);
+        $this->item($this->group($this->plan('2026-11', $other), 'Geheim'), 'Fremder Posten', 1);
+
+        $this->actingAs($this->user)->get('/plan/export?month=2026-11')->assertRedirect();
+    }
+
+    public function test_plan_page_shows_the_export_button_only_with_a_plan(): void
+    {
+        $this->actingAs($this->user)->get('/plan?month=2026-11')->assertDontSee('CSV exportieren');
+
+        $this->plan('2026-11');
+
+        $this->actingAs($this->user)->get('/plan?month=2026-11')->assertSee('CSV exportieren');
+    }
 }
