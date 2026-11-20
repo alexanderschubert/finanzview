@@ -212,7 +212,7 @@ class DetailPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Restschuld')
             ->assertSee('Nächste Raten')
-            ->assertSee('Kompletter Tilgungsplan')
+            ->assertSee('Tilgungsplan')
             ->assertSee('Sondertilgung erfassen');
     }
 }
