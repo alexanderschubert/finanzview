@@ -60,6 +60,29 @@ class NativeApiPlanningTest extends TestCase
             ->assertJsonFragment(['name' => 'Miete', 'due_day' => 1, 'state' => 'due']);
     }
 
+    public function test_plan_can_be_created_empty_or_copied_from_the_previous_month(): void
+    {
+        $april = $this->plan($this->user, '2026-04');
+        $group = $april->groups()->create(['name' => 'Wohnen', 'kind' => 'expense', 'sort_order' => 1]);
+        PlanItem::create(['plan_group_id' => $group->id, 'name' => 'Miete', 'amount' => 900, 'interval' => 'monthly', 'sort_order' => 0]);
+
+        $this->api('GET', '/api/v1/plan?month=2026-05')->assertOk()->assertJsonPath('exists', false)->assertJsonPath('previous', '2026-04');
+
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-05', 'source' => 'previous'])
+            ->assertCreated()
+            ->assertJsonPath('exists', true)
+            ->assertJsonPath('created', true)
+            ->assertJsonFragment(['name' => 'Miete']);
+
+        // Zweiter Aufruf legt nichts doppelt an.
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-05', 'source' => 'previous'])->assertOk()->assertJsonPath('created', false);
+        $this->assertSame(1, PlanMonth::where('user_id', $this->user->id)->whereDate('month', '2026-05-01')->count());
+
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-06'])->assertCreated()->assertJsonPath('exists', true);
+        $this->api('POST', '/api/v1/plan', ['month' => 'kaputt'])->assertStatus(422);
+        $this->assertSame(0, PlanMonth::where('user_id', $this->other->id)->count());
+    }
+
     public function test_plan_item_amount_can_be_changed_but_not_for_other_users(): void
     {
         $plan = $this->plan($this->user);

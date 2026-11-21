@@ -32,6 +32,7 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
     Route::patch('/transactions/{id}', [TransactionController::class, 'update'])->whereNumber('id');
 
     Route::get('/plan', [PlanningController::class, 'plan']);
+    Route::post('/plan', [PlanningController::class, 'store']);
     Route::patch('/plan/items/{id}', [PlanningController::class, 'updateItem'])->whereNumber('id');
 
     Route::get('/loans', [LoanController::class, 'index']);
