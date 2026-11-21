@@ -94,6 +94,29 @@ class NativeApiPlanningTest extends TestCase
         $this->api('GET', '/api/v1/loans/' . $theirs->id)->assertNotFound();
     }
 
+    public function test_loan_can_be_edited_and_schedule_is_rebuilt_only_for_own_loans(): void
+    {
+        $loan = Loan::create([
+            'user_id' => $this->user->id, 'name' => 'Auto', 'principal_amount' => 1200, 'paid_amount' => 0,
+            'interest_rate' => 0, 'installment_amount' => 100, 'total_installments' => 12, 'paid_installments' => 0,
+            'start_date' => '2026-01-01', 'type' => 'loan', 'is_active' => true,
+        ]);
+        $theirs = Loan::create([
+            'user_id' => $this->other->id, 'name' => 'Fremd', 'principal_amount' => 500, 'paid_amount' => 0, 'interest_rate' => 1,
+            'installment_amount' => 50, 'total_installments' => 10, 'paid_installments' => 0, 'start_date' => '2026-01-01', 'type' => 'loan', 'is_active' => true,
+        ]);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['name' => 'Autokredit', 'notes' => 'Test', 'effective_rate' => 3.5])
+            ->assertOk()->assertJsonPath('name', 'Autokredit')->assertJsonPath('contract.effective_rate', 3.5);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['installment_amount' => 150, 'total_installments' => 8])
+            ->assertOk()->assertJsonPath('installment_amount', 150)->assertJsonPath('totals.count', 8);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['principal_amount' => -5])->assertStatus(422);
+        $this->api('PATCH', '/api/v1/loans/' . $theirs->id, ['name' => 'Gehackt'])->assertNotFound();
+        $this->assertSame('Fremd', $theirs->fresh()->name);
+    }
+
     public function test_month_report_summarizes_expenses_by_category(): void
     {
         $account = \App\Models\Account::create([

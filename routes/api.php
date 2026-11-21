@@ -36,6 +36,7 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
 
     Route::get('/loans', [LoanController::class, 'index']);
     Route::get('/loans/{id}', [LoanController::class, 'show'])->whereNumber('id');
+    Route::patch('/loans/{id}', [LoanController::class, 'update'])->whereNumber('id');
 
     Route::get('/reports/month', [ReportController::class, 'month']);
 
