@@ -197,6 +197,26 @@ class NativeApiPlanningTest extends TestCase
             ->assertJsonPath('categories.0.share', 100);
     }
 
+    public function test_account_flags_can_be_toggled_for_own_accounts_only(): void
+    {
+        $mine = \App\Models\Account::create([
+            'user_id' => $this->user->id, 'name' => 'Giro', 'type' => 'checking', 'currency' => 'EUR',
+            'opening_balance' => 0, 'include_in_total' => true, 'is_active' => true,
+        ]);
+        $theirs = \App\Models\Account::create([
+            'user_id' => $this->other->id, 'name' => 'Fremd', 'type' => 'checking', 'currency' => 'EUR',
+            'opening_balance' => 0, 'include_in_total' => true, 'is_active' => true,
+        ]);
+
+        $this->api('PATCH', '/api/v1/accounts/' . $mine->id, ['include_in_total' => false])
+            ->assertOk()->assertJsonPath('include_in_total', false)->assertJsonPath('is_active', true);
+        $this->assertFalse((bool) $mine->fresh()->include_in_total);
+
+        $this->api('PATCH', '/api/v1/accounts/' . $mine->id, ['include_in_total' => 'vielleicht'])->assertStatus(422);
+        $this->api('PATCH', '/api/v1/accounts/' . $theirs->id, ['include_in_total' => false])->assertNotFound();
+        $this->assertTrue((bool) $theirs->fresh()->include_in_total);
+    }
+
     public function test_new_endpoints_require_a_token(): void
     {
         foreach (['/api/v1/plan', '/api/v1/loans', '/api/v1/reports/month'] as $uri) {
