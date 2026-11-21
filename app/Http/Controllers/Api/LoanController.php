@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Loan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 /**
@@ -49,6 +50,49 @@ class LoanController extends Controller
                 'paid_date' => $payment->paid_date?->toDateString(),
             ])->values(),
         ]);
+    }
+
+    /**
+     * Kredit ändern. Betrifft die Änderung den Tilgungsplan (Darlehen, Zins, Rate, Raten, Start),
+     * werden die geplanten Raten wie in der Web-Oberfläche neu berechnet.
+     */
+    public function update(Request $request, int $id)
+    {
+        $loan = $request->user()->loans()->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'creditor_name' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'principal_amount' => ['sometimes', 'required', 'numeric', 'min:0.01'],
+            'interest_rate' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'effective_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:100'],
+            'contract_total' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'financed_costs' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'installment_amount' => ['sometimes', 'required', 'numeric', 'min:0.01'],
+            'total_installments' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'start_date' => ['sometimes', 'nullable', 'date'],
+            'end_date' => ['sometimes', 'nullable', 'date'],
+            'is_active' => ['sometimes', 'boolean'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+        ]);
+
+        if (isset($validated['end_date'], $validated['start_date']) && $validated['end_date'] < $validated['start_date']) {
+            return response()->json(['message' => 'Das Ende darf nicht vor dem Start liegen.', 'errors' => ['end_date' => ['Das Ende darf nicht vor dem Start liegen.']]], 422);
+        }
+
+        DB::transaction(function () use ($loan, $validated) {
+            $loan->fill($validated);
+
+            $scheduleChanged = $loan->isDirty(['principal_amount', 'interest_rate', 'installment_amount', 'total_installments', 'start_date']);
+
+            $loan->save();
+
+            if ($scheduleChanged) {
+                app(\App\Http\Controllers\LoanController::class)->rebuildPlannedPayments($loan->fresh());
+            }
+        });
+
+        return $this->show($request, $id);
     }
 
     private function summary(Loan $loan): array

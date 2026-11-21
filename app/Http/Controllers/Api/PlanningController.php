@@ -19,19 +19,54 @@ class PlanningController extends Controller
 
     public function plan(Request $request)
     {
+        return response()->json($this->payload($request, $this->month($request)));
+    }
+
+    /**
+     * Plan für einen Monat anlegen: leer oder aus dem vorherigen Monat übernommen
+     * (wie in der Web-Oberfläche; ein vorhandener Plan bleibt unverändert).
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'regex:/^\d{4}-\d{2}$/'],
+            'source' => ['nullable', 'in:previous,empty'],
+        ], ['month.required' => 'Bitte einen Monat angeben.', 'month.regex' => 'Der Monat muss im Format JJJJ-MM angegeben werden.']);
+
         $user = $request->user();
-        $month = $this->month($request);
+        $month = Carbon::createFromFormat('!Y-m', $validated['month'])->startOfMonth();
+        $created = false;
+
+        if (! $this->plans->find($user, $month)) {
+            $plan = ($validated['source'] ?? null) === 'previous' ? $this->plans->copyFromPrevious($user, $month) : null;
+            $plan ??= $this->plans->createEmpty($user, $month);
+            $created = true;
+        }
+
+        return response()->json($this->payload($request, $month) + ['created' => $created], $created ? 201 : 200);
+    }
+
+    private function payload(Request $request, Carbon $month): array
+    {
+        $user = $request->user();
         $plan = $this->plans->find($user, $month);
 
         if (! $plan) {
-            return response()->json(['month' => $month->format('Y-m'), 'exists' => false, 'totals' => null, 'groups' => []]);
+            return [
+                'month' => $month->format('Y-m'),
+                'exists' => false,
+                'previous' => $this->plans->previous($user, $month)?->month->format('Y-m'),
+                'totals' => null,
+                'groups' => [],
+            ];
         }
 
         $totals = $this->plans->totals($plan);
 
-        return response()->json([
+        return [
             'month' => $month->format('Y-m'),
             'exists' => true,
+            'previous' => null,
             'totals' => [
                 'income' => $totals['income'],
                 'expense' => $totals['expense'],
@@ -63,7 +98,7 @@ class PlanningController extends Controller
                     ];
                 })->values(),
             ])->values(),
-        ]);
+        ];
     }
 
     public function updateItem(Request $request, int $id)

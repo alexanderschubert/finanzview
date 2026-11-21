@@ -565,7 +565,8 @@ class LoanController extends Controller
      *   (wie nach einer Sondertilgung) ab der Restschuld neu
      *   berechnet.
      */
-    private function rebuildPlannedPayments(
+    /** Auch von der API genutzt (nach Änderung plan-relevanter Felder). */
+    public function rebuildPlannedPayments(
         Loan $loan
     ): void {
         $hasHistory = $loan->payments()

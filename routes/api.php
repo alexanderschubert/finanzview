@@ -32,10 +32,12 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
     Route::patch('/transactions/{id}', [TransactionController::class, 'update'])->whereNumber('id');
 
     Route::get('/plan', [PlanningController::class, 'plan']);
+    Route::post('/plan', [PlanningController::class, 'store']);
     Route::patch('/plan/items/{id}', [PlanningController::class, 'updateItem'])->whereNumber('id');
 
     Route::get('/loans', [LoanController::class, 'index']);
     Route::get('/loans/{id}', [LoanController::class, 'show'])->whereNumber('id');
+    Route::patch('/loans/{id}', [LoanController::class, 'update'])->whereNumber('id');
 
     Route::get('/reports/month', [ReportController::class, 'month']);
 

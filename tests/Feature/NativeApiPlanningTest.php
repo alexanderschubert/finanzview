@@ -60,6 +60,29 @@ class NativeApiPlanningTest extends TestCase
             ->assertJsonFragment(['name' => 'Miete', 'due_day' => 1, 'state' => 'due']);
     }
 
+    public function test_plan_can_be_created_empty_or_copied_from_the_previous_month(): void
+    {
+        $april = $this->plan($this->user, '2026-04');
+        $group = $april->groups()->create(['name' => 'Wohnen', 'kind' => 'expense', 'sort_order' => 1]);
+        PlanItem::create(['plan_group_id' => $group->id, 'name' => 'Miete', 'amount' => 900, 'interval' => 'monthly', 'sort_order' => 0]);
+
+        $this->api('GET', '/api/v1/plan?month=2026-05')->assertOk()->assertJsonPath('exists', false)->assertJsonPath('previous', '2026-04');
+
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-05', 'source' => 'previous'])
+            ->assertCreated()
+            ->assertJsonPath('exists', true)
+            ->assertJsonPath('created', true)
+            ->assertJsonFragment(['name' => 'Miete']);
+
+        // Zweiter Aufruf legt nichts doppelt an.
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-05', 'source' => 'previous'])->assertOk()->assertJsonPath('created', false);
+        $this->assertSame(1, PlanMonth::where('user_id', $this->user->id)->whereDate('month', '2026-05-01')->count());
+
+        $this->api('POST', '/api/v1/plan', ['month' => '2026-06'])->assertCreated()->assertJsonPath('exists', true);
+        $this->api('POST', '/api/v1/plan', ['month' => 'kaputt'])->assertStatus(422);
+        $this->assertSame(0, PlanMonth::where('user_id', $this->other->id)->count());
+    }
+
     public function test_plan_item_amount_can_be_changed_but_not_for_other_users(): void
     {
         $plan = $this->plan($this->user);
@@ -92,6 +115,29 @@ class NativeApiPlanningTest extends TestCase
         $this->api('GET', '/api/v1/loans')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.name', 'Auto')->assertJsonPath('data.0.progress', 25);
         $this->api('GET', '/api/v1/loans/' . $mine->id)->assertOk()->assertJsonPath('totals.count', 1)->assertJsonPath('schedule.0.number', 1)->assertJsonPath('schedule.0.status', 'paid');
         $this->api('GET', '/api/v1/loans/' . $theirs->id)->assertNotFound();
+    }
+
+    public function test_loan_can_be_edited_and_schedule_is_rebuilt_only_for_own_loans(): void
+    {
+        $loan = Loan::create([
+            'user_id' => $this->user->id, 'name' => 'Auto', 'principal_amount' => 1200, 'paid_amount' => 0,
+            'interest_rate' => 0, 'installment_amount' => 100, 'total_installments' => 12, 'paid_installments' => 0,
+            'start_date' => '2026-01-01', 'type' => 'loan', 'is_active' => true,
+        ]);
+        $theirs = Loan::create([
+            'user_id' => $this->other->id, 'name' => 'Fremd', 'principal_amount' => 500, 'paid_amount' => 0, 'interest_rate' => 1,
+            'installment_amount' => 50, 'total_installments' => 10, 'paid_installments' => 0, 'start_date' => '2026-01-01', 'type' => 'loan', 'is_active' => true,
+        ]);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['name' => 'Autokredit', 'notes' => 'Test', 'effective_rate' => 3.5])
+            ->assertOk()->assertJsonPath('name', 'Autokredit')->assertJsonPath('contract.effective_rate', 3.5);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['installment_amount' => 150, 'total_installments' => 8])
+            ->assertOk()->assertJsonPath('installment_amount', 150)->assertJsonPath('totals.count', 8);
+
+        $this->api('PATCH', '/api/v1/loans/' . $loan->id, ['principal_amount' => -5])->assertStatus(422);
+        $this->api('PATCH', '/api/v1/loans/' . $theirs->id, ['name' => 'Gehackt'])->assertNotFound();
+        $this->assertSame('Fremd', $theirs->fresh()->name);
     }
 
     public function test_month_report_summarizes_expenses_by_category(): void
