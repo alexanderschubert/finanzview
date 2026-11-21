@@ -97,6 +97,8 @@ class PlanningController extends Controller
                         'interval_label' => $item->intervalLabel(),
                         'due_day' => $item->due_day,
                         'note' => $item->note,
+                        'starts_on' => $item->starts_on?->toDateString(),
+                        'ends_on' => $item->ends_on?->toDateString(),
                         'state' => $state,
                         'next_due' => in_array($state, ['off', 'upcoming'], true) ? $item->nextDueAfter($month)?->format('Y-m') : null,
                     ];
