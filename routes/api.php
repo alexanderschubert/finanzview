@@ -24,6 +24,7 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
     Route::get('/me/avatar', [ReadController::class, 'avatar']);
     Route::get('/dashboard', [ReadController::class, 'dashboard']);
     Route::get('/accounts', [ReadController::class, 'accounts']);
+    Route::patch('/accounts/{id}', [ReadController::class, 'updateAccount'])->whereNumber('id');
     Route::get('/categories', [ReadController::class, 'categories']);
 
     Route::get('/transactions', [TransactionController::class, 'index']);

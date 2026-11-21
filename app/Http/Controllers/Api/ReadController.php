@@ -122,6 +122,23 @@ class ReadController extends Controller
         ]);
     }
 
+    /**
+     * Kontoeinstellungen, die in der App umschaltbar sind: im Gesamtvermögen berücksichtigen, aktiv.
+     */
+    public function updateAccount(Request $request, int $id)
+    {
+        $account = $request->user()->accounts()->with('provider')->findOrFail($id);
+
+        $validated = $request->validate([
+            'include_in_total' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $account->update($validated);
+
+        return response()->json(ApiPresenter::account($account->fresh('provider')));
+    }
+
     public function categories(Request $request)
     {
         $categories = $request->user()->categories()
