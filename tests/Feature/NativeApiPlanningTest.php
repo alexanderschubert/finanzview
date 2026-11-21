@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ApiToken;
 use App\Models\Category;
 use App\Models\Loan;
+use App\Models\PlanGroup;
 use App\Models\PlanItem;
 use App\Models\PlanMonth;
 use App\Models\Transaction;
@@ -83,6 +84,43 @@ class NativeApiPlanningTest extends TestCase
         $this->assertSame(0, PlanMonth::where('user_id', $this->other->id)->count());
     }
 
+    public function test_groups_and_items_can_be_created_edited_and_deleted_only_in_own_plans(): void
+    {
+        $plan = $this->plan($this->user);
+
+        $this->api('POST', '/api/v1/plan/groups', ['month' => '2026-05', 'name' => 'Versicherung', 'kind' => 'expense', 'icon' => '🛡️', 'color' => '#4f46e5'])
+            ->assertCreated()->assertJsonFragment(['name' => 'Versicherung', 'icon' => '🛡️']);
+        $this->api('POST', '/api/v1/plan/groups', ['month' => '2026-09', 'name' => 'X', 'kind' => 'expense'])->assertStatus(422);
+        $this->api('POST', '/api/v1/plan/groups', ['month' => '2026-05', 'name' => 'X', 'kind' => 'unsinn'])->assertStatus(422);
+
+        $group = $plan->groups()->first();
+
+        $this->api('POST', '/api/v1/plan/groups/' . $group->id . '/items', ['name' => 'Haftpflicht', 'amount' => 12.5, 'due_day' => 8])
+            ->assertCreated()->assertJsonFragment(['name' => 'Haftpflicht', 'amount' => 12.5, 'due_day' => 8]);
+        // Nicht-monatlich braucht einen Start.
+        $this->api('POST', '/api/v1/plan/groups/' . $group->id . '/items', ['name' => 'Jahresbeitrag', 'amount' => 90, 'interval' => 'yearly'])->assertStatus(422);
+        $this->api('POST', '/api/v1/plan/groups/' . $group->id . '/items', ['name' => 'Jahresbeitrag', 'amount' => 90, 'interval' => 'yearly', 'starts_on' => '2026-03-01'])->assertCreated();
+
+        $item = PlanItem::where('name', 'Haftpflicht')->first();
+        $this->api('PATCH', '/api/v1/plan/items/' . $item->id, ['name' => 'Haftpflicht neu', 'amount' => 14, 'note' => 'Hinweis'])->assertOk()->assertJsonPath('amount', 14);
+        $this->assertSame('Haftpflicht neu', $item->fresh()->name);
+
+        $this->api('PATCH', '/api/v1/plan/groups/' . $group->id, ['name' => 'Versicherungen'])->assertOk();
+        $this->assertSame('Versicherungen', $group->fresh()->name);
+
+        $this->api('DELETE', '/api/v1/plan/items/' . $item->id)->assertOk();
+        $this->assertNull(PlanItem::find($item->id));
+        $this->api('DELETE', '/api/v1/plan/groups/' . $group->id)->assertOk();
+        $this->assertNull(PlanGroup::find($group->id));
+
+        $foreignPlan = $this->plan($this->other);
+        $foreignGroup = $foreignPlan->groups()->create(['name' => 'Fremd', 'kind' => 'expense', 'sort_order' => 1]);
+        $this->api('POST', '/api/v1/plan/groups/' . $foreignGroup->id . '/items', ['name' => 'Hack', 'amount' => 1])->assertNotFound();
+        $this->api('PATCH', '/api/v1/plan/groups/' . $foreignGroup->id, ['name' => 'Hack'])->assertNotFound();
+        $this->api('DELETE', '/api/v1/plan/groups/' . $foreignGroup->id)->assertNotFound();
+        $this->assertNotNull(PlanGroup::find($foreignGroup->id));
+    }
+
     public function test_plan_item_amount_can_be_changed_but_not_for_other_users(): void
     {
         $plan = $this->plan($this->user);
@@ -157,6 +195,26 @@ class NativeApiPlanningTest extends TestCase
             ->assertJsonPath('totals.expense', 40)
             ->assertJsonPath('categories.0.name', 'Lebensmittel')
             ->assertJsonPath('categories.0.share', 100);
+    }
+
+    public function test_account_flags_can_be_toggled_for_own_accounts_only(): void
+    {
+        $mine = \App\Models\Account::create([
+            'user_id' => $this->user->id, 'name' => 'Giro', 'type' => 'checking', 'currency' => 'EUR',
+            'opening_balance' => 0, 'include_in_total' => true, 'is_active' => true,
+        ]);
+        $theirs = \App\Models\Account::create([
+            'user_id' => $this->other->id, 'name' => 'Fremd', 'type' => 'checking', 'currency' => 'EUR',
+            'opening_balance' => 0, 'include_in_total' => true, 'is_active' => true,
+        ]);
+
+        $this->api('PATCH', '/api/v1/accounts/' . $mine->id, ['include_in_total' => false])
+            ->assertOk()->assertJsonPath('include_in_total', false)->assertJsonPath('is_active', true);
+        $this->assertFalse((bool) $mine->fresh()->include_in_total);
+
+        $this->api('PATCH', '/api/v1/accounts/' . $mine->id, ['include_in_total' => 'vielleicht'])->assertStatus(422);
+        $this->api('PATCH', '/api/v1/accounts/' . $theirs->id, ['include_in_total' => false])->assertNotFound();
+        $this->assertTrue((bool) $theirs->fresh()->include_in_total);
     }
 
     public function test_new_endpoints_require_a_token(): void

@@ -24,6 +24,7 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
     Route::get('/me/avatar', [ReadController::class, 'avatar']);
     Route::get('/dashboard', [ReadController::class, 'dashboard']);
     Route::get('/accounts', [ReadController::class, 'accounts']);
+    Route::patch('/accounts/{id}', [ReadController::class, 'updateAccount'])->whereNumber('id');
     Route::get('/categories', [ReadController::class, 'categories']);
 
     Route::get('/transactions', [TransactionController::class, 'index']);
@@ -33,7 +34,12 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
 
     Route::get('/plan', [PlanningController::class, 'plan']);
     Route::post('/plan', [PlanningController::class, 'store']);
+    Route::post('/plan/groups', [PlanningController::class, 'storeGroup']);
+    Route::patch('/plan/groups/{id}', [PlanningController::class, 'updateGroup'])->whereNumber('id');
+    Route::delete('/plan/groups/{id}', [PlanningController::class, 'destroyGroup'])->whereNumber('id');
+    Route::post('/plan/groups/{id}/items', [PlanningController::class, 'storeItem'])->whereNumber('id');
     Route::patch('/plan/items/{id}', [PlanningController::class, 'updateItem'])->whereNumber('id');
+    Route::delete('/plan/items/{id}', [PlanningController::class, 'destroyItem'])->whereNumber('id');
 
     Route::get('/loans', [LoanController::class, 'index']);
     Route::get('/loans/{id}', [LoanController::class, 'show'])->whereNumber('id');
