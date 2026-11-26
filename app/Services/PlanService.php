@@ -194,10 +194,6 @@ class PlanService
         $own = $this->find($user, $start);
         $manual = $own?->start_balance !== null;
 
-        if ($accounts->isEmpty() && ! $manual) {
-            return null;
-        }
-
         $estimated = false;
         $opening = $manual ? (float) $own->start_balance : null;
 
@@ -210,6 +206,10 @@ class PlanService
                 $opening = $previous['end'] ?? null;
                 $estimated = $opening !== null;
             }
+        }
+
+        if ($opening === null && $accounts->isEmpty()) {
+            return null;
         }
 
         $opening ??= $this->checkingBalanceBefore($accounts->pluck('id')->all(), $accounts->sum(fn ($a) => (float) $a->opening_balance), $start);
