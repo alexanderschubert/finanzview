@@ -55,6 +55,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('recurring:process')
             ->dailyAt('00:05');
 
+        // Fällige Kreditraten abhaken
+        $schedule->command('loans:settle-due')
+            ->dailyAt('00:15');
+
         // Kreditkartenabrechnungen
         $schedule->command('credit-cards:generate-statements')
             ->dailyAt('00:10');
