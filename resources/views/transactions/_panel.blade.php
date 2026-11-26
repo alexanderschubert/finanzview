@@ -60,7 +60,7 @@
             <select id="panel-category" name="category_id" class="fv-input">
                 <option value="">Ohne Kategorie</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->id }}" @selected($transaction->category_id === $category->id)>{{ $category->icon }} {{ $category->display_name }}</option>
+                    <option value="{{ $category->id }}" @selected($transaction->category_id === $category->id)>{{ $category->icon_text }} {{ $category->display_name }}</option>
                 @endforeach
             </select>
         </div>

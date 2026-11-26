@@ -15,7 +15,9 @@
     <div class="flex items-center gap-3 px-3 pt-3 pb-3">
         <span class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center text-xl"
             style="background-color: {{ $tint }}26; box-shadow: inset 0 0 0 1.5px {{ $tint }}55; color: {{ $tint }}" aria-hidden="true">
-            @if (filled($group->icon))
+            @if (filled($group->icon) && \App\Support\Symbols::svg($group->icon))
+                {!! \App\Support\Symbols::svg($group->icon, 'w-6 h-6') !!}
+            @elseif (filled($group->icon) && ! \App\Support\Symbols::isSymbol($group->icon))
                 {{ $group->icon }}
             @else
                 <x-icon :name="$kindIcon" class="w-5 h-5" />

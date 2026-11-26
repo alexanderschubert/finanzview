@@ -257,7 +257,7 @@
                             <li>
                                 <div class="flex items-center justify-between gap-3 text-sm">
                                     <span class="flex items-center gap-2 min-w-0">
-                                        <span>{{ $category['icon'] }}</span>
+                                        <span>{{ \App\Support\Symbols::text($category['icon']) }}</span>
                                         <span class="truncate font-medium text-slate-800 dark:text-slate-100">{{ $category['name'] }}</span>
                                         <span class="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{{ $category['count'] }}×</span>
                                     </span>
@@ -314,7 +314,7 @@
                         @foreach ($report['category_matrix']['rows'] as $row)
                             <tr>
                                 <td class="pr-3 whitespace-nowrap text-slate-800 dark:text-slate-100 sticky left-0 bg-white dark:bg-slate-900">
-                                    {{ $row['icon'] }} {{ $row['name'] }}
+                                    {{ \App\Support\Symbols::text($row['icon']) }} {{ $row['name'] }}
                                 </td>
                                 @foreach ($row['months'] as $key => $value)
                                     @php $intensity = $value > 0 ? 0.12 + 0.78 * ($value / $matrixMax) : 0; @endphp

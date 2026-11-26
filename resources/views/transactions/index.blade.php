@@ -139,7 +139,7 @@
                 <option value="">Alle Kategorien</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" @selected((string) request('category_id') === (string) $category->id)>
-                        {{ $category->icon }} {{ $category->display_name }}
+                        {{ $category->icon_text }} {{ $category->display_name }}
                     </option>
                 @endforeach
             </select>

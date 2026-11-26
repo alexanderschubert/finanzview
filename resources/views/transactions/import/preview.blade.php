@@ -192,7 +192,7 @@
                                     <select name="category[{{ $item['index'] }}]" class="fv-input py-1.5 text-sm w-auto max-w-full" aria-label="Kategorie">
                                         <option value="0">Keine Kategorie</option>
                                         @foreach ($categoriesByType[$item['type']] ?? [] as $category)
-                                            <option value="{{ $category->id }}" @selected($item['category_id'] === $category->id)>{{ $category->icon }} {{ $category->display_name }}</option>
+                                            <option value="{{ $category->id }}" @selected($item['category_id'] === $category->id)>{{ $category->icon_text }} {{ $category->display_name }}</option>
                                         @endforeach
                                     </select>
 

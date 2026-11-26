@@ -150,7 +150,7 @@
                         data-type="{{ $category->type }}"
                         @selected((string) $value('category_id') === (string) $category->id)
                     >
-                        {{ $category->icon }} {{ $category->display_name }}
+                        {{ $category->icon_text }} {{ $category->display_name }}
                     </option>
                 @endforeach
             </select>

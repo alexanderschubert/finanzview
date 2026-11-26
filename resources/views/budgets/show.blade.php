@@ -125,7 +125,7 @@
                     @foreach ($budget->categories as $category)
                         <a href="{{ route('transactions.index', ['category_id' => $category->id]) }}"
                             class="rounded-full bg-white dark:bg-slate-900 ring-1 ring-slate-900/5 dark:ring-white/10 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition">
-                            {{ $category->icon }} {{ $category->display_name }}
+                            {{ $category->icon_text }} {{ $category->display_name }}
                         </a>
                     @endforeach
                 </div>
