@@ -49,7 +49,7 @@
             <select id="quick-category" name="category_id" class="fv-input" data-quick-category>
                 <option value="">Ohne Kategorie</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->id }}" data-type="{{ $category->type }}">{{ $category->icon }} {{ $category->display_name }}</option>
+                    <option value="{{ $category->id }}" data-type="{{ $category->type }}">{{ $category->icon_text }} {{ $category->display_name }}</option>
                 @endforeach
             </select>
         </div>

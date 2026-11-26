@@ -85,7 +85,7 @@
                         <div class="flex flex-wrap gap-2">
                             @foreach ($quick as $category)
                                 <button type="submit" name="category_id" value="{{ $category->id }}" class="rounded-full border border-slate-900/10 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-1.5 text-[13px] text-slate-700 dark:text-slate-200 hover:border-emerald-500 hover:bg-emerald-500/10 transition">
-                                    {{ $category->icon }} {{ $category->display_name }}
+                                    {{ $category->icon_text }} {{ $category->display_name }}
                                 </button>
                             @endforeach
                         </div>
@@ -94,7 +94,7 @@
                             <select name="category_id" aria-label="Andere Kategorie" class="fv-input !py-2 sm:max-w-xs" onchange="if (this.value) this.form.requestSubmit()">
                                 <option value="">Andere Kategorie …</option>
                                 @foreach ($options as $category)
-                                    <option value="{{ $category->id }}">{{ $category->icon }} {{ $category->display_name }}</option>
+                                    <option value="{{ $category->id }}">{{ $category->icon_text }} {{ $category->display_name }}</option>
                                 @endforeach
                             </select>
 

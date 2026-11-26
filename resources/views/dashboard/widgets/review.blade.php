@@ -26,7 +26,7 @@
                                 </div>
 
                                 @foreach ($chips as $category)
-                                    <button type="submit" name="category_id" value="{{ $category->id }}" class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30 transition">{{ $category->icon }} {{ $category->name }}</button>
+                                    <button type="submit" name="category_id" value="{{ $category->id }}" class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium hover:bg-white/30 transition">{{ $category->icon_text }} {{ $category->name }}</button>
                                 @endforeach
                             </form>
                         </li>

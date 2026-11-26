@@ -24,7 +24,9 @@
     @if ($color) style="background-color: {{ $color }}26" @endif
     aria-hidden="true"
 >
-    @if ($emoji)
+    @if ($emoji && \App\Support\Symbols::svg($emoji))
+        {!! \App\Support\Symbols::svg($emoji, 'w-[55%] h-[55%]') !!}
+    @elseif ($emoji && ! \App\Support\Symbols::isSymbol($emoji))
         {{ $emoji }}
     @else
         <x-icon :name="$fallback" class="w-[45%] h-[45%]" />

@@ -96,7 +96,7 @@
         </div>
         <div class="flex items-center justify-between gap-4 px-4 py-3">
             <dt class="text-slate-500 dark:text-slate-400">Kategorie</dt>
-            <dd class="font-medium text-slate-900 dark:text-white">{{ $item->category ? $item->category->icon . ' ' . $item->category->name : '–' }}</dd>
+            <dd class="font-medium text-slate-900 dark:text-white">{{ $item->category ? $item->category->icon_text . ' ' . $item->category->name : '–' }}</dd>
         </div>
         <div class="flex items-center justify-between gap-4 px-4 py-3">
             <dt class="text-slate-500 dark:text-slate-400">Endet</dt>

@@ -120,4 +120,13 @@ class Category extends Model
             'budget_id'
         );
     }
+
+    /**
+     * Symbol als reiner Text (Emoji) für Auswahllisten und Beschriftungen;
+     * bei Lucide-Symbolen leer, dort zeichnet die Kachel das Symbol.
+     */
+    public function getIconTextAttribute(): string
+    {
+        return \App\Support\Symbols::text($this->icon);
+    }
 }
