@@ -179,7 +179,7 @@ class PlanService
      * laufenden Monat wird, wenn es dafür einen Plan gibt, der geschätzte Endstand
      * des Vormonats übernommen. Ende = Anfang + Einnahmen − Ausgaben des Plans.
      *
-     * @return array{accounts: list<string>, start: float, start_estimated: bool, plan: float, end: float, credit_limit: ?float, overdrawn: float, limit_left: ?float, over_limit: float}|null
+     * @return array{accounts: list<string>, start: float, start_estimated: bool, start_manual: bool, plan: float, end: float, credit_limit: ?float, overdrawn: float, limit_left: ?float, over_limit: float}|null
      */
     public function checking(User $user, Carbon $month, ?float $planBalance = null, int $depth = 0): ?array
     {
@@ -190,15 +190,18 @@ class PlanService
             ->orderBy('id')
             ->get();
 
-        if ($accounts->isEmpty()) {
+        $start = $month->copy()->startOfMonth();
+        $own = $this->find($user, $start);
+        $manual = $own?->start_balance !== null;
+
+        if ($accounts->isEmpty() && ! $manual) {
             return null;
         }
 
-        $start = $month->copy()->startOfMonth();
         $estimated = false;
-        $opening = null;
+        $opening = $manual ? (float) $own->start_balance : null;
 
-        if ($depth < 24 && $start->gt(now()->startOfMonth())) {
+        if ($opening === null && $depth < 24 && $start->gt(now()->startOfMonth())) {
             $previousMonth = $start->copy()->subMonthNoOverflow();
             $previousPlan = $this->find($user, $previousMonth);
 
@@ -211,7 +214,7 @@ class PlanService
 
         $opening ??= $this->checkingBalanceBefore($accounts->pluck('id')->all(), $accounts->sum(fn ($a) => (float) $a->opening_balance), $start);
 
-        $plan = $planBalance ?? ($this->find($user, $start) ? $this->totals($this->find($user, $start))['balance'] : 0.0);
+        $plan = $planBalance ?? ($own ? $this->totals($own)['balance'] : 0.0);
         $end = round($opening + $plan, 2);
 
         $limit = $accounts->whereNotNull('credit_limit')->sum(fn ($a) => (float) $a->credit_limit);
@@ -221,6 +224,7 @@ class PlanService
             'accounts' => $accounts->pluck('name')->all(),
             'start' => round($opening, 2),
             'start_estimated' => $estimated,
+            'start_manual' => $manual,
             'plan' => round($plan, 2),
             'end' => $end,
             'credit_limit' => $limit,
@@ -237,6 +241,10 @@ class PlanService
      */
     private function checkingBalanceBefore(array $ids, float $opening, Carbon $before): float
     {
+        if ($ids === []) {
+            return round($opening, 2);
+        }
+
         $marks = implode(',', array_fill(0, count($ids), '?'));
 
         $sums = Transaction::query()

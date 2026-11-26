@@ -402,6 +402,7 @@ class DataExportController extends Controller
             ->get()
             ->map(fn (PlanMonth $month) => [
                 'month' => $month->month->toDateString(),
+                'start_balance' => $month->start_balance === null ? null : (float) $month->start_balance,
                 'groups' => $month->groups->map(fn (PlanGroup $group) => [
                     'name' => $group->name,
                     'kind' => $group->kind,
@@ -1833,6 +1834,10 @@ class DataExportController extends Controller
             if (!$planMonth) {
                 $planMonth = PlanMonth::create(['user_id' => $user->id, 'month' => $monthStart->toDateString()]);
                 $result['plan_months']++;
+
+                if (is_numeric($monthItem['start_balance'] ?? null)) {
+                    $planMonth->update(['start_balance' => round((float) $monthItem['start_balance'], 2)]);
+                }
             }
 
             foreach ((array) ($monthItem['groups'] ?? []) as $groupItem) {

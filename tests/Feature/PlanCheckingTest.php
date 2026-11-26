@@ -124,4 +124,71 @@ class PlanCheckingTest extends TestCase
             ->assertSee('Geschätzt zum Monatsende')
             ->assertSee('überzogen – bitte versuchen auszugleichen');
     }
+
+    public function test_manual_start_balance_replaces_the_automatic_one_and_can_be_reset(): void
+    {
+        $this->account(['opening_balance' => 100]);
+        $plan = $this->plan('2026-11', 1000, 1500);
+
+        $this->actingAs($this->user)
+            ->put(route('plan.start-balance', $plan), ['start_balance' => '-1.234,50'])
+            ->assertRedirect();
+
+        $c = app(PlanService::class)->checking($this->user, Carbon::parse('2026-11-01'));
+        $this->assertSame(-1234.5, $c['start']);
+        $this->assertTrue($c['start_manual']);
+        $this->assertSame(-1734.5, $c['end']);
+
+        $this->actingAs($this->user)->put(route('plan.start-balance', $plan), ['start_balance' => ''])->assertRedirect();
+
+        $c = app(PlanService::class)->checking($this->user, Carbon::parse('2026-11-01'));
+        $this->assertSame(100.0, $c['start']);
+        $this->assertFalse($c['start_manual']);
+    }
+
+    public function test_invalid_manual_amount_and_foreign_plans_are_rejected(): void
+    {
+        $this->account();
+        $plan = $this->plan('2026-11', 1000, 500);
+
+        $this->actingAs($this->user)
+            ->put(route('plan.start-balance', $plan), ['start_balance' => 'abc'])
+            ->assertSessionHasErrors('start_balance');
+
+        $other = User::factory()->create(['is_active' => true]);
+        $this->actingAs($other)->put(route('plan.start-balance', $plan), ['start_balance' => '5'])->assertNotFound();
+        $this->assertNull($plan->fresh()->start_balance);
+    }
+
+    public function test_manual_start_balance_is_chained_into_the_next_planned_month_and_works_without_an_account(): void
+    {
+        $nov = $this->plan('2026-11', 2000, 1500); // +500
+        $this->plan('2026-12', 2000, 2500);        // −500
+        $nov->update(['start_balance' => 300]);
+
+        $c = app(PlanService::class)->checking($this->user, Carbon::parse('2026-12-01'));
+
+        $this->assertSame(800.0, $c['start']);
+        $this->assertTrue($c['start_estimated']);
+        $this->assertSame(300.0, $c['end']);
+    }
+
+    public function test_api_sets_and_resets_the_manual_start_balance(): void
+    {
+        $this->account();
+        $this->plan('2026-11', 1000, 400);
+        [, $token] = \App\Models\ApiToken::issue($this->user, 'iPad');
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        $this->patchJson('/api/v1/plan/start-balance', ['month' => '2026-11', 'start_balance' => 250.5], $headers)
+            ->assertOk()
+            ->assertJsonPath('checking.start', 250.5)
+            ->assertJsonPath('checking.start_manual', true)
+            ->assertJsonPath('checking.end', 850.5);
+
+        $this->patchJson('/api/v1/plan/start-balance', ['month' => '2026-11', 'start_balance' => null], $headers)
+            ->assertOk()
+            ->assertJsonPath('checking.start', 100)
+            ->assertJsonPath('checking.start_manual', false);
+    }
 }

@@ -131,7 +131,7 @@
             <section class="fv-card p-5 sm:p-6 {{ $checking['overdrawn'] > 0 ? 'ring-1 ring-red-500/40' : '' }}">
                 <div class="flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Girokonto {{ implode(', ', $checking['accounts']) }}</h2>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ $checking['start_estimated'] ? 'Anfangsstand aus dem Plan des Vormonats geschätzt' : 'Anfangsstand aus den Buchungen' }}</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ $checking['start_manual'] ? 'Anfangsstand von Hand eingetragen' : ($checking['start_estimated'] ? 'Anfangsstand aus dem Plan des Vormonats geschätzt' : 'Anfangsstand aus den Buchungen') }}</span>
                 </div>
 
                 <dl class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -148,6 +148,24 @@
                         <dd class="mt-0.5 font-semibold tabular-nums {{ $checking['end'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">{{ $money($checking['end']) }}</dd>
                     </div>
                 </dl>
+
+                <form method="POST" action="{{ route('plan.start-balance', $plan) }}" class="mt-3 flex flex-wrap items-end gap-2">
+                    @csrf
+                    @method('PUT')
+                    <label class="text-xs text-slate-500 dark:text-slate-400">
+                        Stand zum Monatsanfang von Hand eintragen
+                        <input name="start_balance" type="text" inputmode="decimal" placeholder="automatisch"
+                            value="{{ old('start_balance', $checking['start_manual'] ? number_format($checking['start'], 2, ',', '') : '') }}"
+                            class="fv-input tabular-nums mt-1 block w-44">
+                    </label>
+                    <button type="submit" class="fv-btn fv-btn-secondary text-sm py-2">Speichern</button>
+                    @if ($checking['start_manual'])
+                        <button type="submit" name="start_balance" value="" class="fv-link text-sm py-2">Wieder automatisch</button>
+                    @endif
+                    @error('start_balance')
+                        <p class="w-full text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </form>
 
                 @if ($checking['overdrawn'] > 0)
                     <p class="mt-3 rounded-2xl bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-700 dark:text-red-300">
