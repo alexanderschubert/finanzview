@@ -35,6 +35,7 @@ class PlanController extends Controller
             'monthKey' => $month->format('Y-m'),
             'plan' => $plan,
             'totals' => $plan ? $this->plans->totals($plan) : null,
+            'checking' => $plan ? $this->plans->checking($user, $month, $this->plans->totals($plan)['balance']) : null,
             'previous' => $plan ? null : $this->plans->previous($user, $month),
             'kinds' => PlanGroup::KINDS,
         ]);
@@ -72,6 +73,28 @@ class PlanController extends Controller
             'monthKey' => $month->format('Y-m'),
             'calendar' => $calendar,
         ]);
+    }
+
+    /**
+     * Girokonto-Stand zum Monatsanfang von Hand setzen; leer = wieder automatisch.
+     */
+    public function updateStartBalance(Request $request, PlanMonth $planMonth)
+    {
+        $this->authorizeMonth($planMonth);
+
+        $raw = trim((string) $request->input('start_balance', ''));
+        $negative = str_starts_with($raw, '-') || str_starts_with($raw, '−');
+        $value = $raw === '' ? null : PlanService::parseAmount(ltrim($raw, '-−'));
+
+        if ($raw !== '' && $value === null) {
+            return back()->withErrors(['start_balance' => 'Bitte einen Betrag eingeben, z. B. 1.234,56 oder -120,00.'])->withInput();
+        }
+
+        $planMonth->update(['start_balance' => $value === null ? null : ($negative ? -$value : $value)]);
+
+        return redirect()
+            ->route('plan.index', ['month' => $planMonth->month->format('Y-m')])
+            ->with('success', $value === null ? 'Der Kontostand zum Monatsanfang wird wieder automatisch berechnet.' : 'Kontostand zum Monatsanfang gespeichert.');
     }
 
     public function destroy(PlanMonth $planMonth)

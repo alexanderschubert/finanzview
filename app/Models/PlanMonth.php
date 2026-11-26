@@ -15,12 +15,14 @@ class PlanMonth extends Model
     protected $fillable = [
         'user_id',
         'month',
+        'start_balance',
     ];
 
     protected function casts(): array
     {
         return [
             'month' => 'date',
+            'start_balance' => 'decimal:2',
         ];
     }
 

@@ -509,6 +509,7 @@ Route::get('/settings/dashboard', [
         Route::get('/export', 'export')->name('export');
         Route::get('/import', 'importForm')->name('import');
         Route::post('/import', 'import')->middleware('throttle:20,1')->name('import.store');
+        Route::put('/{planMonth}/start-balance', 'updateStartBalance')->name('start-balance');
         Route::delete('/{planMonth}', 'destroy')->name('destroy');
 
         Route::post('/{planMonth}/groups', 'storeGroup')->name('groups.store');

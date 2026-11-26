@@ -34,6 +34,7 @@ Route::middleware(['auth.api', 'throttle:120,1'])->group(function () {
 
     Route::get('/plan', [PlanningController::class, 'plan']);
     Route::post('/plan', [PlanningController::class, 'store']);
+    Route::patch('/plan/start-balance', [PlanningController::class, 'updateStartBalance']);
     Route::post('/plan/groups', [PlanningController::class, 'storeGroup']);
     Route::patch('/plan/groups/{id}', [PlanningController::class, 'updateGroup'])->whereNumber('id');
     Route::delete('/plan/groups/{id}', [PlanningController::class, 'destroyGroup'])->whereNumber('id');

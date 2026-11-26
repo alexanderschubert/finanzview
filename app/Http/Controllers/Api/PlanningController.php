@@ -61,6 +61,7 @@ class PlanningController extends Controller
                 'exists' => false,
                 'previous' => $this->plans->previous($user, $month)?->month->format('Y-m'),
                 'totals' => null,
+                'checking' => null,
                 'groups' => [],
             ];
         }
@@ -79,6 +80,7 @@ class PlanningController extends Controller
                 'loans' => $totals['loans'],
                 'planned_ratio' => $totals['income'] > 0 ? round($totals['expense'] / $totals['income'], 2) : null,
             ],
+            'checking' => $this->plans->checking($user, $month, $totals['balance']),
             'groups' => $plan->groups->map(fn ($group) => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -133,6 +135,25 @@ class PlanningController extends Controller
         ]);
 
         return response()->json($this->payload($request, $month), 201);
+    }
+
+    /**
+     * Girokonto-Stand zum Monatsanfang von Hand setzen; null = wieder automatisch.
+     */
+    public function updateStartBalance(Request $request)
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
+            'start_balance' => ['present', 'nullable', 'numeric', 'min:-99999999.99', 'max:99999999.99'],
+        ]);
+
+        $month = $this->month($request);
+        $plan = $this->plans->find($request->user(), $month);
+        abort_unless($plan, 404);
+
+        $plan->update(['start_balance' => $validated['start_balance'] === null ? null : round((float) $validated['start_balance'], 2)]);
+
+        return response()->json($this->payload($request, $month));
     }
 
     public function updateGroup(Request $request, int $id)
