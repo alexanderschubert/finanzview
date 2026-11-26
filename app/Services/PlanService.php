@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\PlanGroup;
 use App\Models\PlanItem;
 use App\Models\PlanMonth;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Support\CsvCell;
 use Carbon\Carbon;
@@ -167,6 +169,88 @@ class PlanService
                 ->map(fn (PlanGroup $group) => ['group' => $group, 'sum' => $sum($group)])
                 ->values(),
         ];
+    }
+
+    /**
+     * Girokonto im Plan: Kontostand zum Monatsanfang und geschätzter Stand zum Monatsende.
+     *
+     * Anfangsstand = Stand der aktiven Girokonten am Monatsende des Vormonats,
+     * also Startsaldo plus alle Buchungen vor dem Monatsersten. Für Monate nach dem
+     * laufenden Monat wird, wenn es dafür einen Plan gibt, der geschätzte Endstand
+     * des Vormonats übernommen. Ende = Anfang + Einnahmen − Ausgaben des Plans.
+     *
+     * @return array{accounts: list<string>, start: float, start_estimated: bool, plan: float, end: float, credit_limit: ?float, overdrawn: float, limit_left: ?float, over_limit: float}|null
+     */
+    public function checking(User $user, Carbon $month, ?float $planBalance = null, int $depth = 0): ?array
+    {
+        $accounts = Account::query()
+            ->where('user_id', $user->id)
+            ->where('type', 'checking')
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->get();
+
+        if ($accounts->isEmpty()) {
+            return null;
+        }
+
+        $start = $month->copy()->startOfMonth();
+        $estimated = false;
+        $opening = null;
+
+        if ($depth < 24 && $start->gt(now()->startOfMonth())) {
+            $previousMonth = $start->copy()->subMonthNoOverflow();
+            $previousPlan = $this->find($user, $previousMonth);
+
+            if ($previousPlan) {
+                $previous = $this->checking($user, $previousMonth, $this->totals($previousPlan)['balance'], $depth + 1);
+                $opening = $previous['end'] ?? null;
+                $estimated = $opening !== null;
+            }
+        }
+
+        $opening ??= $this->checkingBalanceBefore($accounts->pluck('id')->all(), $accounts->sum(fn ($a) => (float) $a->opening_balance), $start);
+
+        $plan = $planBalance ?? ($this->find($user, $start) ? $this->totals($this->find($user, $start))['balance'] : 0.0);
+        $end = round($opening + $plan, 2);
+
+        $limit = $accounts->whereNotNull('credit_limit')->sum(fn ($a) => (float) $a->credit_limit);
+        $limit = $accounts->whereNotNull('credit_limit')->isNotEmpty() ? round($limit, 2) : null;
+
+        return [
+            'accounts' => $accounts->pluck('name')->all(),
+            'start' => round($opening, 2),
+            'start_estimated' => $estimated,
+            'plan' => round($plan, 2),
+            'end' => $end,
+            'credit_limit' => $limit,
+            'overdrawn' => $end < 0 ? round(-$end, 2) : 0.0,
+            'limit_left' => $limit !== null && $end < 0 ? round($limit + $end, 2) : null,
+            'over_limit' => $limit !== null && $end < -$limit ? round(-$end - $limit, 2) : 0.0,
+        ];
+    }
+
+    /**
+     * Stand der Konten vor einem Stichtag: Startsaldo plus alle Buchungen davor.
+     *
+     * @param list<int> $ids
+     */
+    private function checkingBalanceBefore(array $ids, float $opening, Carbon $before): float
+    {
+        $marks = implode(',', array_fill(0, count($ids), '?'));
+
+        $sums = Transaction::query()
+            ->whereDate('transaction_date', '<', $before->toDateString())
+            ->where(fn ($q) => $q->whereIn('account_id', $ids)->orWhereIn('transfer_account_id', $ids))
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN account_id IN ($marks) AND type = 'income' THEN amount ELSE 0 END), 0) AS income,
+                 COALESCE(SUM(CASE WHEN account_id IN ($marks) AND type IN ('expense', 'transfer') THEN amount ELSE 0 END), 0) AS outgoing,
+                 COALESCE(SUM(CASE WHEN transfer_account_id IN ($marks) AND type = 'transfer' THEN amount ELSE 0 END), 0) AS incoming",
+                [...$ids, ...$ids, ...$ids]
+            )
+            ->first();
+
+        return round($opening + (float) $sums->income - (float) $sums->outgoing + (float) $sums->incoming, 2);
     }
 
     /**

@@ -35,6 +35,7 @@ class PlanController extends Controller
             'monthKey' => $month->format('Y-m'),
             'plan' => $plan,
             'totals' => $plan ? $this->plans->totals($plan) : null,
+            'checking' => $plan ? $this->plans->checking($user, $month, $this->plans->totals($plan)['balance']) : null,
             'previous' => $plan ? null : $this->plans->previous($user, $month),
             'kinds' => PlanGroup::KINDS,
         ]);

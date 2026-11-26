@@ -61,6 +61,7 @@ class PlanningController extends Controller
                 'exists' => false,
                 'previous' => $this->plans->previous($user, $month)?->month->format('Y-m'),
                 'totals' => null,
+                'checking' => null,
                 'groups' => [],
             ];
         }
@@ -79,6 +80,7 @@ class PlanningController extends Controller
                 'loans' => $totals['loans'],
                 'planned_ratio' => $totals['income'] > 0 ? round($totals['expense'] / $totals['income'], 2) : null,
             ],
+            'checking' => $this->plans->checking($user, $month, $totals['balance']),
             'groups' => $plan->groups->map(fn ($group) => [
                 'id' => $group->id,
                 'name' => $group->name,

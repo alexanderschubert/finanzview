@@ -127,6 +127,45 @@
             </div>
         </section>
 
+        @if ($checking)
+            <section class="fv-card p-5 sm:p-6 {{ $checking['overdrawn'] > 0 ? 'ring-1 ring-red-500/40' : '' }}">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">Girokonto {{ implode(', ', $checking['accounts']) }}</h2>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ $checking['start_estimated'] ? 'Anfangsstand aus dem Plan des Vormonats geschätzt' : 'Anfangsstand aus den Buchungen' }}</span>
+                </div>
+
+                <dl class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div class="rounded-2xl bg-slate-900/5 dark:bg-white/5 px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Stand zum Monatsanfang</dt>
+                        <dd class="mt-0.5 font-semibold tabular-nums {{ $checking['start'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white' }}">{{ $money($checking['start']) }}</dd>
+                    </div>
+                    <div class="rounded-2xl bg-slate-900/5 dark:bg-white/5 px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Plan dieses Monats</dt>
+                        <dd class="mt-0.5 font-semibold tabular-nums {{ $checking['plan'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">{{ $checking['plan'] < 0 ? '−' : '+' }}{{ $money(abs($checking['plan'])) }}</dd>
+                    </div>
+                    <div class="rounded-2xl {{ $checking['end'] < 0 ? 'bg-red-500/10' : 'bg-emerald-500/10' }} px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Geschätzt zum Monatsende</dt>
+                        <dd class="mt-0.5 font-semibold tabular-nums {{ $checking['end'] < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">{{ $money($checking['end']) }}</dd>
+                    </div>
+                </dl>
+
+                @if ($checking['overdrawn'] > 0)
+                    <p class="mt-3 rounded-2xl bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-700 dark:text-red-300">
+                        {{ $money($checking['overdrawn']) }} überzogen – bitte versuchen auszugleichen.
+                        @if ($checking['credit_limit'] !== null)
+                            <span class="font-normal">
+                                @if ($checking['over_limit'] > 0)
+                                    Der Dispo ({{ $money($checking['credit_limit']) }}) wäre um {{ $money($checking['over_limit']) }} überschritten.
+                                @else
+                                    Vom Dispo ({{ $money($checking['credit_limit']) }}) blieben {{ $money($checking['limit_left']) }} frei.
+                                @endif
+                            </span>
+                        @endif
+                    </p>
+                @endif
+            </section>
+        @endif
+
 
         <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-4 items-start">
 
