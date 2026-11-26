@@ -123,7 +123,7 @@ class PlanController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'kind' => ['required', Rule::in(array_keys(PlanGroup::KINDS))],
-            'icon' => ['nullable', 'string', 'max:20'],
+            'icon' => ['nullable', 'string', new \App\Rules\SymbolRule],
             'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], ['name.required' => 'Bitte einen Namen für die Gruppe eingeben.']);
 
@@ -156,7 +156,7 @@ class PlanController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'kind' => ['required', Rule::in(array_keys(PlanGroup::KINDS))],
-            'icon' => ['nullable', 'string', 'max:20'],
+            'icon' => ['nullable', 'string', new \App\Rules\SymbolRule],
             'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ], ['name.required' => 'Bitte einen Namen eingeben.']);
 

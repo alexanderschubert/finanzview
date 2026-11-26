@@ -55,7 +55,7 @@
                 @foreach ($segments as $segment)
                     <li class="flex items-center gap-2.5 text-sm min-w-0">
                         <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $segment['color'] }}; box-shadow: 0 0 8px {{ $segment['color'] }}99"></span>
-                        <span class="flex-1 truncate text-slate-700 dark:text-slate-200">{{ $segment['icon'] }} {{ $segment['label'] }}</span>
+                        <span class="flex-1 truncate text-slate-700 dark:text-slate-200">{{ \App\Support\Symbols::text($segment['icon']) }} {{ $segment['label'] }}</span>
                         <span class="tabular-nums whitespace-nowrap text-slate-900 dark:text-white">
                             {{ number_format($segment['amount'], 0, ',', '.') }} €
                             <span class="ml-1 text-xs text-slate-400">{{ number_format($segment['amount'] / $segmentTotal * 100, 0, ',', '.') }} %</span>

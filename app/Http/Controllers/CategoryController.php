@@ -166,7 +166,7 @@ class CategoryController extends Controller
             'parent_id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:income,expense,both'],
-            'icon' => ['nullable', 'string', 'max:20'],
+            'icon' => ['nullable', 'string', new \App\Rules\SymbolRule],
             'color' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
         ] + ($category ? ['is_active' => ['nullable', 'boolean']] : []));

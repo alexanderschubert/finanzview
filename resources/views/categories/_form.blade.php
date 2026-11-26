@@ -47,7 +47,7 @@
                 data-preview-tile
                 class="w-20 h-20 rounded-[22px] flex items-center justify-center text-4xl bg-slate-100 dark:bg-white/5"
                 @if ($hasColor) style="background-color: {{ $color }}26" @endif
-            >{{ $value('icon') ?: '🏷️' }}</span>
+            >@if (\App\Support\Symbols::svg($value('icon'))){!! \App\Support\Symbols::svg($value('icon'), 'w-10 h-10') !!}@elseif (\App\Support\Symbols::isSymbol($value('icon')))🏷️@else{{ $value('icon') ?: '🏷️' }}@endif</span>
 
             <p data-preview-name class="mt-3 text-lg font-semibold text-slate-900 dark:text-white">
                 {{ $value('name') ?: 'Neue Kategorie' }}
@@ -64,7 +64,7 @@
                     <option value="" data-type="">Keine – Hauptkategorie</option>
                     @foreach ($parentOptions as $option)
                         <option value="{{ $option->id }}" data-type="{{ $option->type }}" @selected((string) $value('parent_id') === (string) $option->id)>
-                            {{ $option->icon }} {{ $option->name }}
+                            {{ $option->icon_text }} {{ $option->name }}
                         </option>
                     @endforeach
                 </select>
@@ -188,7 +188,7 @@
 
         // Vorschau oben folgt dem Symbol- und Farbwähler.
         document.querySelector('[data-symbol-picker]').addEventListener('symbolchange', event => {
-            tile.textContent = event.detail.icon || '🏷️';
+            if (event.detail.svg) { tile.innerHTML = event.detail.svg; } else { tile.textContent = event.detail.icon || '🏷️'; }
             tile.style.backgroundColor = event.detail.color ? event.detail.color + '26' : '';
         });
     })();

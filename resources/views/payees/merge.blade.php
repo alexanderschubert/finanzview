@@ -42,7 +42,7 @@
                 <select id="default_category_id" name="default_category_id" class="fv-input">
                     <option value="">Keine</option>
                     @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected((string) old('default_category_id', $suggestedCategory) === (string) $category->id)>{{ $category->icon }} {{ $category->display_name }}</option>
+                        <option value="{{ $category->id }}" @selected((string) old('default_category_id', $suggestedCategory) === (string) $category->id)>{{ $category->icon_text }} {{ $category->display_name }}</option>
                     @endforeach
                 </select>
             </x-field>

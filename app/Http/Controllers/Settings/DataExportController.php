@@ -1853,7 +1853,7 @@ class DataExportController extends Controller
                 $group ??= $planMonth->groups()->create([
                     'name' => $groupName,
                     'kind' => array_key_exists($groupItem['kind'] ?? '', PlanGroup::KINDS) ? $groupItem['kind'] : PlanGroup::KIND_EXPENSE,
-                    'icon' => filled($groupItem['icon'] ?? null) ? Str::limit((string) $groupItem['icon'], 20, '') : null,
+                    'icon' => filled($groupItem['icon'] ?? null) ? Str::limit((string) $groupItem['icon'], 60, '') : null,
                     'color' => is_string($groupItem['color'] ?? null) && preg_match('/^#[0-9a-fA-F]{6}$/', $groupItem['color']) ? $groupItem['color'] : null,
                     'sort_order' => (int) ($groupItem['sort_order'] ?? 0),
                 ]);

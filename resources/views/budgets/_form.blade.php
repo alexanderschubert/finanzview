@@ -145,7 +145,7 @@
                 @foreach ($sortedCategories as $category)
                     <label class="cursor-pointer select-none rounded-full border border-slate-200 dark:border-white/10 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-white/5 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 has-[:checked]:text-emerald-800 dark:has-[:checked]:bg-emerald-500/15 dark:has-[:checked]:text-emerald-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-500 {{ $category->is_active ? '' : 'opacity-60' }}">
                         <input type="checkbox" name="category_ids[]" value="{{ $category->id }}" class="sr-only" @checked(in_array($category->id, $selectedCategories, true))>
-                        {{ $category->icon }} {{ $category->display_name }}
+                        {{ $category->icon_text }} {{ $category->display_name }}
                     </label>
                 @endforeach
             </div>
